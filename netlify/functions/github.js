@@ -4,33 +4,45 @@ export async function handler() {
     "help wanted",
     "tester",
     "please contact",
-    "contributors"
+    "contributors",
+    "seeking"
   ];
 
-  const GENERIC = [
-    "tooling",
-    "ecosystem",
-    "release",
-    "version",
-    "upgrade"
-  ];
-
-  const FRICTION = [
-    "confusing",
-    "unclear",
-    "hard to",
+  const HARD_FRICTION = [
     "does not work",
-    "fails",
     "breaks",
+    "fails",
+    "cannot",
     "no way to",
     "missing",
-    "cannot",
+    "incompatible",
     "workaround"
   ];
 
-  try {
+  const SOFT_FRICTION = [
+    "how do i",
+    "how can i",
+    "is it possible",
+    "question",
+    "confusing",
+    "unclear",
+    "unexpected",
+    "problem with",
+    "issue with"
+  ];
+
+  const GENERIC_RELEASE = [
+    "release",
+    "version",
+    "upgrade",
+    "changelog",
+    "v1.",
+    "v2."
+  ];
+
+  async function fetchIssues(query) {
     const res = await fetch(
-      "https://api.github.com/search/issues?q=state:open+(bug+OR+question)+in:title,body&per_page=50",
+      `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&per_page=50`,
       {
         headers: {
           "User-Agent": "tech-murmurs",
@@ -40,37 +52,69 @@ export async function handler() {
       }
     );
 
-    const data = await res.json();
+    const json = await res.json();
+    return Array.isArray(json.items) ? json.items : [];
+  }
 
-    const ideas = data.items
-      .filter(issue => {
+  try {
+    // ─────────────────────────────
+    // TIER 1: HARD FRICTION
+    // ─────────────────────────────
+    let issues = await fetchIssues(
+      "state:open bug OR error OR failure"
+    );
+
+    let ideas = issues.filter(issue => {
+      const text = `${issue.title} ${issue.body || ""}`.toLowerCase();
+      if (STAFFING.some(p => text.includes(p))) return false;
+      if (GENERIC_RELEASE.some(p => text.includes(p))) return false;
+      return HARD_FRICTION.some(p => text.includes(p));
+    });
+
+    // ─────────────────────────────
+    // TIER 2: SOFT FRICTION (QUESTIONS)
+    // ─────────────────────────────
+    if (ideas.length < 3) {
+      const softIssues = await fetchIssues(
+        "state:open question OR help OR how in:title,body"
+      );
+
+      const softIdeas = softIssues.filter(issue => {
         const text = `${issue.title} ${issue.body || ""}`.toLowerCase();
-
         if (STAFFING.some(p => text.includes(p))) return false;
-        if (GENERIC.some(p => text.includes(p))) return false;
+        if (GENERIC_RELEASE.some(p => text.includes(p))) return false;
+        return SOFT_FRICTION.some(p => text.includes(p));
+      });
 
-        return FRICTION.some(p => text.includes(p));
-      })
-      .slice(0, 8)
-      .map(issue => ({
-        title: issue.title,
-        problem:
-          issue.body?.slice(0, 240) ||
-          "A concrete source of friction was described.",
-        quest:
-          "Design a focused solution that reduces or eliminates this friction.",
-        audience: issue.repository_url.split("/").pop(),
-        difficulty: "Medium",
-        tags: ["Infra", "Research"],
-        sources: [
-          { type: "github", url: issue.html_url }
-        ]
-      }));
+      ideas = ideas.concat(softIdeas);
+    }
+
+    // ─────────────────────────────
+    // FINAL MAPPING (CAP AT 5)
+    // ─────────────────────────────
+    const finalIdeas = ideas.slice(0, 5).map(issue => ({
+      title: issue.title,
+      problem:
+        issue.body?.slice(0, 260) ||
+        "A concrete source of developer friction was described.",
+      quest:
+        "Design and prototype a focused solution that reduces or removes this friction.",
+      audience: issue.repository_url.split("/").pop(),
+      difficulty: "Medium",
+      tags: ["Infra", "Research"],
+      sources: [
+        {
+          type: "github",
+          url: issue.html_url
+        }
+      ]
+    }));
 
     return {
       statusCode: 200,
-      body: JSON.stringify(ideas)
+      body: JSON.stringify(finalIdeas)
     };
+
   } catch (err) {
     return {
       statusCode: 500,
