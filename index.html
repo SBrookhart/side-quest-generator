@@ -7,119 +7,124 @@
 
   <style>
     :root {
-      --bg: #f5f6f8;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --accent: #6366f1;
-      --border: #e5e7eb;
+      /* Core palette */
+      --bg: #ffffff;
+      --page-bg: #f2f4f8;
+      --text-main: #1f2937;
+      --text-muted: #4b5563;
+      --accent: #4f46e5;
+      --card-bg: #ffffff;
+      --border-light: #e5e7eb;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
+    html,
     body {
       margin: 0;
-      padding: 48px 20px;
-      background: radial-gradient(1200px 600px at top, #eef2ff, var(--bg));
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
-      color: var(--text);
+      padding: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--page-bg);
+      color: var(--text-main);
+      scroll-behavior: smooth;
     }
 
     .container {
-      max-width: 900px;
-      margin: 0 auto;
+      max-width: 960px;
+      margin: auto;
+      padding: 48px 20px;
     }
 
     header {
-      margin-bottom: 48px;
+      text-align: center;
+      margin-bottom: 42px;
     }
 
-    h1 {
-      font-size: 2.6rem;
-      margin: 0 0 12px 0;
-      letter-spacing: -0.02em;
+    header h1 {
+      font-size: 3rem;
+      margin: 0;
+      font-weight: 600;
     }
 
-    .subtitle {
-      font-size: 1.05rem;
-      color: var(--muted);
-      max-width: 600px;
-      line-height: 1.5;
+    header .subtitle {
+      color: var(--text-muted);
+      font-size: 1.125rem;
+      margin-top: 8px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
     }
 
-    .quest {
-      background: var(--card);
+    .quest-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
       border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 28px;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 8px 24px rgba(31, 41, 55, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .quest:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.09);
+    .quest-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(31, 41, 55, 0.08);
     }
 
-    .quest h2 {
-      margin: 0 0 16px 0;
-      font-size: 1.4rem;
-      letter-spacing: -0.01em;
-    }
-
-    .section {
-      margin-top: 14px;
+    .quest-title {
+      font-size: 1.6rem;
+      margin: 0 0 12px 0;
+      font-weight: 600;
+      color: var(--text-main);
     }
 
     .label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+      font-size: 0.8rem;
       font-weight: 600;
-      color: var(--muted);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 12px;
       margin-bottom: 4px;
     }
 
     .value {
-      line-height: 1.55;
+      font-size: 1rem;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 52px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-light);
     }
 
     .meta {
       display: flex;
-      align-items: center;
       gap: 12px;
-      margin-top: 20px;
+      align-items: center;
+      margin-top: 18px;
       flex-wrap: wrap;
     }
 
-    .pill {
-      font-size: 0.8rem;
+    .badge {
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 0.85rem;
+      font-weight: 500;
       padding: 6px 12px;
       border-radius: 999px;
-      background: #eef2ff;
-      color: #3730a3;
-      font-weight: 500;
     }
 
     .source-link {
-      margin-left: auto;
-      font-size: 0.85rem;
       text-decoration: none;
-      color: var(--accent);
       font-weight: 500;
+      color: var(--accent);
+      font-size: 0.92rem;
     }
-
     .source-link:hover {
       text-decoration: underline;
-    }
-
-    footer {
-      margin-top: 60px;
-      font-size: 0.8rem;
-      color: var(--muted);
     }
   </style>
 </head>
@@ -128,16 +133,16 @@
     <header>
       <h1>🧭 Today’s Unclaimed Side Quests</h1>
       <p class="subtitle">
-        Small, buildable ideas distilled from unfinished intentions across crypto,
-        open source, and developer culture.
+        Sharp ideas distilled from open source and crypto culture — actionable
+        mini-projects worth exploring.
       </p>
     </header>
 
     <div id="quests"></div>
 
-    <footer>
-      Generated from public signals. Built for builders who like small, sharp projects.
-    </footer>
+    <div class="footer">
+      Side-Quest Generator — a project for builders by builders.
+    </div>
   </div>
 
   <script src="quests.js"></script>
