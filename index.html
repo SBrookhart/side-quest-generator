@@ -18,11 +18,19 @@
       --bg: #0b0e14;
       --panel: #121826;
       --border: #1f2937;
+
       --text-primary: #e5e7eb;
       --text-secondary: #9ca3af;
       --text-muted: #6b7280;
+
       --accent: #5eead4;
-      --accent-soft: rgba(94, 234, 212, 0.15);
+
+      --easy: #4ade80;
+      --medium: #facc15;
+      --hard: #f87171;
+
+      --github: #9ca3af;
+      --twitter: #38bdf8;
     }
 
     * { box-sizing: border-box; }
@@ -32,86 +40,68 @@
       font-family: Inter, system-ui, sans-serif;
       color: var(--text-primary);
       background:
-        linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7)),
-        repeating-linear-gradient(
-          0deg,
-          rgba(255,255,255,0.025) 0px,
-          rgba(255,255,255,0.025) 1px,
-          transparent 1px,
-          transparent 80px
-        ),
-        repeating-linear-gradient(
-          90deg,
-          rgba(255,255,255,0.025) 0px,
-          rgba(255,255,255,0.025) 1px,
-          transparent 1px,
-          transparent 80px
-        ),
+        linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.75)),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 80px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 80px),
         var(--bg);
       min-height: 100vh;
     }
 
     header {
-      max-width: 980px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 4rem 1.5rem 2rem;
+      padding: 4rem 2rem 2rem;
     }
 
     h1 {
       font-family: "Space Grotesk", sans-serif;
       font-size: 3rem;
-      margin: 0 0 0.75rem;
+      margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
     }
 
     header p {
-      max-width: 680px;
+      max-width: 720px;
       color: var(--text-secondary);
       line-height: 1.6;
     }
 
-    main {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 0 1.5rem 4rem;
-    }
-
-    .controls {
+    .top-actions {
+      margin-top: 1.5rem;
       display: flex;
       gap: 1rem;
-      margin-bottom: 2rem;
     }
 
     button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: 10px;
+      padding: 0.5rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.85rem;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      background: linear-gradient(135deg, var(--accent), #38bdf8);
-      color: #020617;
-      border: none;
-      border-radius: 12px;
-      padding: 0.8rem 1.4rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      gap: 0.4rem;
     }
 
-    button.secondary {
-      background: transparent;
-      color: var(--text-primary);
-      border: 1px solid var(--border);
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 30px -10px var(--accent-soft);
+    .day-label {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
     }
 
     .quest-card {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 2.2rem;
+      padding: 2rem;
       margin-bottom: 2rem;
       animation: fadeUp 0.35s ease;
     }
@@ -123,29 +113,26 @@
 
     .quest-title {
       font-family: "Space Grotesk", sans-serif;
-      font-size: 1.7rem;
-      margin-bottom: 0.5rem;
+      font-size: 1.6rem;
+      margin-bottom: 0.6rem;
     }
 
     .tags {
       display: flex;
       gap: 0.5rem;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
 
     .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.75rem;
-      padding: 0.3rem 0.7rem;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.6rem;
       border-radius: 999px;
       border: 1px solid var(--border);
       color: var(--text-secondary);
     }
 
     .section {
-      margin-top: 1.1rem;
+      margin-top: 1rem;
     }
 
     .label {
@@ -158,52 +145,65 @@
 
     .value {
       line-height: 1.55;
-      color: var(--text-primary);
     }
 
     .meta {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 1.6rem;
       align-items: center;
+      gap: 0.75rem;
+      margin-top: 1.4rem;
+      flex-wrap: wrap;
     }
 
-    .pill {
-      padding: 0.35rem 0.8rem;
+    .difficulty {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.7rem;
       border-radius: 999px;
-      font-size: 0.75rem;
-      border: 1px solid rgba(94,234,212,0.35);
-      color: #c7f9f2;
-      background: var(--accent-soft);
+      font-weight: 600;
+      color: #020617;
     }
+
+    .easy { background: var(--easy); }
+    .medium { background: var(--medium); }
+    .hard { background: var(--hard); }
 
     .sources {
-      display: flex;
-      gap: 0.75rem;
       margin-left: auto;
+      display: flex;
+      gap: 0.6rem;
     }
 
     .source {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      font-size: 0.8rem;
-      text-decoration: none;
-      color: var(--text-primary);
+      padding: 0.3rem;
+    }
+
+    .source.github svg { color: var(--github); }
+    .source.twitter svg { color: var(--twitter); }
+
+    .archive {
+      margin-top: 4rem;
+    }
+
+    .archive input {
+      background: transparent;
       border: 1px solid var(--border);
-      padding: 0.35rem 0.6rem;
       border-radius: 8px;
+      padding: 0.4rem 0.6rem;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      width: 260px;
     }
 
     footer {
       border-top: 1px solid var(--border);
+      padding: 2rem;
       margin-top: 4rem;
-      padding: 2rem 1.5rem;
     }
 
     .footer-inner {
-      max-width: 980px;
+      max-width: 1100px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -216,138 +216,193 @@
       color: var(--text-primary);
     }
 
-    @media (max-width: 700px) {
-      .sources { width: 100%; }
-      .footer-inner {
-        flex-direction: column;
-        gap: 0.75rem;
-      }
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal-content {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 720px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      font-family: "Space Grotesk", sans-serif;
+      margin-top: 0;
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <h1>Brookhart Labs</h1>
+<header>
+  <h1>Brookhart Labs</h1>
+  <p>
+    A daily side-quest generator for builders.  
+    High-signal ideas distilled from open conversations across crypto and open source.
+  </p>
+  <div class="top-actions">
+    <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
+  </div>
+</header>
+
+<main>
+  <div class="day-label" id="dayLabel"></div>
+  <div id="today"></div>
+
+  <div class="archive">
+    <h3>Archive</h3>
+    <input placeholder="Search timeline…" oninput="filterArchive(this.value)" />
+    <div id="archiveList"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="motto">Built quietly, shipped deliberately.</div>
+    <div>© 2026 Brookhart Labs</div>
+  </div>
+</footer>
+
+<!-- Methodology Modal -->
+<div class="modal" id="methodology">
+  <div class="modal-content">
+    <h2>Methodology</h2>
     <p>
-      A side-quest generator for builders.  
-      High-signal ideas extracted from unfinished conversations across crypto,
-      open source, and developer culture.
+      Brookhart Labs’ Side-Quest Generator identifies small, buildable project ideas by
+      scanning public developer signals where unmet needs surface organically.
     </p>
-  </header>
+    <p>
+      Inputs include developer discussions, issue threads, roadmap comments, and social
+      posts that express friction, missing functionality, or unrealized opportunities.
+      These signals are filtered for specificity, feasibility, and relevance to builders.
+    </p>
+    <p>
+      Each idea is synthesized into a concise “side quest” with a clearly defined problem,
+      target audience, and implementation scope. Ideas are intentionally constrained to
+      remain achievable by individuals or small teams.
+    </p>
+    <p>
+      This project prioritizes cultural signal over market timing and does not attempt to
+      predict financial outcomes. It is a research and ideation tool, not investment advice.
+    </p>
+    <button onclick="toggleMethodology()">Close</button>
+  </div>
+</div>
 
-  <main>
-    <div class="controls">
-      <button onclick="generateQuest()">
-        <i data-lucide="shuffle"></i> Generate Quest
-      </button>
-      <button class="secondary" onclick="toggleArchive()">
-        <i data-lucide="archive"></i> Archive
-      </button>
-    </div>
+<script>
+  const seed = new Date().toISOString().slice(0,10);
+  document.getElementById("dayLabel").innerText = "Ideas for " + seed;
 
-    <div id="quest"></div>
-    <div id="archive" style="display:none;"></div>
-  </main>
-
-  <footer>
-    <div class="footer-inner">
-      <div class="motto">Built quietly, shipped deliberately.</div>
-      <div>© 2026 Brookhart Labs</div>
-    </div>
-  </footer>
-
-  <script>
-    const quests = [
-      {
-        title: "Gas Fee Translator",
-        tags: ["Infra", "Product"],
-        origin: "Repeated developer complaints on X during high-congestion periods",
-        problem: "Users don’t understand why gas fees change or what they’re paying for.",
-        quest: "Build a contextual widget that explains gas fees in plain English at the moment of transaction.",
-        audience: "Wallet teams, onboarding flows, L2s",
-        difficulty: "Medium",
-        sources: [
-          { icon: "twitter", url: "https://x.com/search?q=gas%20fees" },
-          { icon: "github", url: "https://github.com/ethereum" }
-        ]
-      },
-      {
-        title: "DAO Proposal Summarizer",
-        tags: ["Product", "Research"],
-        origin: "Long governance threads with low voter participation",
-        problem: "DAO voters lack time to read and compare detailed proposals.",
-        quest: "Create a summarization layer highlighting tradeoffs, risks, and outcomes.",
-        audience: "DAO delegates, contributors",
-        difficulty: "Easy–Medium",
-        sources: [
-          { icon: "github", url: "https://github.com/ethereum/governance" }
-        ]
-      }
-    ];
-
-    const archive = [];
-
-    function generateQuest() {
-      const quest = quests[Math.floor(Math.random() * quests.length)];
-      archive.push(quest);
-
-      document.getElementById("quest").innerHTML = renderQuest(quest);
-      document.getElementById("archive").innerHTML =
-        archive.map(renderQuest).join("");
-
-      lucide.createIcons();
+  const ALL_QUESTS = [
+    {
+      title: "Gas Fee Translator",
+      tags: ["Infra", "Product"],
+      origin: "Recurring confusion during high congestion events",
+      problem: "Users do not understand gas pricing at transaction time.",
+      quest: "Build a real-time, plain-English gas explanation layer for wallets.",
+      audience: "Wallet teams, onboarding tools",
+      difficulty: "Medium",
+      sources: [{ type: "twitter", url: "https://x.com/search?q=gas%20fees" }]
+    },
+    {
+      title: "DAO Proposal Digest",
+      tags: ["Product", "Research"],
+      origin: "Low participation in long governance threads",
+      problem: "Voters cannot process lengthy proposals efficiently.",
+      quest: "Summarize proposals into risks, tradeoffs, and outcomes.",
+      audience: "DAO delegates",
+      difficulty: "Easy",
+      sources: [{ type: "github", url: "https://github.com/ethereum/governance" }]
+    },
+    {
+      title: "Protocol Changelog Radar",
+      tags: ["Infra"],
+      origin: "Breaking changes missed during testnet launches",
+      problem: "Developers lack a unified view of protocol changes.",
+      quest: "Aggregate changelogs and highlight breaking updates.",
+      audience: "App developers",
+      difficulty: "Medium",
+      sources: [{ type: "github", url: "https://github.com/solana-labs/solana" }]
+    },
+    {
+      title: "Narrative Momentum Tracker",
+      tags: ["Research"],
+      origin: "Shifts in developer and social attention",
+      problem: "Teams react too late to narrative changes.",
+      quest: "Track narrative velocity across social and repo activity.",
+      audience: "Researchers, strategists",
+      difficulty: "Hard",
+      sources: [{ type: "twitter", url: "https://x.com/search?q=crypto" }]
+    },
+    {
+      title: "Wallet Health Monitor",
+      tags: ["Infra"],
+      origin: "Scattered balance and flow visibility",
+      problem: "Users cannot easily understand wallet health.",
+      quest: "Visualize inflows, outflows, and idle capital.",
+      audience: "Power users",
+      difficulty: "Easy",
+      sources: [{ type: "github", url: "https://github.com/ethereum" }]
     }
+  ];
 
-    function renderQuest(q) {
-      return `
-        <div class="quest-card">
-          <div class="tags">
-            ${q.tags.map(t => `<span class="tag"><i data-lucide="tag"></i>${t}</span>`).join("")}
-          </div>
+  const todaySet = ALL_QUESTS.slice(0,5);
+  const archive = JSON.parse(localStorage.getItem("archive") || "[]");
+  archive.unshift({ date: seed, quests: todaySet });
+  localStorage.setItem("archive", JSON.stringify(archive));
 
-          <div class="quest-title">${q.title}</div>
+  function renderQuest(q) {
+    return `
+      <div class="quest-card">
+        <div class="tags">${q.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+        <div class="quest-title">${q.title}</div>
 
-          <div class="section">
-            <div class="label">Origin</div>
-            <div class="value">${q.origin}</div>
-          </div>
+        <div class="section"><div class="label">Origin</div><div class="value">${q.origin}</div></div>
+        <div class="section"><div class="label">Problem</div><div class="value">${q.problem}</div></div>
+        <div class="section"><div class="label">Quest</div><div class="value">${q.quest}</div></div>
+        <div class="section"><div class="label">Audience</div><div class="value">${q.audience}</div></div>
 
-          <div class="section">
-            <div class="label">The problem</div>
-            <div class="value">${q.problem}</div>
-          </div>
-
-          <div class="section">
-            <div class="label">The quest</div>
-            <div class="value">${q.quest}</div>
-          </div>
-
-          <div class="section">
-            <div class="label">Who wants this</div>
-            <div class="value">${q.audience}</div>
-          </div>
-
-          <div class="meta">
-            <span class="pill">Difficulty: ${q.difficulty}</span>
-            <div class="sources">
-              ${q.sources.map(s => `
-                <a class="source" href="${s.url}" target="_blank">
-                  <i data-lucide="${s.icon}"></i>
-                </a>
-              `).join("")}
-            </div>
+        <div class="meta">
+          <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+          <div class="sources">
+            ${q.sources.map(s => `
+              <a class="source ${s.type}" href="${s.url}" target="_blank">
+                <i data-lucide="${s.type === "github" ? "github" : "twitter"}"></i>
+              </a>`).join("")}
           </div>
         </div>
-      `;
-    }
+      </div>
+    `;
+  }
 
-    function toggleArchive() {
-      const el = document.getElementById("archive");
-      el.style.display = el.style.display === "none" ? "block" : "none";
-    }
+  document.getElementById("today").innerHTML = todaySet.map(renderQuest).join("");
 
-    lucide.createIcons();
-  </script>
+  function filterArchive(text) {
+    document.getElementById("archiveList").innerHTML =
+      archive
+        .filter(a => a.date.includes(text))
+        .map(a => `<div class="day-label">${a.date}</div>` + a.quests.map(renderQuest).join(""))
+        .join("");
+  }
+
+  function toggleMethodology() {
+    const m = document.getElementById("methodology");
+    m.style.display = m.style.display === "flex" ? "none" : "flex";
+  }
+
+  filterArchive("");
+  lucide.createIcons();
+</script>
 </body>
 </html>
