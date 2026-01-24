@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Brookhart Labs — Side-Quest Generator</title>
+  <title>Tech Murmurs</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,181 +29,171 @@
       --twitter:#38bdf8;
     }
 
-    *{box-sizing:border-box}
+    * { box-sizing: border-box; }
 
-    body{
-      margin:0;
-      font-family:Inter,system-ui,sans-serif;
-      color:var(--text);
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--text);
       background:
-        repeating-linear-gradient(0deg,rgba(255,255,255,0.02) 0 1px,transparent 1px 80px),
-        repeating-linear-gradient(90deg,rgba(255,255,255,0.02) 0 1px,transparent 1px 80px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
         var(--bg);
     }
 
-    header{
-      max-width:1100px;
-      margin:auto;
-      padding:4rem 2rem 2rem;
+    header {
+      max-width: 1100px;
+      margin: auto;
+      padding: 4rem 2rem 2.5rem;
     }
 
-    h1{
-      font-family:"Space Grotesk",sans-serif;
-      font-size:3rem;
-      margin:0 0 .5rem;
+    h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 3.2rem;
+      margin-bottom: 0.3rem;
     }
 
-    header p{
-      max-width:720px;
-      color:var(--muted);
-      line-height:1.6;
+    .motto {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.6rem;
     }
 
-    .nav{
-      margin-top:1.5rem;
-      display:flex;
-      gap:1rem;
+    header p {
+      max-width: 780px;
+      line-height: 1.7;
+      color: var(--muted);
     }
 
-    .nav a, .nav button{
-      border:1px solid var(--border);
-      background:transparent;
-      color:var(--text);
-      border-radius:10px;
-      padding:.45rem .8rem;
-      font-size:.85rem;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:.4rem;
-      text-decoration:none;
+    .nav {
+      margin-top: 1.8rem;
+      display: flex;
+      gap: 1rem;
     }
 
-    main{
-      max-width:1100px;
-      margin:auto;
-      padding:0 2rem 4rem;
+    .nav a, .nav button {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
     }
 
-    .day-label{
-      color:var(--muted);
-      margin-bottom:1.5rem;
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 0 2rem 4rem;
     }
 
-    .quest{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--border);
-      border-radius:20px;
-      padding:2rem;
-      margin-bottom:2rem;
+    .day-label {
+      color: var(--muted);
+      margin-bottom: 1.5rem;
     }
 
-    .quest h2{
-      font-family:"Space Grotesk",sans-serif;
-      margin:.3rem 0;
+    .quest {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
     }
 
-    .tags{display:flex;gap:.5rem;margin-bottom:1rem}
-
-    .tag{
-      font-size:.7rem;
-      border:1px solid var(--border);
-      padding:.25rem .6rem;
-      border-radius:999px;
-      color:var(--muted);
+    .quest h2 {
+      font-family: "Space Grotesk", sans-serif;
+      margin: 0.3rem 0;
     }
 
-    .label{
-      font-size:.7rem;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      color:#6b7280;
-      margin-top:1rem;
+    .tags {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
 
-    .meta{
-      display:flex;
-      align-items:center;
-      gap:.7rem;
-      margin-top:1.2rem;
-      flex-wrap:wrap;
+    .tag {
+      font-size: 0.7rem;
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      color: var(--muted);
     }
 
-    .difficulty{
-      font-size:.7rem;
-      font-weight:600;
-      padding:.25rem .7rem;
-      border-radius:999px;
-      color:#020617;
+    .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-top: 1rem;
     }
 
-    .easy{background:var(--easy)}
-    .medium{background:var(--medium)}
-    .hard{background:var(--hard)}
-
-    .sources{margin-left:auto;display:flex;gap:.6rem}
-    .source.github svg{color:var(--github)}
-    .source.twitter svg{color:var(--twitter)}
-
-    footer{
-      border-top:1px solid var(--border);
-      padding:2rem;
-      margin-top:4rem;
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-top: 1.3rem;
+      flex-wrap: wrap;
     }
 
-    .footer-inner{
-      max-width:1100px;
-      margin:auto;
-      display:flex;
-      justify-content:space-between;
-      font-size:.85rem;
-      color:var(--muted);
+    .difficulty {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      color: #020617;
     }
 
-    .motto{
-      font-family:"Space Grotesk",sans-serif;
-      color:var(--text);
+    .easy { background: var(--easy); }
+    .medium { background: var(--medium); }
+    .hard { background: var(--hard); }
+
+    .sources {
+      margin-left: auto;
+      display: flex;
+      gap: 0.6rem;
     }
 
-    /* Methodology modal */
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.6);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:2rem;
+    .source.github svg { color: var(--github); }
+    .source.twitter svg { color: var(--twitter); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      margin-top: 4rem;
     }
 
-    .modal-content{
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:2rem;
-      max-width:800px;
-      max-height:80vh;
-      overflow:auto;
-    }
-
-    .modal-content h2,
-    .modal-content h3{
-      font-family:"Space Grotesk",sans-serif;
+    .footer-inner {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
   </style>
 </head>
 
 <body>
+
 <header>
-  <h1>Brookhart Labs</h1>
+  <h1>Tech Murmurs</h1>
+  <div class="motto">Side-Quest Generator for Builders</div>
+
   <p>
-    A daily side-quest generator for builders.  
-    High-signal ideas distilled from public developer conversations.
+    Side-Quest Generator for Builders sits at the intersection of unmet needs,
+    unfinished ambition, and public signals. It’s a quiet machine for turning
+    ambient internet intent into actionable mini-projects.
   </p>
 
   <div class="nav">
     <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
-    <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
   </div>
 </header>
 
@@ -214,147 +204,45 @@
 
 <footer>
   <div class="footer-inner">
-    <div class="motto">Built quietly, shipped deliberately.</div>
+    <div>Built quietly, shipped deliberately.</div>
     <div>© 2026 Brookhart Labs</div>
   </div>
 </footer>
 
-<!-- Methodology Modal -->
-<div class="modal" id="methodology">
-  <div class="modal-content">
-    <!-- FULL RESEARCH-GRADE METHODOLOGY -->
-    <h2>Methodology</h2>
-
-    <p>
-      The Brookhart Labs Side-Quest Generator is a research-oriented ideation system
-      designed to surface small, buildable opportunities from observable developer
-      and product discourse. It is not a market forecasting tool, sentiment engine,
-      or investment framework.
-    </p>
-
-    <h3>Objective</h3>
-    <p>
-      The objective is to translate explicit or implicit expressions of unmet demand
-      into concise, actionable “side-quests” suitable for individuals or small teams.
-      Each idea is intentionally constrained to avoid speculative or over-scoped work.
-    </p>
-
-    <h3>Data Sources</h3>
-    <p>
-      Signals are derived exclusively from publicly accessible sources where builders
-      articulate needs organically:
-    </p>
-    <ul>
-      <li>GitHub issue threads and feature requests</li>
-      <li>Public developer posts on X</li>
-      <li>Open technical discussions and articles</li>
-    </ul>
-
-    <h3>Signal Extraction</h3>
-    <p>
-      Raw text is parsed for language indicating friction, absence, or desire for
-      tooling. Phrases such as “missing,” “wish there was,” “cannot easily,” or
-      “feature request” are treated as candidate signals.
-    </p>
-
-    <h3>Filtering & Classification</h3>
-    <p>
-      Signals are filtered for specificity, feasibility, and independence from
-      proprietary data. Each signal is classified into one or more categories:
-    </p>
-    <ul>
-      <li><strong>Infrastructure</strong> — tooling, frameworks, SDKs</li>
-      <li><strong>Product</strong> — UX and workflow improvements</li>
-      <li><strong>Research</strong> — exploratory or analytical needs</li>
-    </ul>
-
-    <h3>Synthesis</h3>
-    <p>
-      Each idea is structured into a standardized card containing:
-      title, origin, problem, quest, audience, difficulty, and attribution.
-      Difficulty reflects estimated effort to prototype.
-    </p>
-
-    <h3>Limitations</h3>
-    <p>
-      The generator does not assess commercial viability, adoption probability,
-      or long-term sustainability. Ideas are starting points, not recommendations.
-    </p>
-
-    <h3>Ethics & Privacy</h3>
-    <p>
-      All inputs are public. No private, gated, or user-restricted content is used.
-      Source attribution is preserved via outbound links.
-    </p>
-
-    <button onclick="toggleMethodology()">Close</button>
-  </div>
-</div>
-
 <script>
-  const todayISO = new Date().toISOString().slice(0,10);
-  document.getElementById("dayLabel").innerText =
-    "Ideas for " + new Date(todayISO).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+  async function loadIdeas() {
+    const endpoints = [
+      "/.netlify/functions/github",
+      "/.netlify/functions/hackathons",
+      "/.netlify/functions/roadmaps"
+      // "/.netlify/functions/twitter" ← enable when ready
+    ];
 
-  const QUESTS = [
-    {
-      title:"Gas Fee Translator",
-      tags:["Infra","Product"],
-      origin:"Recurring confusion during network congestion",
-      problem:"Users do not understand gas pricing at transaction time.",
-      quest:"Build a plain-English explanation layer for wallet transactions.",
-      audience:"Wallet teams",
-      difficulty:"Medium",
-      sources:[{type:"twitter",url:"https://x.com/search?q=gas%20fees"}]
-    },
-    {
-      title:"DAO Proposal Digest",
-      tags:["Product","Research"],
-      origin:"Low voter engagement in long governance threads",
-      problem:"Proposals are too long to parse efficiently.",
-      quest:"Summarize proposals into tradeoffs and outcomes.",
-      audience:"DAO delegates",
-      difficulty:"Easy",
-      sources:[{type:"github",url:"https://github.com/ethereum/governance"}]
-    },
-    {
-      title:"Protocol Changelog Radar",
-      tags:["Infra"],
-      origin:"Missed breaking changes during testnet launches",
-      problem:"Developers lack a unified changelog view.",
-      quest:"Aggregate protocol updates and flag breaking changes.",
-      audience:"App developers",
-      difficulty:"Medium",
-      sources:[{type:"github",url:"https://github.com/solana-labs/solana"}]
-    },
-    {
-      title:"Narrative Momentum Tracker",
-      tags:["Research"],
-      origin:"Shifts in developer attention",
-      problem:"Teams react too late to narrative changes.",
-      quest:"Track narrative velocity across social and repo activity.",
-      audience:"Researchers",
-      difficulty:"Hard",
-      sources:[{type:"twitter",url:"https://x.com/search?q=crypto"}]
-    },
-    {
-      title:"Wallet Health Monitor",
-      tags:["Infra"],
-      origin:"Fragmented balance visibility",
-      problem:"Users cannot assess wallet health holistically.",
-      quest:"Visualize inflows, outflows, and idle capital.",
-      audience:"Power users",
-      difficulty:"Easy",
-      sources:[{type:"github",url:"https://github.com/ethereum"}]
-    }
-  ];
+    const responses = await Promise.all(
+      endpoints.map(e => fetch(e).then(r => r.json()))
+    );
 
-  const archive = JSON.parse(localStorage.getItem("archive")||"{}");
-  archive[todayISO] = QUESTS;
-  localStorage.setItem("archive",JSON.stringify(archive));
+    const ideas = responses.flat().slice(0, 5);
+    const todayISO = new Date().toISOString().slice(0,10);
 
-  document.getElementById("today").innerHTML =
-    QUESTS.map(q=>`
+    document.getElementById("dayLabel").innerText =
+      "Ideas for " + new Date(todayISO).toLocaleDateString(
+        "en-US",{month:"long",day:"numeric",year:"numeric"}
+      );
+
+    const archive =
+      JSON.parse(localStorage.getItem("techMurmursArchive") || "{}");
+    archive[todayISO] = ideas;
+    localStorage.setItem("techMurmursArchive", JSON.stringify(archive));
+
+    document.getElementById("today").innerHTML =
+      ideas.map(renderQuest).join("");
+
+    lucide.createIcons();
+  }
+
+  function renderQuest(q) {
+    return `
       <div class="quest">
         <div class="tags">${q.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
         <h2>${q.title}</h2>
@@ -373,14 +261,11 @@
               </a>`).join("")}
           </div>
         </div>
-      </div>`).join("");
-
-  function toggleMethodology(){
-    const m=document.getElementById("methodology");
-    m.style.display=m.style.display==="flex"?"none":"flex";
+      </div>
+    `;
   }
 
-  lucide.createIcons();
+  loadIdeas();
 </script>
 </body>
 </html>
