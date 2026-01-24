@@ -2,72 +2,67 @@ const quests = [
   {
     title: "Gas Fee Translator",
     sourceType: "X",
-    origin: "Tweet from an Ethereum infrastructure developer",
-    problem: "Users don’t understand why gas fees change or what they are actually paying for.",
-    quest: "Build a lightweight widget that explains gas fees in plain English at the moment of transaction.",
-    audience: "Wallet teams, onboarding tools, L2 explorers",
+    sourceIcon: "🟦",
+    origin: "Tweet discussing confusing gas fees",
+    problem: "Users struggle to understand gas fees at checkout.",
+    quest: "Build a real-time gas fee explainer widget with plain English tooltips.",
+    audience: "Wallets, onboarding tools",
     difficulty: "Medium",
-    sourceLink: "https://twitter.com/ethereum"
+    sourceLink: "https://twitter.com/ethereum/status/1700000000000000000"
   },
   {
     title: "DAO Proposal Summarizer",
     sourceType: "GitHub",
-    origin: "Heavily commented governance issue in a DAO repo",
-    problem: "DAO voters don’t have time to read long proposals or debate threads.",
-    quest: "Create a tool that summarizes proposals and highlights key tradeoffs and risks.",
-    audience: "DAO contributors, delegates, voters",
-    difficulty: "Easy–Medium",
-    sourceLink: "https://github.com/ethereum/governance"
+    sourceIcon: "🐙",
+    origin: "DAO governance issue thread with 50+ comments",
+    problem: "Long proposals are hard to digest for voters.",
+    quest: "Create a summarizer that highlights outcomes, risks, and key changes.",
+    audience: "DAO delegates and voters",
+    difficulty: "Easy-Medium",
+    sourceLink: "https://github.com/org/repo/issues/123"
   },
   {
     title: "Protocol Changelog Radar",
     sourceType: "GitHub",
-    origin: "Multiple developer posts during a fast-moving testnet launch",
-    problem: "Builders miss breaking changes across rapidly evolving protocols.",
-    quest: "Aggregate protocol changelogs into a single alert feed with breaking-change detection.",
-    audience: "Application developers, infra teams",
+    sourceIcon: "🐙",
+    origin: "Rapid protocol updates during testnet launch",
+    problem: "Developers miss breaking changes across different repos.",
+    quest: "Aggregate notable changelog events into a simple alert feed.",
+    audience: "App developers, protocol integrators",
     difficulty: "Medium",
-    sourceLink: "https://github.com/solana-labs/solana"
+    sourceLink: "https://github.com/solana-labs/solana/CHANGELOG.md"
   }
 ];
 
 const container = document.getElementById("quests");
 
 quests.forEach((q, index) => {
-  const div = document.createElement("div");
-  div.className = "quest";
+  const card = document.createElement("div");
+  card.className = "quest-card";
 
-  div.innerHTML = `
-    <h2>Side Quest #${index + 1}: ${q.title}</h2>
+  card.innerHTML = `
+    <div class="quest-title">${q.sourceIcon} Side Quest #${index + 1}: ${q.title}</div>
 
-    <div class="section">
-      <div class="label">Origin</div>
-      <div class="value">${q.origin}</div>
-    </div>
+    <div class="label">Origin</div>
+    <div class="value">${q.origin}</div>
 
-    <div class="section">
-      <div class="label">The problem</div>
-      <div class="value">${q.problem}</div>
-    </div>
+    <div class="label">The problem</div>
+    <div class="value">${q.problem}</div>
 
-    <div class="section">
-      <div class="label">The quest</div>
-      <div class="value">${q.quest}</div>
-    </div>
+    <div class="label">The quest</div>
+    <div class="value">${q.quest}</div>
 
-    <div class="section">
-      <div class="label">Who wants this</div>
-      <div class="value">${q.audience}</div>
-    </div>
+    <div class="label">Who wants this</div>
+    <div class="value">${q.audience}</div>
 
     <div class="meta">
-      <span class="pill">Difficulty: ${q.difficulty}</span>
-      <span class="pill">Source: ${q.sourceType}</span>
+      <span class="badge">Difficulty: ${q.difficulty}</span>
+      <span class="badge">${q.sourceType}</span>
       <a class="source-link" href="${q.sourceLink}" target="_blank">
-        View source →
+        View Source →
       </a>
     </div>
   `;
 
-  container.appendChild(div);
+  container.appendChild(card);
 });
