@@ -25,7 +25,7 @@
       --subtle:#c7cbd3;
 
       --accent:#60a5fa;
-      --accent-soft:rgba(96,165,250,0.15);
+      --accent-soft:rgba(96,165,250,0.14);
 
       --warning:#f59e0b;
       --warning-bg:rgba(245,158,11,0.15);
@@ -47,7 +47,7 @@
         var(--bg);
     }
 
-    /* ===== Banner ===== */
+    /* ===== Sample Data Banner ===== */
     .banner {
       display: none;
       background: var(--warning-bg);
@@ -163,7 +163,6 @@
     }
 
     /* ===== Modal ===== */
-
     .modal {
       position: fixed;
       inset: 0;
@@ -184,6 +183,11 @@
       overflow-y: auto;
     }
 
+    .modal-content h2 {
+      font-family: "Space Grotesk", sans-serif;
+      margin-bottom: 1.2rem;
+    }
+
     .method-section {
       background: var(--accent-soft);
       border-left: 3px solid var(--accent);
@@ -201,6 +205,7 @@
     .method-section p {
       color: var(--subtle);
       line-height: 1.65;
+      margin-bottom: 0.8rem;
     }
   </style>
 </head>
@@ -216,7 +221,7 @@
   <h1>Tech Murmurs</h1>
   <div class="motto">Side-Quest Generator for Builders</div>
 
-  <!-- YOUR DESCRIPTION — UNCHANGED -->
+  <!-- DESCRIPTION — VERBATIM -->
   <p>
     Side-Quest Generator for Builders sits at the intersection of unmet needs, unfinished ambition, and public signals.<br/>
     It’s a quiet machine for turning ambient internet intent into actionable mini-projects, listening to the places where builders talk — issues, roadmaps, hackathons, and posts — and extracting what hasn’t been built yet.
@@ -250,58 +255,82 @@
     <h2>Methodology</h2>
 
     <div class="method-section">
-      <h3>System Architecture</h3>
       <p>
-        Tech Murmurs is a client-rendered web application backed by serverless
-        ingestion functions. Data collection is performed via Netlify Functions
-        that proxy public APIs and feeds, preventing credential exposure.
+        <strong>Tech Murmurs</strong> is an ideation and synthesis system designed to surface
+        small, buildable opportunities from public builder activity. It listens for early
+        signals — ideas that are being discussed, hinted at, or partially articulated —
+        before they harden into roadmaps, products, or narratives.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Integrated Data Sources</h3>
       <p>
-        Current integrations include the GitHub Search API (open issues and
-        repository activity), GitHub Releases (as roadmap proxies), and public
-        hackathon feeds via RSS. Each source is queried independently and normalized
-        into a common structure.
+        The system draws from places where builders naturally express intent: open-source
+        issue threads, hackathon prompts, protocol updates, and public developer conversations.
+        These sources are chosen not for volume, but for proximity to real, unfinished work.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Transformation Pipeline</h3>
       <p>
-        Raw inputs are filtered for explicit expressions of unmet need, tooling
-        gaps, or unfinished work. Surviving signals are structured into a
-        standardized “side quest” format containing origin, problem, proposed
-        build, audience, and estimated difficulty.
+        Rather than treating every signal as equally meaningful, Tech Murmurs looks for
+        <strong>specific expressions of friction or absence</strong>. Language such as
+        “missing,” “wish there was,” “no tool for,” or recurring feature requests are treated
+        as higher-signal than general commentary. Vague or speculative input is intentionally
+        ignored.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Snapshot & Archival Logic</h3>
       <p>
-        Rather than streaming continuously, Tech Murmurs publishes a daily snapshot.
-        This reduces noise, avoids recency bias, and creates a time-series archive
-        suitable for longitudinal review.
+        Each signal is distilled into a constrained <strong>side quest</strong>: a small,
+        concrete project idea that can plausibly be explored by an individual or small team.
+        Side quests are designed to be scoped, actionable, and incomplete by design —
+        starting points rather than prescriptions.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Failure Modes & Fallbacks</h3>
       <p>
-        If one or more live data sources fail due to rate limits, network errors,
-        or API changes, the system enters Sample Data Mode. Representative ideas
-        are shown, and the state is explicitly surfaced in the UI.
+        Tech Murmurs publishes ideas as a <strong>daily snapshot</strong> rather than a
+        continuous feed. This preserves context, avoids recency bias, and makes it possible
+        to review how certain needs emerge, fade, or recur over time.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Scope & Limitations</h3>
       <p>
-        The system does not evaluate commercial viability, adoption likelihood,
-        or technical feasibility. All inputs are public, and no private or
-        user-identifiable data is accessed.
+        When live sources are temporarily unavailable, the system falls back to a curated
+        baseline of representative ideas. This ensures continuity while making the system’s
+        state explicit to the reader.
+      </p>
+    </div>
+
+    <div class="method-section">
+      <h3>Technical Overview (For Transparency)</h3>
+      <p>
+        Tech Murmurs is a client-rendered web application backed by serverless ingestion
+        functions. Data collection is performed via Netlify Functions that proxy public APIs
+        and feeds, preventing credential exposure.
+      </p>
+    </div>
+
+    <div class="method-section">
+      <h3>Language Analysis & Signal Identification</h3>
+      <p>
+        Incoming text is scanned for a small, evolving vocabulary of intent-bearing phrases.
+        These phrases act as heuristic markers rather than definitive signals. Context,
+        repetition, and specificity are used to increase confidence without relying on
+        opaque machine-learning models.
+      </p>
+    </div>
+
+    <div class="method-section">
+      <h3>Snapshot, Fallbacks & Limits</h3>
+      <p>
+        If one or more live data sources fail, the system enters Sample Data Mode. Tech
+        Murmurs does not evaluate commercial viability or predict outcomes. All inputs
+        are public, and no private data is accessed.
       </p>
     </div>
 
