@@ -25,7 +25,10 @@
       --subtle:#c7cbd3;
 
       --accent:#60a5fa;
-      --accent-soft:rgba(96,165,250,0.12);
+      --accent-soft:rgba(96,165,250,0.15);
+
+      --warning:#f59e0b;
+      --warning-bg:rgba(245,158,11,0.15);
 
       --easy:#4ade80;
       --medium:#facc15;
@@ -42,6 +45,17 @@
         repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
         repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
         var(--bg);
+    }
+
+    /* ===== Banner ===== */
+    .banner {
+      display: none;
+      background: var(--warning-bg);
+      border-bottom: 1px solid var(--warning);
+      color: var(--subtle);
+      padding: 0.8rem 1.2rem;
+      font-size: 0.85rem;
+      text-align: center;
     }
 
     header, main, footer {
@@ -165,14 +179,9 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 2.4rem;
-      max-width: 900px;
+      max-width: 920px;
       max-height: 85vh;
       overflow-y: auto;
-    }
-
-    .modal-content h2 {
-      font-family: "Space Grotesk", sans-serif;
-      margin-bottom: 1rem;
     }
 
     .method-section {
@@ -198,18 +207,25 @@
 
 <body>
 
+<div class="banner" id="fallbackBanner">
+  <strong>Sample Data Mode</strong> — Live data sources are temporarily unavailable.
+  The ideas shown below are representative examples, not real-time signals.
+</div>
+
 <header>
   <h1>Tech Murmurs</h1>
   <div class="motto">Side-Quest Generator for Builders</div>
 
-  <!-- DESCRIPTION — UNCHANGED -->
+  <!-- YOUR DESCRIPTION — UNCHANGED -->
   <p>
     Side-Quest Generator for Builders sits at the intersection of unmet needs, unfinished ambition, and public signals.<br/>
     It’s a quiet machine for turning ambient internet intent into actionable mini-projects, listening to the places where builders talk — issues, roadmaps, hackathons, and posts — and extracting what hasn’t been built yet.
   </p>
 
   <p>
-    Every day, it publishes a small set of unclaimed side quests: weird micro-projects, unbuilt features, and abandoned experiments hiding in plain sight. Ideas waiting for someone to care enough to ship them.
+    Every day, it publishes a small set of unclaimed side quests: weird micro-projects,
+    unbuilt features, and abandoned experiments hiding in plain sight.
+    Ideas waiting for someone to care enough to ship them.
   </p>
 
   <div class="nav">
@@ -234,46 +250,58 @@
     <h2>Methodology</h2>
 
     <div class="method-section">
-      <h3>What This System Is</h3>
+      <h3>System Architecture</h3>
       <p>
-        Tech Murmurs is a lightweight research and synthesis system. It observes public
-        builder activity and converts early, unfinished signals into small, buildable
-        project ideas. It is not predictive and does not rank ideas by commercial value.
+        Tech Murmurs is a client-rendered web application backed by serverless
+        ingestion functions. Data collection is performed via Netlify Functions
+        that proxy public APIs and feeds, preventing credential exposure.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Live Data Integrations</h3>
+      <h3>Integrated Data Sources</h3>
       <p>
-        The system ingests public data from GitHub (issues, repositories, releases),
-        hackathon feeds, and protocol roadmap sources. These integrations are implemented
-        via secure serverless functions and are refreshed regularly.
+        Current integrations include the GitHub Search API (open issues and
+        repository activity), GitHub Releases (as roadmap proxies), and public
+        hackathon feeds via RSS. Each source is queried independently and normalized
+        into a common structure.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Signal Detection</h3>
+      <h3>Transformation Pipeline</h3>
       <p>
-        Text is scanned for explicit expressions of unmet need — phrases like “missing,”
-        “wish there was,” or repeated feature requests. Specificity is favored over volume.
+        Raw inputs are filtered for explicit expressions of unmet need, tooling
+        gaps, or unfinished work. Surviving signals are structured into a
+        standardized “side quest” format containing origin, problem, proposed
+        build, audience, and estimated difficulty.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Daily Snapshot Logic</h3>
+      <h3>Snapshot & Archival Logic</h3>
       <p>
-        Rather than streaming constantly, Tech Murmurs publishes a daily snapshot. This
-        avoids recency bias and creates an archive that can be reviewed over time.
-        If live ingestion fails, a curated baseline is shown instead.
+        Rather than streaming continuously, Tech Murmurs publishes a daily snapshot.
+        This reduces noise, avoids recency bias, and creates a time-series archive
+        suitable for longitudinal review.
       </p>
     </div>
 
     <div class="method-section">
-      <h3>Limits & Ethics</h3>
+      <h3>Failure Modes & Fallbacks</h3>
       <p>
-        All inputs are public. No private data is accessed. The system does not judge
-        feasibility, profitability, or success — it simply surfaces what is being
-        quietly asked for.
+        If one or more live data sources fail due to rate limits, network errors,
+        or API changes, the system enters Sample Data Mode. Representative ideas
+        are shown, and the state is explicitly surfaced in the UI.
+      </p>
+    </div>
+
+    <div class="method-section">
+      <h3>Scope & Limitations</h3>
+      <p>
+        The system does not evaluate commercial viability, adoption likelihood,
+        or technical feasibility. All inputs are public, and no private or
+        user-identifiable data is accessed.
       </p>
     </div>
 
@@ -309,7 +337,6 @@
         <div class="quest">
           ${q.tags.map(t => `<span class="tag">${t}</span>`).join("")}
           <h2>${q.title}</h2>
-
           <div class="label">Origin</div>${q.origin}
           <div class="label">Problem</div>${q.problem}
           <div class="label">Quest</div>${q.quest}
@@ -325,6 +352,7 @@
     document.getElementById("dayLabel").innerText =
       "Ideas for " + today.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
 
+    let usingFallback = false;
     renderIdeas(FALLBACK_IDEAS);
 
     try {
@@ -335,8 +363,18 @@
       ]);
 
       const data = (await Promise.all(responses.map(r => r.json()))).flat();
-      if (data.length) renderIdeas(data.slice(0,5));
-    } catch {}
+      if (data.length) {
+        renderIdeas(data.slice(0,5));
+      } else {
+        usingFallback = true;
+      }
+    } catch {
+      usingFallback = true;
+    }
+
+    if (usingFallback) {
+      document.getElementById("fallbackBanner").style.display = "block";
+    }
   }
 
   function toggleMethodology() {
