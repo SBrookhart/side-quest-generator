@@ -1,25 +1,20 @@
-import Parser from "rss-parser";
-const parser = new Parser();
-
 export async function handler() {
-  const feed = await parser.parseURL("https://devpost.com/feed");
-
-  const ideas = feed.items.slice(0, 5).map(item => ({
-    title: item.title,
-    origin: "Hackathon prompt",
-    problem: "Opportunity surfaced via hackathon challenge.",
-    quest: "Prototype a minimal solution inspired by this challenge.",
-    audience: "Hackathon builders",
-    difficulty: "Easy",
-    tags: ["Product"],
-    sources: [{
-      type: "external",
-      url: item.link
-    }]
-  }));
-
   return {
     statusCode: 200,
-    body: JSON.stringify(ideas)
+    body: JSON.stringify([
+      {
+        title:"Resurrect the Abandoned Hackathon Idea",
+        murmur:"Many hackathon ideas never ship despite strong concepts.",
+        quest:"Build a gallery of abandoned hackathon ideas reframed as weekend projects.",
+        worth:[
+          "Built-in scope control",
+          "Clear starting point",
+          "Socially interesting"
+        ],
+        signals:[
+          {name:"Devpost",url:"https://devpost.com/software"}
+        ]
+      }
+    ])
   };
 }
