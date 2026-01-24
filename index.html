@@ -131,11 +131,18 @@
     .sources {
       margin-top: 1.2rem;
       display: flex;
+      align-items: center;
       gap: 0.6rem;
+      color: var(--muted);
+      font-size: 0.8rem;
     }
 
     .sources a {
       color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      text-decoration: none;
     }
 
     .sources a:hover {
@@ -155,7 +162,7 @@
 <body>
 
 <div class="banner" id="fallbackBanner">
-  <strong>Sample Data Mode</strong> — Live data sources are currently quiet or unavailable.
+  <strong>Sample Data Mode</strong> — Live signals are currently unavailable.
   The ideas shown below are representative examples.
 </div>
 
@@ -186,42 +193,6 @@
 </footer>
 
 <script>
-  const FALLBACK_IDEAS = [
-    {
-      title: "Explain Failed Transactions Before They Fail",
-      problem:
-        "Users often submit transactions that are guaranteed to revert, but only learn this after paying gas.",
-      quest:
-        "Build a pre-flight simulation layer that explains why a transaction will fail before it is sent.",
-      audience: "Wallet users",
-      difficulty: "Medium",
-      tags: ["Product", "Infra"],
-      sources: [{ type: "github", url: "https://github.com/ethereum/go-ethereum/issues" }]
-    },
-    {
-      title: "Surface DAO Proposal Risk in Plain Language",
-      problem:
-        "DAO proposals are long, technical, and difficult for voters to assess quickly.",
-      quest:
-        "Create a summarization layer that highlights risks, tradeoffs, and irreversible actions.",
-      audience: "DAO voters",
-      difficulty: "Easy",
-      tags: ["Research", "Product"],
-      sources: [{ type: "github", url: "https://github.com" }]
-    },
-    {
-      title: "Track Breaking Changes Across Protocol Upgrades",
-      problem:
-        "Developers struggle to understand what breaks when protocols release new versions.",
-      quest:
-        "Build a change-diff tool that maps protocol upgrades to downstream impact.",
-      audience: "Protocol developers",
-      difficulty: "Hard",
-      tags: ["Infra", "Research"],
-      sources: [{ type: "github", url: "https://github.com" }]
-    }
-  ];
-
   function renderIdeas(ideas) {
     document.getElementById("today").innerHTML =
       ideas.map(q => `
@@ -243,8 +214,9 @@
           <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
 
           <div class="sources">
+            <span>Source</span>
             ${q.sources.map(s => `
-              <a href="${s.url}" target="_blank" title="View source">
+              <a href="${s.url}" target="_blank">
                 <i data-lucide="${s.type}"></i>
               </a>
             `).join("")}
@@ -274,7 +246,6 @@
     if (ideas.length > 0) {
       renderIdeas(ideas.slice(0, 5));
     } else {
-      renderIdeas(FALLBACK_IDEAS);
       document.getElementById("fallbackBanner").style.display = "block";
     }
   }
