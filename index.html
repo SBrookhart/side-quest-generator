@@ -17,16 +17,19 @@
     :root {
       --bg:#0b0e14;
       --panel:#121826;
+      --panel-soft:#161c2e;
       --border:#1f2937;
+
       --text:#e5e7eb;
       --muted:#9ca3af;
+      --subtle:#c7cbd3;
+
+      --accent:#60a5fa;
+      --accent-soft:rgba(96,165,250,0.12);
 
       --easy:#4ade80;
       --medium:#facc15;
       --hard:#f87171;
-
-      --github:#9ca3af;
-      --twitter:#38bdf8;
     }
 
     * { box-sizing: border-box; }
@@ -41,31 +44,30 @@
         var(--bg);
     }
 
-    header {
+    header, main, footer {
       max-width: 1100px;
       margin: auto;
-      padding: 4rem 2rem 2.5rem;
+      padding: 2.5rem 2rem;
     }
 
     h1 {
       font-family: "Space Grotesk", sans-serif;
       font-size: 3.2rem;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.4rem;
     }
 
     .motto {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 0.9rem;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
+      font-size: 0.85rem;
       color: var(--muted);
       margin-bottom: 1.6rem;
     }
 
     header p {
       max-width: 820px;
-      line-height: 1.7;
-      color: var(--muted);
+      line-height: 1.75;
+      color: var(--subtle);
       margin-bottom: 1.2rem;
     }
 
@@ -80,7 +82,7 @@
       background: transparent;
       color: var(--text);
       border-radius: 10px;
-      padding: 0.45rem 0.85rem;
+      padding: 0.45rem 0.9rem;
       font-size: 0.85rem;
       cursor: pointer;
       display: inline-flex;
@@ -89,66 +91,49 @@
       text-decoration: none;
     }
 
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 0 2rem 4rem;
-    }
-
     .day-label {
       color: var(--muted);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.6rem;
     }
 
     .quest {
-      background: rgba(255,255,255,0.03);
+      background: linear-gradient(180deg, var(--panel), var(--panel-soft));
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 2rem;
-      margin-bottom: 2rem;
+      margin-bottom: 2.2rem;
     }
 
     .quest h2 {
       font-family: "Space Grotesk", sans-serif;
-      margin: 0.3rem 0;
-    }
-
-    .tags {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      margin: 0.4rem 0 0.6rem;
     }
 
     .tag {
       font-size: 0.7rem;
-      border: 1px solid var(--border);
       padding: 0.25rem 0.6rem;
       border-radius: 999px;
+      border: 1px solid var(--border);
       color: var(--muted);
+      margin-right: 0.4rem;
     }
 
     .label {
       font-size: 0.7rem;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #6b7280;
-      margin-top: 1rem;
-    }
-
-    .meta {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      margin-top: 1.3rem;
-      flex-wrap: wrap;
+      color: var(--muted);
+      margin-top: 1.2rem;
     }
 
     .difficulty {
+      margin-top: 0.4rem;
+      display: inline-block;
       font-size: 0.7rem;
-      font-weight: 600;
       padding: 0.25rem 0.7rem;
       border-radius: 999px;
       color: #020617;
+      font-weight: 600;
     }
 
     .easy { background: var(--easy); }
@@ -157,20 +142,14 @@
 
     footer {
       border-top: 1px solid var(--border);
-      padding: 2rem;
-      margin-top: 4rem;
-    }
-
-    .footer-inner {
-      max-width: 1100px;
-      margin: auto;
       display: flex;
       justify-content: space-between;
-      font-size: 0.85rem;
       color: var(--muted);
+      font-size: 0.85rem;
     }
 
-    /* Modal */
+    /* ===== Modal ===== */
+
     .modal {
       position: fixed;
       inset: 0;
@@ -182,17 +161,37 @@
     }
 
     .modal-content {
-      background: var(--panel);
+      background: linear-gradient(180deg, var(--panel), #0f1525);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.2rem;
-      max-width: 860px;
-      max-height: 80vh;
+      border-radius: 18px;
+      padding: 2.4rem;
+      max-width: 900px;
+      max-height: 85vh;
       overflow-y: auto;
     }
 
-    .modal-content h2, .modal-content h3 {
+    .modal-content h2 {
       font-family: "Space Grotesk", sans-serif;
+      margin-bottom: 1rem;
+    }
+
+    .method-section {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 1.6rem;
+      border-radius: 10px;
+    }
+
+    .method-section h3 {
+      font-family: "Space Grotesk", sans-serif;
+      margin-top: 0;
+      margin-bottom: 0.6rem;
+    }
+
+    .method-section p {
+      color: var(--subtle);
+      line-height: 1.65;
     }
   </style>
 </head>
@@ -201,10 +200,9 @@
 
 <header>
   <h1>Tech Murmurs</h1>
-
   <div class="motto">Side-Quest Generator for Builders</div>
 
-  <!-- YOUR DESCRIPTION — RESTORED VERBATIM -->
+  <!-- DESCRIPTION — UNCHANGED -->
   <p>
     Side-Quest Generator for Builders sits at the intersection of unmet needs, unfinished ambition, and public signals.<br/>
     It’s a quiet machine for turning ambient internet intent into actionable mini-projects, listening to the places where builders talk — issues, roadmaps, hackathons, and posts — and extracting what hasn’t been built yet.
@@ -226,70 +224,127 @@
 </main>
 
 <footer>
-  <div class="footer-inner">
-    <div>Built quietly, shipped deliberately.</div>
-    <div>© 2026 Brookhart Labs</div>
-  </div>
+  <div>Built quietly, shipped deliberately.</div>
+  <div>© 2026 Brookhart Labs</div>
 </footer>
 
-<!-- Methodology Modal (UNCHANGED CONTENT-WISE, ONLY ADDITIVE FOR INTEGRATIONS) -->
+<!-- ===== Methodology Modal ===== -->
 <div class="modal" id="methodology">
   <div class="modal-content">
     <h2>Methodology</h2>
 
-    <p>
-      Tech Murmurs is a research-oriented ideation system designed to surface small,
-      buildable opportunities from live public developer signals. It listens for
-      early intent before it hardens into products, roadmaps, or narratives.
-    </p>
+    <div class="method-section">
+      <h3>What This System Is</h3>
+      <p>
+        Tech Murmurs is a lightweight research and synthesis system. It observes public
+        builder activity and converts early, unfinished signals into small, buildable
+        project ideas. It is not predictive and does not rank ideas by commercial value.
+      </p>
+    </div>
 
-    <h3>Data Sources & Integrations</h3>
-    <p>
-      Signals are ingested from publicly accessible sources, including GitHub
-      repositories and issues, hackathon feeds, protocol release streams, and
-      public developer discourse. All integrations rely exclusively on public APIs
-      or open feeds.
-    </p>
+    <div class="method-section">
+      <h3>Live Data Integrations</h3>
+      <p>
+        The system ingests public data from GitHub (issues, repositories, releases),
+        hackathon feeds, and protocol roadmap sources. These integrations are implemented
+        via secure serverless functions and are refreshed regularly.
+      </p>
+    </div>
 
-    <h3>Signal Extraction & Synthesis</h3>
-    <p>
-      Language indicating unmet need, friction, or unfinished work is treated as
-      candidate signal. These signals are distilled into constrained, buildable
-      side quests suitable for individuals or small teams.
-    </p>
+    <div class="method-section">
+      <h3>Signal Detection</h3>
+      <p>
+        Text is scanned for explicit expressions of unmet need — phrases like “missing,”
+        “wish there was,” or repeated feature requests. Specificity is favored over volume.
+      </p>
+    </div>
 
-    <h3>Daily Snapshot Construction</h3>
-    <p>
-      Live signals are synthesized into a fixed daily snapshot to preserve context
-      and avoid recency bias. If live ingestion is temporarily unavailable, the
-      system falls back to a curated baseline to ensure continuity.
-    </p>
+    <div class="method-section">
+      <h3>Daily Snapshot Logic</h3>
+      <p>
+        Rather than streaming constantly, Tech Murmurs publishes a daily snapshot. This
+        avoids recency bias and creates an archive that can be reviewed over time.
+        If live ingestion fails, a curated baseline is shown instead.
+      </p>
+    </div>
 
-    <h3>Limitations & Ethics</h3>
-    <p>
-      Tech Murmurs does not predict success or adoption. All inputs are public, and
-      attribution is preserved via outbound links.
-    </p>
+    <div class="method-section">
+      <h3>Limits & Ethics</h3>
+      <p>
+        All inputs are public. No private data is accessed. The system does not judge
+        feasibility, profitability, or success — it simply surfaces what is being
+        quietly asked for.
+      </p>
+    </div>
 
     <button onclick="toggleMethodology()">Close</button>
   </div>
 </div>
 
 <script>
-  const todayISO = new Date().toISOString().slice(0,10);
-  document.getElementById("dayLabel").innerText =
-    "Ideas for " + new Date(todayISO).toLocaleDateString(
-      "en-US",{month:"long",day:"numeric",year:"numeric"}
-    );
+  const FALLBACK_IDEAS = [
+    {
+      title: "Gas Fee Translator",
+      tags: ["Infra", "Product"],
+      origin: "Recurring confusion during congestion",
+      problem: "Users don’t understand gas fees.",
+      quest: "Explain gas costs in plain language at transaction time.",
+      audience: "Wallet teams",
+      difficulty: "Medium"
+    },
+    {
+      title: "DAO Proposal Digest",
+      tags: ["Product", "Research"],
+      origin: "Low governance participation",
+      problem: "Proposals are too long to parse.",
+      quest: "Summarize risks and tradeoffs.",
+      audience: "DAO voters",
+      difficulty: "Easy"
+    }
+  ];
 
-  document.getElementById("today").innerHTML =
-    "<div class='quest'><strong>Listening for murmurs…</strong><br/>Live signals will appear here as ingestion stabilizes.</div>";
+  function renderIdeas(ideas) {
+    document.getElementById("today").innerHTML =
+      ideas.map(q => `
+        <div class="quest">
+          ${q.tags.map(t => `<span class="tag">${t}</span>`).join("")}
+          <h2>${q.title}</h2>
+
+          <div class="label">Origin</div>${q.origin}
+          <div class="label">Problem</div>${q.problem}
+          <div class="label">Quest</div>${q.quest}
+          <div class="label">Audience</div>${q.audience}
+          <div class="label">Difficulty</div>
+          <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+        </div>
+      `).join("");
+  }
+
+  async function loadIdeas() {
+    const today = new Date();
+    document.getElementById("dayLabel").innerText =
+      "Ideas for " + today.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
+    renderIdeas(FALLBACK_IDEAS);
+
+    try {
+      const responses = await Promise.all([
+        fetch("/.netlify/functions/github"),
+        fetch("/.netlify/functions/hackathons"),
+        fetch("/.netlify/functions/roadmaps")
+      ]);
+
+      const data = (await Promise.all(responses.map(r => r.json()))).flat();
+      if (data.length) renderIdeas(data.slice(0,5));
+    } catch {}
+  }
 
   function toggleMethodology() {
     const m = document.getElementById("methodology");
     m.style.display = m.style.display === "flex" ? "none" : "flex";
   }
 
+  loadIdeas();
   lucide.createIcons();
 </script>
 
