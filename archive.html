@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brookhart Labs — Archive</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Inter,system-ui,sans-serif;
+      background:#0b0e14;
+      color:#e5e7eb;
+    }
+
+    header,main{
+      max-width:1100px;
+      margin:auto;
+      padding:2rem;
+    }
+
+    h1{
+      font-family:"Space Grotesk",sans-serif;
+    }
+
+    .filters{
+      display:flex;
+      gap:1rem;
+      margin:1.5rem 0;
+      flex-wrap:wrap;
+    }
+
+    input{
+      background:transparent;
+      border:1px solid #1f2937;
+      border-radius:8px;
+      padding:.4rem .6rem;
+      color:#e5e7eb;
+    }
+
+    .day{
+      margin-top:2rem;
+    }
+
+    .day h3{
+      color:#9ca3af;
+    }
+
+    .quest{
+      border:1px solid #1f2937;
+      border-radius:12px;
+      padding:1rem;
+      margin-top:.75rem;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Archive</h1>
+  <a href="index.html"><i data-lucide="arrow-left"></i> Back to Today</a>
+</header>
+
+<main>
+  <div class="filters">
+    <input id="keyword" placeholder="Keyword" />
+    <input id="from" placeholder="From (YYYY-MM-DD)" />
+    <input id="to" placeholder="To (YYYY-MM-DD)" />
+  </div>
+
+  <div id="results"></div>
+</main>
+
+<script>
+  const archive=JSON.parse(localStorage.getItem("archive")||"{}");
+
+  function render(){
+    const k=document.getElementById("keyword").value.toLowerCase();
+    const from=document.getElementById("from").value;
+    const to=document.getElementById("to").value;
+
+    document.getElementById("results").innerHTML=
+      Object.keys(archive).sort((a,b)=>b.localeCompare(a)).filter(d=>{
+        if(from && d<from) return false;
+        if(to && d>to) return false;
+        return true;
+      }).map(d=>{
+        const dateLabel=new Date(d).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+        const qs=archive[d].filter(q=>
+          JSON.stringify(q).toLowerCase().includes(k)
+        );
+        if(!qs.length) return "";
+        return `
+          <div class="day">
+            <h3>${dateLabel}</h3>
+            ${qs.map(q=>`<div class="quest">${q.title}</div>`).join("")}
+          </div>`;
+      }).join("");
+  }
+
+  document.querySelectorAll("input").forEach(i=>i.oninput=render);
+  render();
+  lucide.createIcons();
+</script>
+</body>
+</html>
