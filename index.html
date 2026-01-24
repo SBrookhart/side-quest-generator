@@ -2,147 +2,169 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Side-Quest Generator for Builders</title>
+  <title>Side-Quest Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Professional typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      /* Core palette */
-      --bg: #ffffff;
-      --page-bg: #f2f4f8;
-      --text-main: #1f2937;
-      --text-muted: #4b5563;
-      --accent: #4f46e5;
-      --card-bg: #ffffff;
-      --border-light: #e5e7eb;
+      --bg-main: #0b0f1a;
+      --bg-surface: #111827;
+      --bg-card: #0f172a;
+      --border-subtle: rgba(255,255,255,0.06);
+
+      --text-primary: #e5e7eb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+
+      --accent: #6366f1;
+      --accent-soft: rgba(99,102,241,0.15);
     }
 
-    html,
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      padding: 0;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--page-bg);
-      color: var(--text-main);
-      scroll-behavior: smooth;
+      background:
+        radial-gradient(1200px 600px at top, #0e1629, var(--bg-main));
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-primary);
     }
 
     .container {
-      max-width: 960px;
-      margin: auto;
-      padding: 48px 20px;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 64px 24px 80px;
     }
 
     header {
-      text-align: center;
-      margin-bottom: 42px;
+      margin-bottom: 56px;
     }
 
-    header h1 {
+    h1 {
+      font-family: "Space Grotesk", Inter, sans-serif;
       font-size: 3rem;
-      margin: 0;
       font-weight: 600;
+      margin: 0 0 16px;
+      letter-spacing: -0.02em;
     }
 
-    header .subtitle {
-      color: var(--text-muted);
-      font-size: 1.125rem;
-      margin-top: 8px;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
+    .subtitle {
+      max-width: 720px;
+      font-size: 1.15rem;
       line-height: 1.6;
+      color: var(--text-secondary);
     }
 
     .quest-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-light);
-      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0))
+        , var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
       padding: 32px;
       margin-bottom: 32px;
-      box-shadow: 0 8px 24px rgba(31, 41, 55, 0.05);
+      box-shadow:
+        0 20px 40px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.04);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .quest-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(31, 41, 55, 0.08);
+      box-shadow:
+        0 28px 60px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     .quest-title {
+      font-family: "Space Grotesk", Inter, sans-serif;
       font-size: 1.6rem;
-      margin: 0 0 12px 0;
-      font-weight: 600;
-      color: var(--text-main);
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .section {
+      margin-top: 16px;
     }
 
     .label {
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--text-muted);
-      margin-top: 12px;
       margin-bottom: 4px;
     }
 
     .value {
-      font-size: 1rem;
-      color: var(--text-main);
-      line-height: 1.5;
-    }
-
-    .footer {
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-top: 52px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border-light);
+      line-height: 1.55;
+      color: var(--text-primary);
     }
 
     .meta {
       display: flex;
-      gap: 12px;
       align-items: center;
-      margin-top: 18px;
+      gap: 14px;
+      margin-top: 22px;
       flex-wrap: wrap;
     }
 
-    .badge {
-      background: #eef2ff;
-      color: #4338ca;
-      font-size: 0.85rem;
-      font-weight: 500;
-      padding: 6px 12px;
+    .pill {
+      padding: 6px 14px;
       border-radius: 999px;
+      font-size: 0.8rem;
+      background: var(--accent-soft);
+      color: #c7d2fe;
+      border: 1px solid rgba(99,102,241,0.25);
     }
 
     .source-link {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--accent);
       text-decoration: none;
       font-weight: 500;
-      color: var(--accent);
-      font-size: 0.92rem;
     }
-    .source-link:hover {
-      text-decoration: underline;
+
+    .source-link svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    footer {
+      margin-top: 72px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 24px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>🧭 Today’s Unclaimed Side Quests</h1>
+      <h1>Unclaimed Side Quests</h1>
       <p class="subtitle">
-        Sharp ideas distilled from open source and crypto culture — actionable
-        mini-projects worth exploring.
+        A daily distillation of small, buildable ideas hiding inside unfinished
+        conversations across crypto, open source, and developer culture.
       </p>
     </header>
 
     <div id="quests"></div>
 
-    <div class="footer">
-      Side-Quest Generator — a project for builders by builders.
-    </div>
+    <footer>
+      Built quietly. Shipped deliberately.
+    </footer>
   </div>
 
   <script src="quests.js"></script>
