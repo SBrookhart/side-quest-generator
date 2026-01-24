@@ -4,76 +4,140 @@
   <meta charset="UTF-8" />
   <title>Side-Quest Generator for Builders</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #6366f1;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #f7f7f8;
       margin: 0;
-      padding: 40px 20px;
-      color: #111;
+      padding: 48px 20px;
+      background: radial-gradient(1200px 600px at top, #eef2ff, var(--bg));
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+      color: var(--text);
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
-    h1 {
-      font-size: 2.2rem;
-      margin-bottom: 10px;
+    header {
+      margin-bottom: 48px;
     }
 
-    p.subtitle {
-      color: #555;
-      margin-bottom: 40px;
+    h1 {
+      font-size: 2.6rem;
+      margin: 0 0 12px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.5;
     }
 
     .quest {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .quest:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.09);
     }
 
     .quest h2 {
-      margin-top: 0;
-      font-size: 1.3rem;
+      margin: 0 0 16px 0;
+      font-size: 1.4rem;
+      letter-spacing: -0.01em;
+    }
+
+    .section {
+      margin-top: 14px;
     }
 
     .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       font-weight: 600;
-      margin-top: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
     }
 
-    .source {
-      margin-top: 16px;
-      font-size: 0.9rem;
+    .value {
+      line-height: 1.55;
     }
 
-    .source a {
-      color: #0066cc;
-      text-decoration: none;
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
     }
 
-    .badge {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 4px 10px;
-      border-radius: 999px;
+    .pill {
       font-size: 0.8rem;
-      background: #eee;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-weight: 500;
+    }
+
+    .source-link {
+      margin-left: auto;
+      font-size: 0.85rem;
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .source-link:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      margin-top: 60px;
+      font-size: 0.8rem;
+      color: var(--muted);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🧭 Today’s Unclaimed Side Quests</h1>
-    <p class="subtitle">
-      Small, buildable ideas pulled from unfinished internet intentions.
-    </p>
+    <header>
+      <h1>🧭 Today’s Unclaimed Side Quests</h1>
+      <p class="subtitle">
+        Small, buildable ideas distilled from unfinished intentions across crypto,
+        open source, and developer culture.
+      </p>
+    </header>
 
     <div id="quests"></div>
+
+    <footer>
+      Generated from public signals. Built for builders who like small, sharp projects.
+    </footer>
   </div>
 
   <script src="quests.js"></script>
