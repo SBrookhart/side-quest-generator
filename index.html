@@ -7,114 +7,194 @@
 
 <style>
 :root {
-  --bg:#0b0d12; --card:#121622; --text:#e6e9f0;
-  --muted:#9aa3b2; --accent:#7aa2ff;
-  --border:#1e2333; --sparkle:#f4d47c;
-  --warn:#f5c16c;
+  --bg: #0b0d12;
+  --card: #121622;
+  --text: #e6e9f0;
+  --muted: #9aa3b2;
+  --accent: #7aa2ff;
+  --border: #1e2333;
+  --sparkle: #f4d47c;
+  --warn: #f5c16c;
 }
-body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
-header,main{max-width:900px;margin:auto;padding:1.5rem}
-h1{font-size:3rem;margin-bottom:.5rem}
-.motto{color:var(--muted);max-width:720px}
-.card{background:linear-gradient(180deg,#121622,#0f1320);border:1px solid var(--border);
-border-radius:16px;padding:2rem;margin-bottom:2.5rem}
-.section{margin-bottom:1.5rem}
-.section-title{font-weight:600}
-.descriptor{font-size:.8rem;color:var(--muted);margin-left:1.5rem}
-ul{margin-left:1.5rem}
-a{color:var(--accent);text-decoration:none}
-footer{text-align:center;color:var(--muted);padding:3rem}
-#banner{display:none;background:rgba(245,193,108,.15);
-border:1px solid rgba(245,193,108,.4);
-padding:1rem;border-radius:12px;margin:1rem 0;color:var(--warn)}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+header {
+  max-width: 900px;
+  margin: 3rem auto 1rem;
+  padding: 0 1.5rem;
+}
+h1 {
+  font-size: 3rem;
+  margin-bottom: .2rem;
+}
+nav a {
+  color: var(--accent);
+  text-decoration: none;
+  margin-right: 1.5rem;
+}
+#banner {
+  display: none;
+  background: rgba(245,193,108,.15);
+  border: 1px solid rgba(245,193,108,.4);
+  padding: 1rem;
+  margin: 1rem 1.5rem;
+  border-radius: 10px;
+  color: var(--warn);
+}
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+.card {
+  background: linear-gradient(180deg,#121622,#0f1320);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.descriptor {
+  font-size: .8rem;
+  color: var(--muted);
+  margin-left: 1.7rem;
+  margin-top: .2rem;
+}
+ul {
+  margin-left: 1.7rem;
+  margin-top: .6rem;
+}
+a.idea-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+footer {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: var(--muted);
+  font-size: .85rem;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>Tech Murmurs</h1>
-<p class="motto">
-Side-Quest Generator for Builders.<br/>
-A quiet machine for turning ambient internet intent into actionable mini-projects.
-</p>
+  <h1>Tech Murmurs</h1>
+  <div class="motto">
+    Side-Quest Generator for Builders sits at the intersection of unmet needs,
+    unfinished ambition, and public signals. A quiet machine for turning ambient
+    internet intent into actionable mini-projects.
+  </div>
+  <nav>
+    <a href="archive.html">Archive</a>
+    <a href="methodology.html">Methodology</a>
+  </nav>
 </header>
 
-<main>
-<div id="banner">⚠️ Live APIs unavailable. Showing sample ideas.</div>
-<div id="ideas"></div>
-</main>
+<div id="banner">⚠️ Live APIs are quiet — showing sample ideas.</div>
+<main id="ideas"></main>
 
 <footer>
-Built quietly. Shipped deliberately.<br/>© Brookhart Labs
+Built quietly. Shipped deliberately.<br/>© 2026 Brookhart Labs
 </footer>
 
 <script>
-const FALLBACK = [
-{
-  title:"Explain This Repo Like I’m New Here",
-  murmur:"People share repos assuming shared context. Many quietly wonder what they actually do.",
-  quest:"Build a tiny app that explains a GitHub repo in plain English and suggests a weekend build.",
-  worth:[
-    "No deep technical knowledge required",
-    "Useful even if imperfect",
-    "Translation > correctness"
-  ],
-  signals:[
-    {name:"GitHub",url:"https://github.com/search?q=confusing+readme&type=Issues"},
-    {name:"X",url:"https://x.com/search?q=what%20does%20this%20repo%20do"}
-  ]
-}
+const SAMPLE = [
+  {
+    title: "Explain This Repo Like I’m New Here",
+    murmur: "Developers share repos assuming shared context; many wonder what they do.",
+    quest: "Build a tiny app that explains a GitHub repo in plain English and suggests a weekend build.",
+    worth: [
+      "No deep technical knowledge required",
+      "Useful even if imperfect",
+      "Translation over correctness"
+    ],
+    signals: [
+      {name:"GitHub", url:"https://github.com/search?q=confusing+readme&type=Issues"},
+      {name:"X", url:"https://x.com/search?q=what%20does%20this%20repo%20do"}
+    ]
+  },
+  {
+    title: "Why Is This So Hard to See?",
+    murmur: "People complain about data being buried or invisible across tools.",
+    quest: "Build a lightweight dashboard that surfaces what people say is hard to find.",
+    worth: [
+      "Visual UX does most of the work",
+      "Ambiguity clarifies design quickly",
+      "Great portfolio piece"
+    ],
+    signals: [
+      {name:"GitHub", url:"https://github.com/search?q=hard+to+find&type=Issues"},
+      {name:"X", url:"https://x.com/search?q=hard%20to%20see"}
+    ]
+  }
 ];
 
-async function loadIdeas(){
-  try{
-    const res = await fetch('/.netlify/functions/github');
-    const data = await res.json();
-    if(!Array.isArray(data) || data.length===0) throw Error();
-    render(data,false);
-  }catch{
-    document.getElementById('banner').style.display='block';
-    render(FALLBACK,true);
+async function fetchAll() {
+  const urls = [
+    "/.netlify/functions/github",
+    "/.netlify/functions/hackathon",
+    "/.netlify/functions/roadmaps",
+    "/.netlify/functions/twitter"
+  ];
+  try {
+    const results = await Promise.all(urls.map(u=>fetch(u).then(r=>r.json())));
+    const flattened = results.flat();
+    if (!flattened.length) throw Error();
+    render(flattened.slice(0,5), false);
+  } catch {
+    document.getElementById("banner").style.display="block";
+    render(SAMPLE, true);
   }
 }
 
-function render(ideas,isSample){
-  const el=document.getElementById('ideas');
-  el.innerHTML='';
-  ideas.forEach(i=>{
-    el.innerHTML+=`
-    <div class="card">
-      <h2>${i.title}</h2>
+function render(list, sample) {
+  const container = document.getElementById("ideas");
+  container.innerHTML = "";
+  list.forEach(i=>{
+    container.innerHTML += `
+<div class="card">
+  <h2>${i.title}</h2>
 
-      <div class="section">
-        🫧 <strong>Murmur</strong>
-        <div class="descriptor">Why this exists</div>
-        <p>${i.murmur}</p>
-      </div>
+  <div class="section">
+    <div class="section-title">🫧 Murmur</div>
+    <div class="descriptor">Why this exists</div>
+    <p>${i.murmur}</p>
+  </div>
 
-      <div class="section">
-        🧭 <strong>Side Quest</strong>
-        <div class="descriptor">What to build</div>
-        <p>${i.quest}</p>
-      </div>
+  <div class="section">
+    <div class="section-title">🧭 Side Quest</div>
+    <div class="descriptor">What to build</div>
+    <p>${i.quest}</p>
+  </div>
 
-      <div class="section">
-        ✨ <strong>For What It’s Worth</strong>
-        <div class="descriptor">Why it’s worth your energy</div>
-        <ul>${i.worth.map(w=>`<li>${w}</li>`).join('')}</ul>
-      </div>
+  <div class="section">
+    <div class="section-title">✨ For What It’s Worth</div>
+    <div class="descriptor">Why it’s worth your energy</div>
+    <ul>${i.worth.map(w=>`<li>${w}</li>`).join("")}</ul>
+  </div>
 
-      <div class="section">
-        🧾 <strong>Signals Observed</strong>
-        <div class="descriptor">Receipts, if you want them</div>
-        <ul>${i.signals.map(s=>`<li>Source: <a href="${s.url}" target="_blank">${s.name}</a></li>`).join('')}</ul>
-      </div>
-    </div>`;
+  <div class="section">
+    <div class="section-title">🧾 Signals Observed</div>
+    <div class="descriptor">Receipts, if you want them</div>
+    <ul>${i.signals.map(s=>`<li>Source: <a class="idea-link" href="${s.url}" target="_blank">${s.name}</a></li>`).join("")}</ul>
+  </div>
+</div>`;
   });
 }
 
-loadIdeas();
+fetchAll();
 </script>
 
 </body>
