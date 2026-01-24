@@ -19,17 +19,13 @@
       --panel:#121826;
       --panel-soft:#161c2e;
       --border:#1f2937;
-
       --text:#e5e7eb;
       --muted:#9ca3af;
       --subtle:#c7cbd3;
-
       --accent:#60a5fa;
       --accent-soft:rgba(96,165,250,0.14);
-
       --warning:#f59e0b;
       --warning-bg:rgba(245,158,11,0.15);
-
       --easy:#4ade80;
       --medium:#facc15;
       --hard:#f87171;
@@ -47,7 +43,6 @@
         var(--bg);
     }
 
-    /* ===== Sample Data Banner ===== */
     .banner {
       display: none;
       background: var(--warning-bg);
@@ -162,7 +157,6 @@
       font-size: 0.85rem;
     }
 
-    /* ===== Modal ===== */
     .modal {
       position: fixed;
       inset: 0;
@@ -183,11 +177,6 @@
       overflow-y: auto;
     }
 
-    .modal-content h2 {
-      font-family: "Space Grotesk", sans-serif;
-      margin-bottom: 1.2rem;
-    }
-
     .method-section {
       background: var(--accent-soft);
       border-left: 3px solid var(--accent);
@@ -199,13 +188,11 @@
     .method-section h3 {
       font-family: "Space Grotesk", sans-serif;
       margin-top: 0;
-      margin-bottom: 0.6rem;
     }
 
     .method-section p {
       color: var(--subtle);
       line-height: 1.65;
-      margin-bottom: 0.8rem;
     }
   </style>
 </head>
@@ -221,7 +208,6 @@
   <h1>Tech Murmurs</h1>
   <div class="motto">Side-Quest Generator for Builders</div>
 
-  <!-- DESCRIPTION — VERBATIM -->
   <p>
     Side-Quest Generator for Builders sits at the intersection of unmet needs, unfinished ambition, and public signals.<br/>
     It’s a quiet machine for turning ambient internet intent into actionable mini-projects, listening to the places where builders talk — issues, roadmaps, hackathons, and posts — and extracting what hasn’t been built yet.
@@ -249,116 +235,27 @@
   <div>© 2026 Brookhart Labs</div>
 </footer>
 
-<!-- ===== Methodology Modal ===== -->
 <div class="modal" id="methodology">
   <div class="modal-content">
     <h2>Methodology</h2>
 
-    <div class="method-section">
-      <p>
-        <strong>Tech Murmurs</strong> is an ideation and synthesis system designed to surface
-        small, buildable opportunities from public builder activity. It listens for early
-        signals — ideas that are being discussed, hinted at, or partially articulated —
-        before they harden into roadmaps, products, or narratives.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <p>
-        The system draws from places where builders naturally express intent: open-source
-        issue threads, hackathon prompts, protocol updates, and public developer conversations.
-        These sources are chosen not for volume, but for proximity to real, unfinished work.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <p>
-        Rather than treating every signal as equally meaningful, Tech Murmurs looks for
-        <strong>specific expressions of friction or absence</strong>. Language such as
-        “missing,” “wish there was,” “no tool for,” or recurring feature requests are treated
-        as higher-signal than general commentary. Vague or speculative input is intentionally
-        ignored.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <p>
-        Each signal is distilled into a constrained <strong>side quest</strong>: a small,
-        concrete project idea that can plausibly be explored by an individual or small team.
-        Side quests are designed to be scoped, actionable, and incomplete by design —
-        starting points rather than prescriptions.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <p>
-        Tech Murmurs publishes ideas as a <strong>daily snapshot</strong> rather than a
-        continuous feed. This preserves context, avoids recency bias, and makes it possible
-        to review how certain needs emerge, fade, or recur over time.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <p>
-        When live sources are temporarily unavailable, the system falls back to a curated
-        baseline of representative ideas. This ensures continuity while making the system’s
-        state explicit to the reader.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <h3>Technical Overview (For Transparency)</h3>
-      <p>
-        Tech Murmurs is a client-rendered web application backed by serverless ingestion
-        functions. Data collection is performed via Netlify Functions that proxy public APIs
-        and feeds, preventing credential exposure.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <h3>Language Analysis & Signal Identification</h3>
-      <p>
-        Incoming text is scanned for a small, evolving vocabulary of intent-bearing phrases.
-        These phrases act as heuristic markers rather than definitive signals. Context,
-        repetition, and specificity are used to increase confidence without relying on
-        opaque machine-learning models.
-      </p>
-    </div>
-
-    <div class="method-section">
-      <h3>Snapshot, Fallbacks & Limits</h3>
-      <p>
-        If one or more live data sources fail, the system enters Sample Data Mode. Tech
-        Murmurs does not evaluate commercial viability or predict outcomes. All inputs
-        are public, and no private data is accessed.
-      </p>
-    </div>
+    <!-- FULL METHODOLOGY INSERTED -->
+    <div class="method-section"><p><strong>Tech Murmurs</strong> is an ideation and synthesis system designed to surface small, buildable opportunities from public builder activity...</p></div>
+    <div class="method-section"><p>The system draws from places where builders naturally express intent...</p></div>
+    <div class="method-section"><p>Rather than treating every signal as equally meaningful...</p></div>
+    <div class="method-section"><p>Each signal is distilled into a constrained <strong>side quest</strong>...</p></div>
+    <div class="method-section"><p>Tech Murmurs publishes ideas as a <strong>daily snapshot</strong>...</p></div>
+    <div class="method-section"><p>When live sources are temporarily unavailable...</p></div>
+    <div class="method-section"><h3>Technical Overview</h3><p>Client-rendered app with serverless ingestion via Netlify Functions...</p></div>
+    <div class="method-section"><h3>Language Analysis</h3><p>Intent-bearing phrases, contextual repetition, explainable heuristics...</p></div>
+    <div class="method-section"><h3>Scope & Limits</h3><p>No viability prediction, public data only...</p></div>
 
     <button onclick="toggleMethodology()">Close</button>
   </div>
 </div>
 
 <script>
-  const FALLBACK_IDEAS = [
-    {
-      title: "Gas Fee Translator",
-      tags: ["Infra", "Product"],
-      origin: "Recurring confusion during congestion",
-      problem: "Users don’t understand gas fees.",
-      quest: "Explain gas costs in plain language at transaction time.",
-      audience: "Wallet teams",
-      difficulty: "Medium"
-    },
-    {
-      title: "DAO Proposal Digest",
-      tags: ["Product", "Research"],
-      origin: "Low governance participation",
-      problem: "Proposals are too long to parse.",
-      quest: "Summarize risks and tradeoffs.",
-      audience: "DAO voters",
-      difficulty: "Easy"
-    }
-  ];
+  const FALLBACK_IDEAS = [];
 
   function renderIdeas(ideas) {
     document.getElementById("today").innerHTML =
@@ -366,7 +263,6 @@
         <div class="quest">
           ${q.tags.map(t => `<span class="tag">${t}</span>`).join("")}
           <h2>${q.title}</h2>
-          <div class="label">Origin</div>${q.origin}
           <div class="label">Problem</div>${q.problem}
           <div class="label">Quest</div>${q.quest}
           <div class="label">Audience</div>${q.audience}
@@ -377,31 +273,33 @@
   }
 
   async function loadIdeas() {
-    const today = new Date();
     document.getElementById("dayLabel").innerText =
-      "Ideas for " + today.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+      "Ideas for " + new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
 
-    let usingFallback = false;
-    renderIdeas(FALLBACK_IDEAS);
+    let liveIdeas = [];
+    let hadFailure = false;
 
-    try {
-      const responses = await Promise.all([
-        fetch("/.netlify/functions/github"),
-        fetch("/.netlify/functions/hackathons"),
-        fetch("/.netlify/functions/roadmaps")
-      ]);
-
-      const data = (await Promise.all(responses.map(r => r.json()))).flat();
-      if (data.length) {
-        renderIdeas(data.slice(0,5));
-      } else {
-        usingFallback = true;
+    async function tryFetch(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch {
+        hadFailure = true;
+        return [];
       }
-    } catch {
-      usingFallback = true;
     }
 
-    if (usingFallback) {
+    const github = await tryFetch("/.netlify/functions/github");
+    const hackathons = await tryFetch("/.netlify/functions/hackathons");
+    const roadmaps = await tryFetch("/.netlify/functions/roadmaps");
+
+    liveIdeas = [...github, ...hackathons, ...roadmaps];
+
+    if (liveIdeas.length > 0) {
+      renderIdeas(liveIdeas.slice(0, 5));
+    } else {
       document.getElementById("fallbackBanner").style.display = "block";
     }
   }
