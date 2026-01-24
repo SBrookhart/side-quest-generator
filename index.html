@@ -2,27 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Side-Quest Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brookhart Labs — Side-Quest Generator</title>
 
-  <!-- Professional typography -->
+  <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
     :root {
-      --bg-main: #0b0f1a;
-      --bg-surface: #111827;
-      --bg-card: #0f172a;
-      --border-subtle: rgba(255,255,255,0.06);
-
+      --bg: #0b0e14;
+      --panel: #121826;
+      --border: #1f2937;
       --text-primary: #e5e7eb;
       --text-secondary: #9ca3af;
-      --text-muted: #6b7280;
-
-      --accent: #6366f1;
-      --accent-soft: rgba(99,102,241,0.15);
+      --accent: #5eead4;
+      --accent-soft: rgba(94, 234, 212, 0.15);
     }
 
     * {
@@ -31,142 +30,275 @@
 
     body {
       margin: 0;
-      background:
-        radial-gradient(1200px 600px at top, #0e1629, var(--bg-main));
-      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: Inter, system-ui, sans-serif;
       color: var(--text-primary);
-    }
-
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 64px 24px 80px;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6)),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255,255,255,0.03) 0px,
+          rgba(255,255,255,0.03) 1px,
+          transparent 1px,
+          transparent 80px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.03) 0px,
+          rgba(255,255,255,0.03) 1px,
+          transparent 1px,
+          transparent 80px
+        ),
+        var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     header {
-      margin-bottom: 56px;
+      max-width: 960px;
+      width: 100%;
+      padding: 4rem 1.5rem 2rem;
     }
 
-    h1 {
-      font-family: "Space Grotesk", Inter, sans-serif;
+    header h1 {
+      font-family: "Space Grotesk", sans-serif;
       font-size: 3rem;
-      font-weight: 600;
-      margin: 0 0 16px;
+      margin: 0 0 0.5rem;
       letter-spacing: -0.02em;
     }
 
-    .subtitle {
-      max-width: 720px;
-      font-size: 1.15rem;
-      line-height: 1.6;
+    header p {
       color: var(--text-secondary);
+      max-width: 640px;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 960px;
+      width: 100%;
+      padding: 0 1.5rem;
+      flex: 1;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--accent), #38bdf8);
+      color: #020617;
+      border: none;
+      border-radius: 12px;
+      padding: 0.8rem 1.4rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 30px -10px var(--accent-soft);
     }
 
     .quest-card {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0))
-        , var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 18px;
-      padding: 32px;
-      margin-bottom: 32px;
-      box-shadow:
-        0 20px 40px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.04);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      animation: fadeUp 0.4s ease;
+      margin-bottom: 2rem;
     }
 
-    .quest-card:hover {
-      transform: translateY(-4px);
-      box-shadow:
-        0 28px 60px rgba(0,0,0,0.55),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .quest-title {
-      font-family: "Space Grotesk", Inter, sans-serif;
-      font-size: 1.6rem;
-      margin-bottom: 18px;
-      letter-spacing: -0.01em;
+    .quest-card h2 {
+      font-family: "Space Grotesk", sans-serif;
+      margin: 0 0 0.5rem;
     }
 
-    .section {
-      margin-top: 16px;
-    }
-
-    .label {
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .value {
-      line-height: 1.55;
-      color: var(--text-primary);
-    }
-
-    .meta {
+    .tags {
       display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-top: 22px;
-      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
 
-    .pill {
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      background: var(--accent-soft);
-      color: #c7d2fe;
-      border: 1px solid rgba(99,102,241,0.25);
-    }
-
-    .source-link {
-      margin-left: auto;
+    .tag {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
     }
 
-    .source-link svg {
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
+    .sources {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+
+    .source {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.7rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+    }
+
+    .archive h3 {
+      font-family: "Space Grotesk", sans-serif;
+      margin-bottom: 1rem;
     }
 
     footer {
-      margin-top: 72px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border-subtle);
-      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 4rem;
+    }
+
+    .footer-inner {
+      max-width: 960px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .motto {
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+      }
+      .footer-inner {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <header>
-      <h1>Unclaimed Side Quests</h1>
-      <p class="subtitle">
-        A daily distillation of small, buildable ideas hiding inside unfinished
-        conversations across crypto, open source, and developer culture.
-      </p>
-    </header>
+  <header>
+    <h1>Brookhart Labs</h1>
+    <p>
+      Side-Quest Generator for Builders.  
+      Cultural signal over noise. Execution over hype.
+    </p>
+  </header>
 
-    <div id="quests"></div>
+  <main>
+    <div class="controls">
+      <button onclick="generateQuest()">
+        <i data-lucide="shuffle"></i> Generate Quest
+      </button>
+      <button class="secondary" onclick="toggleArchive()">
+        <i data-lucide="archive"></i> Archive
+      </button>
+    </div>
 
-    <footer>
-      Built quietly. Shipped deliberately.
-    </footer>
-  </div>
+    <div id="quest"></div>
 
-  <script src="quests.js"></script>
+    <div id="archive" class="archive" style="display:none;">
+      <h3>Archive</h3>
+      <div id="archiveList"></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="motto">Built quietly, shipped deliberately.</div>
+      <div>© 2026 Brookhart Labs</div>
+    </div>
+  </footer>
+
+  <script>
+    const quests = [
+      {
+        title: "Wallet Health Monitor",
+        description: "Visualize inflows, outflows, and idle capital across wallets.",
+        tags: ["Infra"],
+        sources: [
+          { label: "GitHub", icon: "github", url: "https://github.com/ethereum" }
+        ]
+      },
+      {
+        title: "Narrative Velocity Tracker",
+        description: "Track which crypto narratives are gaining momentum socially and technically.",
+        tags: ["Research", "Product"],
+        sources: [
+          { label: "X Thread", icon: "twitter", url: "https://x.com/search?q=crypto" }
+        ]
+      }
+    ];
+
+    const archive = [];
+
+    function generateQuest() {
+      const quest = quests[Math.floor(Math.random() * quests.length)];
+      archive.push(quest);
+
+      document.getElementById("quest").innerHTML = renderQuest(quest);
+      document.getElementById("archiveList").innerHTML =
+        archive.map(renderQuest).join("");
+
+      lucide.createIcons();
+    }
+
+    function renderQuest(q) {
+      return `
+        <div class="quest-card">
+          <div class="tags">
+            ${q.tags.map(t => `<div class="tag"><i data-lucide="tag"></i>${t}</div>`).join("")}
+          </div>
+          <h2>${q.title}</h2>
+          <p>${q.description}</p>
+          <div class="sources">
+            ${q.sources.map(s => `
+              <a class="source" href="${s.url}" target="_blank">
+                <i data-lucide="${s.icon}"></i>${s.label}
+              </a>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleArchive() {
+      const el = document.getElementById("archive");
+      el.style.display = el.style.display === "none" ? "block" : "none";
+    }
+
+    lucide.createIcons();
+  </script>
 </body>
 </html>
