@@ -8,10 +8,19 @@ export async function handler() {
     "seeking"
   ];
 
+  const RELEASE_NOISE = [
+    "release",
+    "changelog",
+    "version",
+    "upgrade",
+    "v1.",
+    "v2."
+  ];
+
   const HARD_FRICTION = [
     "does not work",
-    "breaks",
     "fails",
+    "breaks",
     "cannot",
     "no way to",
     "missing",
@@ -23,34 +32,26 @@ export async function handler() {
     "how do i",
     "how can i",
     "is it possible",
-    "question",
     "confusing",
     "unclear",
     "unexpected",
-    "problem with",
-    "issue with"
+    "problem",
+    "issue"
   ];
 
-  const GENERIC_RELEASE = [
-    "release",
-    "version",
-    "upgrade",
-    "changelog",
-    "v1.",
-    "v2."
-  ];
+  async function searchGitHub(query) {
+    const url =
+      "https://api.github.com/search/issues?q=" +
+      encodeURIComponent(query) +
+      "&per_page=50";
 
-  async function fetchIssues(query) {
-    const res = await fetch(
-      `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&per_page=50`,
-      {
-        headers: {
-          "User-Agent": "tech-murmurs",
-          "Accept": "application/vnd.github+json",
-          "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`
-        }
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "tech-murmurs",
+        "Accept": "application/vnd.github+json",
+        "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`
       }
-    );
+    });
 
     const json = await res.json();
     return Array.isArray(json.items) ? json.items : [];
@@ -58,61 +59,59 @@ export async function handler() {
 
   try {
     // ─────────────────────────────
-    // TIER 1: HARD FRICTION
+    // QUERY 1: BUGS WITH DESCRIPTIVE TEXT
     // ─────────────────────────────
-    let issues = await fetchIssues(
-      "state:open bug OR error OR failure"
+    let issues = await searchGitHub(
+      "state:open label:bug in:title,body"
     );
 
-    let ideas = issues.filter(issue => {
-      const text = `${issue.title} ${issue.body || ""}`.toLowerCase();
-      if (STAFFING.some(p => text.includes(p))) return false;
-      if (GENERIC_RELEASE.some(p => text.includes(p))) return false;
-      return HARD_FRICTION.some(p => text.includes(p));
-    });
-
     // ─────────────────────────────
-    // TIER 2: SOFT FRICTION (QUESTIONS)
+    // QUERY 2: QUESTIONS / CONFUSION
     // ─────────────────────────────
-    if (ideas.length < 3) {
-      const softIssues = await fetchIssues(
-        "state:open question OR help OR how in:title,body"
+    if (issues.length < 10) {
+      const questions = await searchGitHub(
+        "state:open label:question in:title,body"
       );
-
-      const softIdeas = softIssues.filter(issue => {
-        const text = `${issue.title} ${issue.body || ""}`.toLowerCase();
-        if (STAFFING.some(p => text.includes(p))) return false;
-        if (GENERIC_RELEASE.some(p => text.includes(p))) return false;
-        return SOFT_FRICTION.some(p => text.includes(p));
-      });
-
-      ideas = ideas.concat(softIdeas);
+      issues = issues.concat(questions);
     }
 
     // ─────────────────────────────
-    // FINAL MAPPING (CAP AT 5)
+    // FILTER + SCORE
     // ─────────────────────────────
-    const finalIdeas = ideas.slice(0, 5).map(issue => ({
-      title: issue.title,
-      problem:
-        issue.body?.slice(0, 260) ||
-        "A concrete source of developer friction was described.",
-      quest:
-        "Design and prototype a focused solution that reduces or removes this friction.",
-      audience: issue.repository_url.split("/").pop(),
-      difficulty: "Medium",
-      tags: ["Infra", "Research"],
-      sources: [
-        {
-          type: "github",
-          url: issue.html_url
-        }
-      ]
-    }));
+    const ideas = issues
+      .filter(issue => {
+        const text = `${issue.title} ${issue.body || ""}`.toLowerCase();
+
+        if (STAFFING.some(p => text.includes(p))) return false;
+        if (RELEASE_NOISE.some(p => text.includes(p))) return false;
+
+        return (
+          HARD_FRICTION.some(p => text.includes(p)) ||
+          SOFT_FRICTION.some(p => text.includes(p))
+        );
+      })
+      .slice(0, 5)
+      .map(issue => ({
+        title: issue.title,
+        problem:
+          issue.body?.slice(0, 260) ||
+          "A concrete source of developer friction was described.",
+        quest:
+          "Design and prototype a focused solution that reduces or removes this friction.",
+        audience: issue.repository_url.split("/").pop(),
+        difficulty: "Medium",
+        tags: ["Infra", "Research"],
+        sources: [
+          {
+            type: "github",
+            url: issue.html_url
+          }
+        ]
+      }));
 
     return {
       statusCode: 200,
-      body: JSON.stringify(finalIdeas)
+      body: JSON.stringify(ideas)
     };
 
   } catch (err) {
