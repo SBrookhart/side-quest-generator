@@ -1,6 +1,7 @@
 export async function handler() {
   const QUERY =
-    '(build OR building OR "someone should" OR wish OR missing OR "no tool") ' +
+    '(visualize OR dashboard OR "someone should build" OR "wish there was" ' +
+    'OR "it would be cool if" OR "i want a tool") ' +
     '-is:retweet -is:reply lang:en';
 
   try {
@@ -8,7 +9,7 @@ export async function handler() {
       "https://api.twitter.com/2/tweets/search/recent" +
         "?query=" + encodeURIComponent(QUERY) +
         "&max_results=10" +
-        "&tweet.fields=text,author_id,created_at",
+        "&tweet.fields=text",
       {
         headers: {
           "Authorization": `Bearer ${process.env.X_BEARER_TOKEN}`
@@ -16,40 +17,18 @@ export async function handler() {
       }
     );
 
-    if (!res.ok) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify([])
-      };
-    }
-
     const data = await res.json();
-
-    if (!data.data) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify([])
-      };
-    }
+    if (!data.data) return { statusCode: 200, body: "[]" };
 
     const ideas = data.data
-      .filter(t => {
-        const text = t.text.toLowerCase();
-        return (
-          text.includes("wish") ||
-          text.includes("missing") ||
-          text.includes("no tool") ||
-          text.includes("someone should")
-        );
-      })
       .slice(0, 2)
       .map(t => ({
-        title: "Ambient builder signal",
+        title: "Ambient builder idea",
         problem: t.text.slice(0, 240),
         quest:
-          "Extract a concrete side project that addresses the unmet need implied by this post.",
+          "Turn this idea into a playful, shippable micro-project using modern web tools.",
         difficulty: "Easy",
-        tags: ["Product"],
+        tags: ["Vibe", "Creative"],
         sources: [
           {
             type: "twitter",
@@ -62,11 +41,10 @@ export async function handler() {
       statusCode: 200,
       body: JSON.stringify(ideas)
     };
-
-  } catch (err) {
+  } catch {
     return {
       statusCode: 200,
-      body: JSON.stringify([])
+      body: "[]"
     };
   }
 }
