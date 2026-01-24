@@ -43,13 +43,13 @@
     }
 
     .banner {
-      display: none;
       background: var(--warning-bg);
       border-bottom: 1px solid var(--warning);
       color: var(--subtle);
       padding: 0.8rem 1.2rem;
       font-size: 0.85rem;
       text-align: center;
+      display: none;
     }
 
     header, main, footer {
@@ -133,16 +133,16 @@
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      color: var(--muted);
       font-size: 0.8rem;
+      color: var(--muted);
     }
 
     .sources a {
       color: var(--muted);
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
-      text-decoration: none;
+      gap: 0.3rem;
     }
 
     .sources a:hover {
@@ -161,10 +161,7 @@
 
 <body>
 
-<div class="banner" id="fallbackBanner">
-  <strong>Sample Data Mode</strong> — Live signals are currently unavailable.
-  The ideas shown below are representative examples.
-</div>
+<div class="banner" id="modeBanner"></div>
 
 <header>
   <h1>Tech Murmurs</h1>
@@ -193,12 +190,41 @@
 </footer>
 
 <script>
+  const FALLBACK_IDEAS = [
+    {
+      title: "Explain Failed Transactions Before They Fail",
+      problem: "Users submit transactions that are guaranteed to revert, but only find out after paying gas.",
+      quest: "Build a pre-flight simulation layer that explains failure reasons before submission.",
+      audience: "Wallet users",
+      difficulty: "Medium",
+      tags: ["Product", "Infra"],
+      sources: [{ type: "github", url: "https://github.com/ethereum/go-ethereum/issues" }]
+    },
+    {
+      title: "Surface DAO Proposal Risk in Plain Language",
+      problem: "DAO proposals are long, technical, and difficult to assess quickly.",
+      quest: "Create a summary layer that highlights risks, tradeoffs, and irreversible actions.",
+      audience: "DAO voters",
+      difficulty: "Easy",
+      tags: ["Research", "Product"],
+      sources: [{ type: "github", url: "https://github.com" }]
+    },
+    {
+      title: "Track Breaking Changes Across Protocol Upgrades",
+      problem: "Developers struggle to understand what breaks across protocol upgrades.",
+      quest: "Build a diff tool mapping protocol changes to downstream impact.",
+      audience: "Protocol developers",
+      difficulty: "Hard",
+      tags: ["Infra", "Research"],
+      sources: [{ type: "github", url: "https://github.com" }]
+    }
+  ];
+
   function renderIdeas(ideas) {
     document.getElementById("today").innerHTML =
       ideas.map(q => `
         <div class="quest">
           ${q.tags.map(t => `<span class="tag">${t}</span>`).join("")}
-
           <h2>${q.title}</h2>
 
           <div class="label">Problem</div>
@@ -229,24 +255,29 @@
 
   async function loadIdeas() {
     document.getElementById("dayLabel").innerText =
-      "Ideas for " + new Date().toLocaleDateString(
-        "en-US",
-        { month:"long", day:"numeric", year:"numeric" }
-      );
+      "Ideas for " + new Date().toLocaleDateString("en-US", {
+        month:"long", day:"numeric", year:"numeric"
+      });
 
-    let ideas = [];
+    // ALWAYS render fallback first
+    renderIdeas(FALLBACK_IDEAS);
+
+    const banner = document.getElementById("modeBanner");
+    banner.style.display = "block";
+    banner.innerText =
+      "Sample Data Mode — Showing representative ideas while live signals are quiet.";
 
     try {
       const res = await fetch("/.netlify/functions/github");
       if (res.ok) {
-        ideas = await res.json();
+        const live = await res.json();
+        if (Array.isArray(live) && live.length > 0) {
+          renderIdeas(live.slice(0,5));
+          banner.innerText = "Live Data Mode — Ideas sourced from public GitHub signals.";
+        }
       }
-    } catch {}
-
-    if (ideas.length > 0) {
-      renderIdeas(ideas.slice(0, 5));
-    } else {
-      document.getElementById("fallbackBanner").style.display = "block";
+    } catch {
+      // fallback stays rendered
     }
   }
 
