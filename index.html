@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tech Murmurs</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 
-  <!-- Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
@@ -20,162 +18,117 @@
       --border:#1f2937;
       --text:#e5e7eb;
       --muted:#9ca3af;
-
       --easy:#4ade80;
       --medium:#facc15;
       --hard:#f87171;
-
-      --github:#9ca3af;
-      --twitter:#38bdf8;
     }
 
-    * { box-sizing: border-box; }
+    *{box-sizing:border-box}
 
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, sans-serif;
-      color: var(--text);
+    body{
+      margin:0;
+      font-family:Inter,system-ui,sans-serif;
+      color:var(--text);
       background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
-        repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+        repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 80px),
+        repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0 1px,transparent 1px 80px),
         var(--bg);
     }
 
-    header {
-      max-width: 1100px;
-      margin: auto;
-      padding: 4rem 2rem 2.5rem;
+    header,main,footer{
+      max-width:1100px;
+      margin:auto;
+      padding:2rem;
     }
 
-    h1 {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 3.2rem;
-      margin-bottom: 0.3rem;
+    h1{font-family:"Space Grotesk",sans-serif;font-size:3.2rem}
+
+    .motto{
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:1.5rem;
+      font-size:.9rem;
     }
 
-    .motto {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 0.9rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1.6rem;
+    .nav{display:flex;gap:1rem;margin-top:1.5rem}
+
+    .nav a,.nav button{
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--text);
+      padding:.45rem .85rem;
+      border-radius:10px;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      gap:.4rem;
+      align-items:center;
     }
 
-    header p {
-      max-width: 780px;
-      line-height: 1.7;
-      color: var(--muted);
+    .quest{
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:2rem;
+      margin-bottom:2rem;
+      background:rgba(255,255,255,.03);
     }
 
-    .nav {
-      margin-top: 1.8rem;
-      display: flex;
-      gap: 1rem;
+    .tag{
+      font-size:.7rem;
+      padding:.25rem .6rem;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      margin-right:.4rem;
     }
 
-    .nav a, .nav button {
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text);
-      border-radius: 10px;
-      padding: 0.45rem 0.85rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      text-decoration: none;
+    .label{
+      font-size:.7rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:#6b7280;
+      margin-top:1rem;
     }
 
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 0 2rem 4rem;
+    .difficulty{
+      font-size:.7rem;
+      padding:.25rem .7rem;
+      border-radius:999px;
+      color:#020617;
+      font-weight:600;
     }
 
-    .day-label {
-      color: var(--muted);
-      margin-bottom: 1.5rem;
+    .easy{background:var(--easy)}
+    .medium{background:var(--medium)}
+    .hard{background:var(--hard)}
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.65);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      padding:2rem;
     }
 
-    .quest {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 2rem;
+    .modal-content{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:2rem;
+      max-width:900px;
+      max-height:80vh;
+      overflow:auto;
     }
 
-    .quest h2 {
-      font-family: "Space Grotesk", sans-serif;
-      margin: 0.3rem 0;
-    }
-
-    .tags {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .tag {
-      font-size: 0.7rem;
-      border: 1px solid var(--border);
-      padding: 0.25rem 0.6rem;
-      border-radius: 999px;
-      color: var(--muted);
-    }
-
-    .label {
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #6b7280;
-      margin-top: 1rem;
-    }
-
-    .meta {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      margin-top: 1.3rem;
-      flex-wrap: wrap;
-    }
-
-    .difficulty {
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      color: #020617;
-    }
-
-    .easy { background: var(--easy); }
-    .medium { background: var(--medium); }
-    .hard { background: var(--hard); }
-
-    .sources {
-      margin-left: auto;
-      display: flex;
-      gap: 0.6rem;
-    }
-
-    .source.github svg { color: var(--github); }
-    .source.twitter svg { color: var(--twitter); }
-
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 2rem;
-      margin-top: 4rem;
-    }
-
-    .footer-inner {
-      max-width: 1100px;
-      margin: auto;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--muted);
+    footer{
+      border-top:1px solid var(--border);
+      color:var(--muted);
+      font-size:.85rem;
+      display:flex;
+      justify-content:space-between;
     }
   </style>
 </head>
@@ -194,78 +147,75 @@
 
   <div class="nav">
     <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
+    <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
   </div>
 </header>
 
 <main>
-  <div class="day-label" id="dayLabel"></div>
+  <div id="dayLabel"></div>
   <div id="today"></div>
 </main>
 
 <footer>
-  <div class="footer-inner">
-    <div>Built quietly, shipped deliberately.</div>
-    <div>© 2026 Brookhart Labs</div>
-  </div>
+  <div>Built quietly, shipped deliberately.</div>
+  <div>© 2026 Brookhart Labs</div>
 </footer>
 
+<!-- Methodology Modal -->
+<div class="modal" id="methodology">
+  <div class="modal-content">
+    <h2>Methodology</h2>
+
+    <p>
+      Tech Murmurs is a research-oriented ideation system designed to surface small,
+      buildable opportunities from live public developer signals. It captures early
+      intent before it hardens into products, roadmaps, or narratives.
+    </p>
+
+    <h3>Data Sources & Integrations</h3>
+    <p>
+      The system ingests signals from GitHub repositories and issues, hackathon feeds,
+      protocol release streams, and public developer discourse. All integrations rely
+      exclusively on public APIs or open feeds.
+    </p>
+
+    <h3>Signal Extraction & Filtering</h3>
+    <p>
+      Language indicating unmet need or unfinished work is treated as candidate signal.
+      Inputs are filtered for specificity and feasibility before synthesis.
+    </p>
+
+    <h3>Daily Snapshot Construction</h3>
+    <p>
+      Signals are synthesized into a fixed daily snapshot. If live ingestion is
+      temporarily unavailable, the system falls back to a curated baseline to ensure
+      continuity.
+    </p>
+
+    <h3>Limitations & Ethics</h3>
+    <p>
+      Tech Murmurs does not predict market success or adoption. All inputs are public,
+      and attribution is preserved via outbound links.
+    </p>
+
+    <button onclick="toggleMethodology()">Close</button>
+  </div>
+</div>
+
 <script>
-  async function loadIdeas() {
-    const endpoints = [
-      "/.netlify/functions/github",
-      "/.netlify/functions/hackathons",
-      "/.netlify/functions/roadmaps"
-      // "/.netlify/functions/twitter" ← enable when ready
-    ];
+  document.getElementById("dayLabel").innerText =
+    "Ideas for " + new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
 
-    const responses = await Promise.all(
-      endpoints.map(e => fetch(e).then(r => r.json()))
-    );
+  document.getElementById("today").innerHTML =
+    "<div class='quest'><strong>System is listening.</strong><br/>Live signals will appear here as ingestion stabilizes.</div>";
 
-    const ideas = responses.flat().slice(0, 5);
-    const todayISO = new Date().toISOString().slice(0,10);
-
-    document.getElementById("dayLabel").innerText =
-      "Ideas for " + new Date(todayISO).toLocaleDateString(
-        "en-US",{month:"long",day:"numeric",year:"numeric"}
-      );
-
-    const archive =
-      JSON.parse(localStorage.getItem("techMurmursArchive") || "{}");
-    archive[todayISO] = ideas;
-    localStorage.setItem("techMurmursArchive", JSON.stringify(archive));
-
-    document.getElementById("today").innerHTML =
-      ideas.map(renderQuest).join("");
-
-    lucide.createIcons();
+  function toggleMethodology(){
+    const m=document.getElementById("methodology");
+    m.style.display=m.style.display==="flex"?"none":"flex";
   }
 
-  function renderQuest(q) {
-    return `
-      <div class="quest">
-        <div class="tags">${q.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
-        <h2>${q.title}</h2>
-
-        <div class="label">Origin</div>${q.origin}
-        <div class="label">Problem</div>${q.problem}
-        <div class="label">Quest</div>${q.quest}
-        <div class="label">Audience</div>${q.audience}
-
-        <div class="meta">
-          <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
-          <div class="sources">
-            ${q.sources.map(s=>`
-              <a class="source ${s.type}" href="${s.url}" target="_blank">
-                <i data-lucide="${s.type}"></i>
-              </a>`).join("")}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  loadIdeas();
+  lucide.createIcons();
 </script>
+
 </body>
 </html>
