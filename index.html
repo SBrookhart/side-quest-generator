@@ -23,7 +23,6 @@
       --muted:#9ca3af;
       --subtle:#c7cbd3;
       --accent:#60a5fa;
-      --accent-soft:rgba(96,165,250,0.14);
       --warning:#f59e0b;
       --warning-bg:rgba(245,158,11,0.15);
       --easy:#4ade80;
@@ -149,50 +148,26 @@
     .medium { background: var(--medium); }
     .hard { background: var(--hard); }
 
+    .sources {
+      margin-top: 1.2rem;
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .sources a {
+      color: var(--muted);
+    }
+
+    .sources a:hover {
+      color: var(--accent);
+    }
+
     footer {
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       color: var(--muted);
       font-size: 0.85rem;
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-
-    .modal-content {
-      background: linear-gradient(180deg, var(--panel), #0f1525);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 2.4rem;
-      max-width: 920px;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-
-    .method-section {
-      background: var(--accent-soft);
-      border-left: 3px solid var(--accent);
-      padding: 1.2rem 1.4rem;
-      margin-bottom: 1.6rem;
-      border-radius: 10px;
-    }
-
-    .method-section h3 {
-      font-family: "Space Grotesk", sans-serif;
-      margin-top: 0;
-    }
-
-    .method-section p {
-      color: var(--subtle);
-      line-height: 1.65;
     }
   </style>
 </head>
@@ -221,7 +196,6 @@
 
   <div class="nav">
     <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
-    <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
   </div>
 </header>
 
@@ -235,82 +209,64 @@
   <div>© 2026 Brookhart Labs</div>
 </footer>
 
-<div class="modal" id="methodology">
-  <div class="modal-content">
-    <h2>Methodology</h2>
-
-    <!-- FULL METHODOLOGY INSERTED -->
-    <div class="method-section"><p><strong>Tech Murmurs</strong> is an ideation and synthesis system designed to surface small, buildable opportunities from public builder activity...</p></div>
-    <div class="method-section"><p>The system draws from places where builders naturally express intent...</p></div>
-    <div class="method-section"><p>Rather than treating every signal as equally meaningful...</p></div>
-    <div class="method-section"><p>Each signal is distilled into a constrained <strong>side quest</strong>...</p></div>
-    <div class="method-section"><p>Tech Murmurs publishes ideas as a <strong>daily snapshot</strong>...</p></div>
-    <div class="method-section"><p>When live sources are temporarily unavailable...</p></div>
-    <div class="method-section"><h3>Technical Overview</h3><p>Client-rendered app with serverless ingestion via Netlify Functions...</p></div>
-    <div class="method-section"><h3>Language Analysis</h3><p>Intent-bearing phrases, contextual repetition, explainable heuristics...</p></div>
-    <div class="method-section"><h3>Scope & Limits</h3><p>No viability prediction, public data only...</p></div>
-
-    <button onclick="toggleMethodology()">Close</button>
-  </div>
-</div>
-
 <script>
-  const FALLBACK_IDEAS = [];
-
   function renderIdeas(ideas) {
     document.getElementById("today").innerHTML =
       ideas.map(q => `
         <div class="quest">
-          ${q.tags.map(t => `<span class="tag">${t}</span>`).join("")}
+          ${q.tags?.map(t => `<span class="tag">${t}</span>`).join("") || ""}
+
           <h2>${q.title}</h2>
-          <div class="label">Problem</div>${q.problem}
-          <div class="label">Quest</div>${q.quest}
-          <div class="label">Audience</div>${q.audience}
+
+          <div class="label">Problem</div>
+          <p>${q.problem}</p>
+
+          <div class="label">Quest</div>
+          <p>${q.quest}</p>
+
+          <div class="label">Audience</div>
+          <p>${q.audience}</p>
+
           <div class="label">Difficulty</div>
           <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+
+          <div class="sources">
+            ${q.sources?.map(s => `
+              <a href="${s.url}" target="_blank" title="View source">
+                <i data-lucide="${s.type}"></i>
+              </a>
+            `).join("") || ""}
+          </div>
         </div>
       `).join("");
+
+    lucide.createIcons();
   }
 
   async function loadIdeas() {
     document.getElementById("dayLabel").innerText =
-      "Ideas for " + new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+      "Ideas for " + new Date().toLocaleDateString(
+        "en-US",
+        { month:"long", day:"numeric", year:"numeric" }
+      );
 
-    let liveIdeas = [];
-    let hadFailure = false;
+    let ideas = [];
 
-    async function tryFetch(url) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        return Array.isArray(data) ? data : [];
-      } catch {
-        hadFailure = true;
-        return [];
+    try {
+      const res = await fetch("/.netlify/functions/github");
+      if (res.ok) {
+        ideas = await res.json();
       }
-    }
+    } catch {}
 
-    const github = await tryFetch("/.netlify/functions/github");
-    const hackathons = await tryFetch("/.netlify/functions/hackathons");
-    const roadmaps = await tryFetch("/.netlify/functions/roadmaps");
-
-    liveIdeas = [...github, ...hackathons, ...roadmaps];
-
-    if (liveIdeas.length > 0) {
-      renderIdeas(liveIdeas.slice(0, 5));
+    if (ideas.length > 0) {
+      renderIdeas(ideas.slice(0, 5));
     } else {
       document.getElementById("fallbackBanner").style.display = "block";
     }
   }
 
-  function toggleMethodology() {
-    const m = document.getElementById("methodology");
-    m.style.display = m.style.display === "flex" ? "none" : "flex";
-  }
-
   loadIdeas();
-  lucide.createIcons();
 </script>
 
 </body>
