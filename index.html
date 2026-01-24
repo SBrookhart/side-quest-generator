@@ -79,26 +79,6 @@
       margin-bottom: 1.2rem;
     }
 
-    .nav {
-      margin-top: 1.8rem;
-      display: flex;
-      gap: 1rem;
-    }
-
-    .nav a, .nav button {
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text);
-      border-radius: 10px;
-      padding: 0.45rem 0.9rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      text-decoration: none;
-    }
-
     .day-label {
       color: var(--muted);
       margin-bottom: 1.6rem;
@@ -175,8 +155,8 @@
 <body>
 
 <div class="banner" id="fallbackBanner">
-  <strong>Sample Data Mode</strong> — Live data sources are temporarily unavailable.
-  The ideas shown below are representative examples, not real-time signals.
+  <strong>Sample Data Mode</strong> — Live data sources are currently quiet or unavailable.
+  The ideas shown below are representative examples.
 </div>
 
 <header>
@@ -193,10 +173,6 @@
     unbuilt features, and abandoned experiments hiding in plain sight.
     Ideas waiting for someone to care enough to ship them.
   </p>
-
-  <div class="nav">
-    <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
-  </div>
 </header>
 
 <main>
@@ -210,11 +186,47 @@
 </footer>
 
 <script>
+  const FALLBACK_IDEAS = [
+    {
+      title: "Explain Failed Transactions Before They Fail",
+      problem:
+        "Users often submit transactions that are guaranteed to revert, but only learn this after paying gas.",
+      quest:
+        "Build a pre-flight simulation layer that explains why a transaction will fail before it is sent.",
+      audience: "Wallet users",
+      difficulty: "Medium",
+      tags: ["Product", "Infra"],
+      sources: [{ type: "github", url: "https://github.com/ethereum/go-ethereum/issues" }]
+    },
+    {
+      title: "Surface DAO Proposal Risk in Plain Language",
+      problem:
+        "DAO proposals are long, technical, and difficult for voters to assess quickly.",
+      quest:
+        "Create a summarization layer that highlights risks, tradeoffs, and irreversible actions.",
+      audience: "DAO voters",
+      difficulty: "Easy",
+      tags: ["Research", "Product"],
+      sources: [{ type: "github", url: "https://github.com" }]
+    },
+    {
+      title: "Track Breaking Changes Across Protocol Upgrades",
+      problem:
+        "Developers struggle to understand what breaks when protocols release new versions.",
+      quest:
+        "Build a change-diff tool that maps protocol upgrades to downstream impact.",
+      audience: "Protocol developers",
+      difficulty: "Hard",
+      tags: ["Infra", "Research"],
+      sources: [{ type: "github", url: "https://github.com" }]
+    }
+  ];
+
   function renderIdeas(ideas) {
     document.getElementById("today").innerHTML =
       ideas.map(q => `
         <div class="quest">
-          ${q.tags?.map(t => `<span class="tag">${t}</span>`).join("") || ""}
+          ${q.tags.map(t => `<span class="tag">${t}</span>`).join("")}
 
           <h2>${q.title}</h2>
 
@@ -231,11 +243,11 @@
           <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
 
           <div class="sources">
-            ${q.sources?.map(s => `
+            ${q.sources.map(s => `
               <a href="${s.url}" target="_blank" title="View source">
                 <i data-lucide="${s.type}"></i>
               </a>
-            `).join("") || ""}
+            `).join("")}
           </div>
         </div>
       `).join("");
@@ -262,6 +274,7 @@
     if (ideas.length > 0) {
       renderIdeas(ideas.slice(0, 5));
     } else {
+      renderIdeas(FALLBACK_IDEAS);
       document.getElementById("fallbackBanner").style.display = "block";
     }
   }
