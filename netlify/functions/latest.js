@@ -22,7 +22,7 @@ export default async () => {
   let raw;
   try {
     raw = await store.get("latest");
-  } catch (err) {
+  } catch {
     return Response.json(
       { error: "Failed to read latest snapshot" },
       { status: 500 }
@@ -36,28 +36,24 @@ export default async () => {
     );
   }
 
-  let latest;
+  let snapshot;
   try {
-    // Handle stringified JSON or objects
-    latest = typeof raw === "string" ? JSON.parse(raw) : raw;
-  } catch (err) {
+    snapshot = typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch {
     return Response.json(
       { error: "Corrupt snapshot data" },
       { status: 500 }
     );
   }
 
-  // Basic shape validation
-  if (
-    !latest ||
-    !Array.isArray(latest.ideas) ||
-    !latest.mode
-  ) {
+  // 🔑 CRITICAL FIX:
+  // Frontend expects an ARRAY, not an object
+  if (!Array.isArray(snapshot.ideas)) {
     return Response.json(
       { error: "Invalid snapshot format" },
       { status: 500 }
     );
   }
 
-  return Response.json(latest, { status: 200 });
+  return Response.json(snapshot.ideas, { status: 200 });
 };
