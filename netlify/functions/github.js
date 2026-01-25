@@ -1,19 +1,31 @@
 export async function getGithubSignals() {
-  const res = await fetch(
-    "https://api.github.com/search/issues?q=label:help+wanted+state:open&per_page=10",
-    {
-      headers: {
-        "User-Agent": "tech-murmurs"
-      }
+  const query = `
+    language:javascript
+    ("missing" OR "wish there was" OR "hard to" OR "no tool")
+    in:body
+    is:issue
+    is:open
+  `;
+
+  const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
+    query
+  )}&sort=updated&order=desc&per_page=10`;
+
+  const res = await fetch(url, {
+    headers: {
+      "Accept": "application/vnd.github+json"
     }
-  );
+  });
+
+  if (!res.ok) return [];
 
   const data = await res.json();
 
-  return (data.items || []).map(issue => ({
+  return data.items.map(item => ({
     type: "github",
-    name: "GitHub Issue",
-    url: issue.html_url,
-    text: issue.title + " — " + (issue.body || "").slice(0, 300)
+    title: item.title,
+    text: item.body || "",
+    url: item.html_url,
+    repo: item.repository_url
   }));
 }
