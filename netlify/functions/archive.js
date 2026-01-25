@@ -8,7 +8,7 @@ export default async () => {
     process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN;
 
   if (!siteID || !token) {
-    return Response.json([], { status: 200 });
+    return Response.json([]);
   }
 
   const store = getStore({
@@ -17,10 +17,18 @@ export default async () => {
     token
   });
 
-  const latest = await store.get("latest");
-  if (!latest) {
+  const raw = await store.get("latest");
+
+  if (!raw) {
     return Response.json([]);
   }
 
-  return Response.json([latest]);
+  let snapshot;
+  try {
+    snapshot = typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch {
+    return Response.json([]);
+  }
+
+  return Response.json([snapshot]);
 };
