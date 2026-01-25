@@ -1,3 +1,6 @@
+export const config = {
+  schedule: "@daily"
+};
 import { getStore } from "@netlify/blobs";
 
 /**
