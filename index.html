@@ -456,7 +456,18 @@ if (banner) {
     : "Sample data mode — live signals unavailable.";
 }
 
-if (!ideas.length) return;
+if (!ideas.length) {
+  container.innerHTML = `
+    <div class="quest">
+      <h2>No signals available</h2>
+      <div class="section">
+        <div class="section-title">System Status</div>
+        <div>Live sources responded, but no usable ideas were synthesized.</div>
+      </div>
+    </div>
+  `;
+  return;
+}
     
     container.innerHTML = ideas.map(q => `
       <div class="quest">
