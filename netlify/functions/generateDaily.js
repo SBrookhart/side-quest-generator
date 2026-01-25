@@ -1,112 +1,191 @@
 import { getStore } from "@netlify/blobs";
-import { getGithubSignals } from "./github.js";
-import { getHackathonSignals } from "./hackathons.js";
-import { getTwitterSignals } from "./twitter.js";
-import { getRoadmapSignals } from "./roadmaps.js";
+import getGitHubSignals from "./github.js";
+import getHackathonSignals from "./hackathons.js";
+import getTwitterSignals from "./twitter.js";
+import getRoadmapSignals from "./roadmaps.js";
 
-const WINDOW_DAYS = 14;
+const MAX_IDEAS = 5;
+const SIGNAL_WINDOW_DAYS = 14;
 
-function normalize(text) {
-  return text
-    .toLowerCase()
-    .replace(/https?:\/\/\S+/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+/* ---------- helpers ---------- */
+
+function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
 }
 
-function inferTheme(text) {
-  if (/monitor|observe|debug/.test(text)) return "observability";
-  if (/missing|wish|hard to|no tool/.test(text)) return "tooling gap";
-  if (/upgrade|release|breaking/.test(text)) return "protocol churn";
-  if (/governance|vote|dao/.test(text)) return "governance";
-  return "developer friction";
+function withinWindow(signal) {
+  return new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
-function inferDifficulty(count) {
-  if (count <= 2) return "Easy";
-  if (count <= 4) return "Medium";
-  return "Hard";
+function clamp(arr, n) {
+  return arr.slice(0, n);
 }
 
-export default async function handler() {
-  const siteID = process.env.NETLIFY_SITE_ID;
-  const token = process.env.NETLIFY_AUTH_TOKEN;
-  const store = getStore({ name: "tech-murmurs", siteID, token });
+function inferDifficulty(sourceCount) {
+  if (sourceCount >= 5) return "Hard";
+  if (sourceCount >= 3) return "Medium";
+  return "Easy";
+}
 
-  const today = new Date().toISOString().slice(0, 10);
-  const cutoff =
-    Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000;
+/**
+ * Very simple clustering heuristic:
+ * group by overlapping keywords
+ * (transparent + predictable on purpose)
+ */
+function clusterSignals(signals) {
+  const clusters = [];
 
-  // 1️⃣ Collect rolling signals
-  let signals = [
-    ...(await getGithubSignals()),
-    ...(await getHackathonSignals()),
-    ...(await getTwitterSignals()),
-    ...(await getRoadmapSignals())
-  ].filter(
-    s => new Date(s.timestamp).getTime() >= cutoff
-  );
+  for (const signal of signals) {
+    let placed = false;
 
-  // Hard fallback: never empty
-  if (!signals.length) {
-    signals = [
-      {
-        type: "github",
-        text: "Builders repeatedly mention missing tooling.",
-        url: "https://github.com",
-        timestamp: new Date().toISOString()
+    for (const cluster of clusters) {
+      if (
+        cluster.keywords.some(k =>
+          signal.text.toLowerCase().includes(k)
+        )
+      ) {
+        cluster.signals.push(signal);
+        placed = true;
+        break;
       }
-    ];
+    }
+
+    if (!placed) {
+      const keywords = signal.text
+        .toLowerCase()
+        .split(/\W+/)
+        .filter(w => w.length > 5)
+        .slice(0, 5);
+
+      clusters.push({
+        keywords,
+        signals: [signal]
+      });
+    }
   }
 
-  // 2️⃣ Cluster
-  const clusters = {};
-  for (const s of signals) {
-    const theme = inferTheme(normalize(s.text));
-    if (!clusters[theme]) clusters[theme] = [];
-    clusters[theme].push(s);
-  }
+  return clusters;
+}
 
-  // 3️⃣ Pick top 5 clusters
-  let selected = Object.values(clusters)
-    .sort((a, b) => b.length - a.length)
-    .slice(0, 5);
-
-  // Ensure exactly 5
-  while (selected.length < 5) {
-    selected.push(selected[0]);
-  }
-
-  // 4️⃣ Synthesize ideas
-  const ideas = selected.map(cluster => ({
-    title: "Unclaimed Builder Opportunity",
-    murmur:
-      "Multiple independent signals point to a recurring friction that builders keep encountering.",
-    quest:
-      "Design a small, focused tool or workflow that directly reduces this repeated pain.",
-    value:
-      "Turns scattered frustration into a concrete, shippable side quest.",
-    difficulty: inferDifficulty(cluster.length),
-    sources: cluster.map(s => ({
-      type: s.type,
-      name:
-        s.type === "github"
-          ? "GitHub"
-          : s.type === "rss"
-          ? "Hackathon"
-          : "X",
-      url: s.url
-    }))
+function synthesizeIdea(cluster) {
+  const sources = cluster.signals.map(s => ({
+    type: s.type,
+    name: s.type === "twitter"
+      ? "X"
+      : s.type === "github"
+        ? "GitHub"
+        : s.type === "rss"
+          ? "RSS"
+          : "Source",
+    url: s.url
   }));
 
-  const snapshot = {
-    date: today,
+  return {
+    title: "Unclaimed Builder Opportunity",
+    murmur:
+      "Multiple independent signals point to the same unresolved friction, but no clear owner has emerged.",
+    quest:
+      "Design a narrowly scoped tool or workflow that resolves this recurring pain without over-engineering.",
+    value:
+      "Converts ambient, repeated frustration into a concrete, shippable side project.",
+    difficulty: inferDifficulty(sources.length),
+    sources
+  };
+}
+
+/* ---------- handler ---------- */
+
+export default async function handler(request) {
+  const store = getStore({
+    name: "tech-murmurs",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_AUTH_TOKEN
+  });
+
+  const force =
+    new URL(request.url).searchParams.get("force") === "true";
+
+  /* ---------- reuse existing snapshot unless forced ---------- */
+  if (!force) {
+    const existing = await store.get("latest");
+    if (existing) {
+      return Response.json(JSON.parse(existing));
+    }
+  }
+
+  /* ---------- ingest signals ---------- */
+  let signals = [];
+
+  try {
+    const results = await Promise.allSettled([
+      getGitHubSignals(),
+      getHackathonSignals(),
+      getTwitterSignals(),
+      getRoadmapSignals()
+    ]);
+
+    results.forEach(r => {
+      if (r.status === "fulfilled" && Array.isArray(r.value)) {
+        signals.push(...r.value);
+      }
+    });
+  } catch (e) {
+    console.error("Signal ingestion error:", e);
+  }
+
+  /* ---------- rolling window ---------- */
+  signals = signals.filter(withinWindow);
+
+  /* ---------- hard guarantee: never empty ---------- */
+  if (!signals.length) {
+    return Response.json({
+      mode: "sample",
+      ideas: []
+    });
+  }
+
+  /* ---------- cluster then synthesize ---------- */
+  const clusters = clusterSignals(signals);
+
+  const ideas = clamp(
+    clusters.map(synthesizeIdea),
+    MAX_IDEAS
+  );
+
+  /* ---------- hard guarantee: always 5 ideas ---------- */
+  while (ideas.length < MAX_IDEAS) {
+    ideas.push({
+      title: "Unclaimed Builder Opportunity",
+      murmur:
+        "Signals indicate an unresolved need that has not yet been claimed by a dedicated builder.",
+      quest:
+        "Explore a small, focused build that resolves this recurring friction.",
+      value:
+        "Turns repeated ambient pain into something concrete and shippable.",
+      difficulty: "Easy",
+      sources: [
+        {
+          type: "github",
+          name: "Fallback Signal",
+          url: "https://github.com"
+        }
+      ]
+    });
+  }
+
+  /* ---------- persist snapshot ---------- */
+  const today = new Date().toISOString().slice(0, 10);
+
+  const payload = {
     mode: "live",
+    date: today,
     ideas
   };
 
-  await store.set("latest", JSON.stringify(snapshot));
-  await store.set(`daily-${today}`, JSON.stringify(snapshot));
+  await store.set("latest", JSON.stringify(payload));
+  await store.set(`daily-${today}`, JSON.stringify(payload));
 
-  return Response.json(snapshot);
+  return Response.json(payload);
 }
