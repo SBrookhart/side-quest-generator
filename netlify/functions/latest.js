@@ -19,18 +19,45 @@ export default async () => {
     token
   });
 
-  const latest = await store.get("latest");
+  let raw;
+  try {
+    raw = await store.get("latest");
+  } catch (err) {
+    return Response.json(
+      { error: "Failed to read latest snapshot" },
+      { status: 500 }
+    );
+  }
 
-  if (!latest) {
+  if (!raw) {
     return Response.json(
       { error: "No ideas published yet." },
       { status: 404 }
     );
   }
 
-  return new Response(latest, {
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
+  let latest;
+  try {
+    // Handle stringified JSON or objects
+    latest = typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch (err) {
+    return Response.json(
+      { error: "Corrupt snapshot data" },
+      { status: 500 }
+    );
+  }
+
+  // Basic shape validation
+  if (
+    !latest ||
+    !Array.isArray(latest.ideas) ||
+    !latest.mode
+  ) {
+    return Response.json(
+      { error: "Invalid snapshot format" },
+      { status: 500 }
+    );
+  }
+
+  return Response.json(latest, { status: 200 });
 };
