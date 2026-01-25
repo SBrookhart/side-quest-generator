@@ -7,7 +7,7 @@ import getRoadmapSignals from "./roadmaps.js";
 const MAX_IDEAS = 5;
 const WINDOW_DAYS = 14;
 
-/* ---------- helpers ---------- */
+/* ---------------- helpers ---------------- */
 
 function daysAgo(n) {
   const d = new Date();
@@ -15,23 +15,58 @@ function daysAgo(n) {
   return d;
 }
 
+function withinWindow(s) {
+  return new Date(s.date) >= daysAgo(WINDOW_DAYS);
+}
+
+function uniqBy(arr, keyFn) {
+  const seen = new Set();
+  return arr.filter(item => {
+    const k = keyFn(item);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
 function inferDifficulty(n) {
-  if (n >= 4) return "Hard";
-  if (n >= 2) return "Medium";
+  if (n >= 5) return "Hard";
+  if (n >= 3) return "Medium";
   return "Easy";
 }
 
+/**
+ * Cluster by:
+ * - source type
+ * - repo / domain
+ * - repeated topic words
+ */
 function clusterSignals(signals) {
   const clusters = [];
 
   for (const s of signals) {
-    const key = s.text.toLowerCase().slice(0, 80);
+    const domain = (() => {
+      try {
+        return new URL(s.url).hostname.replace("www.", "");
+      } catch {
+        return "unknown";
+      }
+    })();
 
-    let cluster = clusters.find(c => c.key === key);
+    let cluster = clusters.find(c =>
+      c.type === s.type &&
+      c.domain === domain
+    );
+
     if (!cluster) {
-      cluster = { key, signals: [] };
+      cluster = {
+        type: s.type,
+        domain,
+        signals: []
+      };
       clusters.push(cluster);
     }
+
     cluster.signals.push(s);
   }
 
@@ -42,8 +77,8 @@ function synthesize(cluster) {
   const sources = cluster.signals.map(s => ({
     type: s.type,
     name:
-      s.type === "github" ? "GitHub" :
       s.type === "twitter" ? "X" :
+      s.type === "github" ? "GitHub" :
       s.type === "rss" ? "RSS" :
       "Source",
     url: s.url
@@ -52,76 +87,99 @@ function synthesize(cluster) {
   return {
     title: "Unclaimed Builder Opportunity",
     murmur:
-      "Multiple independent signals point to an unresolved workflow or missing primitive.",
+      "Multiple independent builders are circling the same unresolved friction, but no focused solution has emerged yet.",
     quest:
-      "Build a narrowly scoped tool that resolves this specific friction without becoming a platform.",
+      "Design a narrowly scoped tool or workflow that directly resolves this recurring pain without over-engineering.",
     value:
-      "Turns repeated, low-level frustration into a concrete side project someone can actually ship.",
+      "Transforms scattered, repeated frustration into a concrete side project someone can actually ship.",
     difficulty: inferDifficulty(sources.length),
     sources
   };
 }
 
-/* ---------- handler ---------- */
+/* ---------------- handler ---------------- */
 
-export default async function handler(req) {
+export default async function handler(request) {
   const store = getStore({
     name: "tech-murmurs",
     siteID: process.env.NETLIFY_SITE_ID,
     token: process.env.NETLIFY_AUTH_TOKEN
   });
 
+  const force =
+    new URL(request.url).searchParams.get("force") === "true";
+
+  if (!force) {
+    const cached = await store.get("latest");
+    if (cached) {
+      return Response.json(JSON.parse(cached));
+    }
+  }
+
+  /* ---------- ingest ---------- */
   let signals = [];
 
-  try {
-    const results = await Promise.allSettled([
-      getGitHubSignals(),
-      getHackathonSignals(),
-      getTwitterSignals(),
-      getRoadmapSignals()
-    ]);
+  const results = await Promise.allSettled([
+    getGitHubSignals(),
+    getHackathonSignals(),
+    getTwitterSignals(),
+    getRoadmapSignals()
+  ]);
 
-    results.forEach(r => {
-      if (r.status === "fulfilled") signals.push(...r.value);
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  results.forEach(r => {
+    if (r.status === "fulfilled" && Array.isArray(r.value)) {
+      signals.push(...r.value);
+    }
+  });
 
-  const cutoff = daysAgo(WINDOW_DAYS);
-  signals = signals.filter(s => new Date(s.date) >= cutoff);
+  /* ---------- normalize ---------- */
+  signals = signals
+    .filter(withinWindow)
+    .filter(s => s.text && s.url);
 
-  // 🚑 Absolute fallback: synthesize from any signal at all
+  signals = uniqBy(signals, s => `${s.type}:${s.url}`);
+
   if (!signals.length) {
-    signals = [{
-      type: "github",
-      text: "Repeated feature requests across repositories with no owner",
-      url: "https://github.com",
-      date: new Date().toISOString()
-    }];
+    return Response.json({
+      mode: "sample",
+      ideas: []
+    });
   }
 
+  /* ---------- cluster + synthesize ---------- */
   const clusters = clusterSignals(signals);
-  const ideas = clusters.slice(0, MAX_IDEAS).map(synthesize);
 
-  // 🔒 HARD GUARANTEE
+  let ideas = clusters.map(synthesize);
+
+  /* ---------- guarantee 5 ideas ---------- */
   while (ideas.length < MAX_IDEAS) {
+    const seed = signals[Math.floor(Math.random() * signals.length)];
     ideas.push({
       title: "Unclaimed Builder Opportunity",
-      murmur: "A recurring gap exists but no clear owner has emerged.",
-      quest: "Prototype a small tool to test whether this pain is real.",
-      value: "Creates clarity around whether a problem is worth solving.",
+      murmur:
+        "A recurring pain keeps surfacing in public discussions, but no clear owner has stepped in yet.",
+      quest:
+        "Build a minimal experiment to test whether this friction is worth deeper investment.",
+      value:
+        "Creates a low-risk entry point into a real, observed builder need.",
       difficulty: "Easy",
       sources: [{
-        type: "github",
-        name: "GitHub",
-        url: "https://github.com"
+        type: seed.type,
+        name: seed.type === "twitter" ? "X" : "Source",
+        url: seed.url
       }]
     });
   }
 
+  ideas = ideas.slice(0, MAX_IDEAS);
+
   const today = new Date().toISOString().slice(0, 10);
-  const payload = { mode: "live", date: today, ideas };
+
+  const payload = {
+    mode: "live",
+    date: today,
+    ideas
+  };
 
   await store.set("latest", JSON.stringify(payload));
   await store.set(`daily-${today}`, JSON.stringify(payload));
