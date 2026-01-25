@@ -1,21 +1,21 @@
 import { getStore } from "@netlify/blobs";
 import { getGithubSignals } from "./github.js";
+import { getTwitterSignals } from "./twitter.js";
 
-/**
- * Convert a GitHub signal into a Tech Murmurs side quest
- */
+/* ---------- Synthesizers ---------- */
+
 function synthesizeGithubIdea(signal) {
   return {
     title: signal.title.slice(0, 80),
 
     murmur:
-      "A recurring developer pain point surfaced in an open-source issue, suggesting friction that hasn’t been resolved upstream.",
+      "A developer surfaced a concrete pain point in an open-source issue that hasn’t been resolved upstream.",
 
     quest:
-      "Build a lightweight, human-friendly layer that addresses the core confusion or missing abstraction described in the issue — without requiring changes to the upstream project.",
+      "Build a lightweight abstraction, explainer, or helper tool that resolves the confusion described — without modifying the core project.",
 
     value:
-      "Turns an isolated developer complaint into a reusable pattern or tool that lowers friction for others encountering the same problem.",
+      "Turns an isolated complaint into a reusable fix that saves future developers time and frustration.",
 
     difficulty: "Medium",
 
@@ -28,6 +28,33 @@ function synthesizeGithubIdea(signal) {
     ]
   };
 }
+
+function synthesizeTwitterIdea(signal) {
+  return {
+    title: signal.text.slice(0, 60).replace(/\n/g, "") + "…",
+
+    murmur:
+      "A builder publicly articulated a missing tool or workflow — not as a roadmap, but as frustration.",
+
+    quest:
+      "Build a small, opinionated prototype that directly answers the unmet need expressed in the post.",
+
+    value:
+      "Captures intent before it hardens into products, thinkpieces, or VC decks.",
+
+    difficulty: "Easy",
+
+    sources: [
+      {
+        type: "twitter",
+        name: "X Post",
+        url: signal.url
+      }
+    ]
+  };
+}
+
+/* ---------- Generator ---------- */
 
 export default async function generateDaily(req) {
   const siteID = process.env.NETLIFY_SITE_ID;
@@ -60,93 +87,95 @@ export default async function generateDaily(req) {
     }
   }
 
-  /**
-   * 1. Editorial baseline (ALWAYS present)
-   */
-  const editorialIdeas = [
+  /* ---------- Editorial Baseline ---------- */
+
+  let ideas = [
     {
       title: "The Market Has Feelings",
       murmur:
         "Crypto discourse oscillates between euphoria and despair, but that emotional movement is rarely made legible.",
       quest:
-        "Build a real-time emotional dashboard that translates crypto discourse into a simple, human-readable mood index.",
+        "Build a real-time emotional dashboard that translates crypto discourse into a simple mood index.",
       value:
-        "Helps builders and observers sense narrative momentum without trading or staring at price charts.",
+        "Helps people sense narrative momentum without staring at prices.",
       difficulty: "Easy",
       sources: []
     },
     {
       title: "Crypto Urban Legends",
       murmur:
-        "On-chain myths and memes persist long after their origins are forgotten or misattributed.",
+        "On-chain myths persist long after their origins are forgotten.",
       quest:
-        "Create a living, annotated museum of crypto myths, memes, and lore with sources and timelines.",
+        "Create a living, annotated museum of crypto myths and memes.",
       value:
-        "Preserves cultural memory while reducing misinformation and folklore drift.",
+        "Preserves cultural memory while reducing misinformation.",
       difficulty: "Easy",
       sources: []
     },
     {
       title: "If Crypto Twitter Were a Person",
       murmur:
-        "Collective behavior on crypto Twitter often feels like a single, volatile personality.",
+        "Collective behavior often feels like a single volatile personality.",
       quest:
-        "Build an AI character that embodies crypto Twitter’s collective voice using live discourse.",
+        "Build an AI character powered by live crypto discourse.",
       value:
-        "Turns chaotic sentiment into something legible, playful, and introspective.",
+        "Turns chaotic sentiment into something legible and playful.",
       difficulty: "Medium",
       sources: []
     },
     {
       title: "On-Chain Weather Channel",
       murmur:
-        "Network conditions are difficult for non-technical users to intuit in real time.",
+        "Network conditions are unintuitive to non-technical users.",
       quest:
-        "Visualize on-chain activity like a weather forecast — congestion, calm, storms, and pressure fronts.",
+        "Visualize on-chain activity like a weather forecast.",
       value:
-        "Improves comprehension of network conditions without dashboards or jargon.",
+        "Improves comprehension without dashboards.",
       difficulty: "Medium",
       sources: []
     },
     {
       title: "Build-A-Protocol Simulator",
       murmur:
-        "Protocol design is opaque and intimidating to newcomers.",
+        "Protocol design is opaque to newcomers.",
       quest:
-        "Create a sandbox that lets users simulate protocol tradeoffs and design decisions visually.",
+        "Create a sandbox for simulating protocol tradeoffs.",
       value:
-        "Lowers the barrier to systems thinking and protocol literacy.",
+        "Lowers the barrier to systems thinking.",
       difficulty: "Hard",
       sources: []
     }
   ];
 
-  /**
-   * 2. Controlled GitHub augmentation (OPTION B)
-   * Append at most ONE high-signal GitHub idea
-   */
+  /* ---------- Controlled Augmentation ---------- */
+
   try {
     const githubSignals = await getGithubSignals();
-
-    const strongSignal = githubSignals.find(
+    const strongGithub = githubSignals.find(
       s => (s.text || "").length > 300
     );
 
-    if (strongSignal) {
-      editorialIdeas.push(
-        synthesizeGithubIdea(strongSignal)
-      );
+    if (strongGithub) {
+      ideas.push(synthesizeGithubIdea(strongGithub));
     }
-  } catch {
-    // Silent failure — editorial mode remains intact
-  }
+  } catch {}
 
-  /**
-   * 3. Final snapshot (HARD CAP at 5)
-   */
+  try {
+    const twitterSignals = await getTwitterSignals();
+    const strongTweet = twitterSignals.find(
+      t => t.text.length > 80
+    );
+
+    if (strongTweet) {
+      ideas.push(synthesizeTwitterIdea(strongTweet));
+    }
+  } catch {}
+
+  /* ---------- Final Snapshot ---------- */
+
   const snapshot = {
     mode: "editorial",
-    ideas: editorialIdeas.slice(0, 5)
+    ideas: ideas.slice(0, 5)
   };
 
   await store.set("latest", JSON.stringify(snapshot));
