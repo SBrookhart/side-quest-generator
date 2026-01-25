@@ -66,6 +66,7 @@
       align-items: center;
       gap: 1rem;
       flex-wrap: wrap;
+      margin-top: 1.5rem;
     }
 
     .nav a {
@@ -82,21 +83,46 @@
       text-decoration: none;
     }
 
+    .nav a:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
     .legend {
       display: flex;
-      gap: 0.8rem;
-      margin-left: auto;
-      font-size: 0.7rem;
+      gap: 1rem;
+      font-size: 0.75rem;
       color: var(--muted);
       align-items: center;
       flex-wrap: wrap;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
     }
 
-    .legend span {
+    .legend-label {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6b7280;
+    }
+
+    .legend-item {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.4rem;
     }
+
+    .legend-pill {
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.65rem;
+      color: #020617;
+    }
+
+    .legend-pill.easy { background: var(--easy); }
+    .legend-pill.medium { background: var(--medium); }
+    .legend-pill.hard { background: var(--hard); }
 
     main {
       max-width: 1100px;
@@ -152,6 +178,26 @@
     .medium { background: var(--medium); }
     .hard { background: var(--hard); }
 
+    .sources {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .sources a {
+      color: var(--muted);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+    }
+
+    .sources a:hover {
+      color: var(--accent);
+    }
+
     footer {
       border-top: 1px solid var(--border);
       padding: 2rem;
@@ -166,6 +212,14 @@
       font-size: 0.85rem;
       color: var(--muted);
     }
+
+    @media (max-width: 768px) {
+      .legend {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
   </style>
 </head>
 
@@ -177,13 +231,22 @@
 
   <div class="nav">
     <a href="index.html"><i data-lucide="arrow-left"></i> Back to Today</a>
+  </div>
 
-    <div class="legend">
-      <strong>Legend</strong>
-      <span><span class="difficulty easy">Easy</span> approachable, playful, minimal setup</span>
-      <span><span class="difficulty medium">Medium</span> some glue code, light APIs, light thinking</span>
-      <span><span class="difficulty hard">Hard</span> ambitious, multi-source, deeper systems thinking</span>
-    </div>
+  <div class="legend">
+    <span class="legend-label">Legend</span>
+    <span class="legend-item">
+      <span class="legend-pill easy">Easy</span>
+      <span>Quick build, minimal setup</span>
+    </span>
+    <span class="legend-item">
+      <span class="legend-pill medium">Medium</span>
+      <span>Some glue code, light APIs</span>
+    </span>
+    <span class="legend-item">
+      <span class="legend-pill hard">Hard</span>
+      <span>Deep rabbit hole, research-heavy</span>
+    </span>
   </div>
 </header>
 
@@ -237,16 +300,23 @@
               <h3>${q.title}</h3>
 
               <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-              ${q.murmur}
+              <div>${q.murmur}</div>
 
               <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-              ${q.quest}
+              <div>${q.quest}</div>
 
-              <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
-              ${q.value}
+              <div class="subhead"><i data-lucide="sparkles"></i> For What It's Worth → Why it's worth your energy</div>
+              <div>${q.value}</div>
 
               <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-              ${q.signals}
+              <div class="sources">
+                ${(q.sources || []).map(s => `
+                  <a href="${s.url}" target="_blank">
+                    <i data-lucide="${s.type === 'github' ? 'github' : s.type === 'twitter' ? 'twitter' : 'rss'}"></i>
+                    ${s.name}
+                  </a>
+                `).join("")}
+              </div>
 
               <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
             </div>
