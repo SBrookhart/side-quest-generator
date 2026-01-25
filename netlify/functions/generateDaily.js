@@ -1,6 +1,6 @@
 import { getStore } from "@netlify/blobs";
 
-export default async () => {
+export default async (request) => {
   /* ------------------------------------------------------------------
      Environment
   ------------------------------------------------------------------ */
@@ -31,24 +31,27 @@ export default async () => {
   });
 
   /* ------------------------------------------------------------------
-     Date + keying
+     Date + override handling
   ------------------------------------------------------------------ */
 
   const today = new Date().toISOString().slice(0, 10);
   const key = `daily/${today}`;
 
-  // Prevent accidental re-generation for the same day
+  const url = new URL(request.url);
+  const force = url.searchParams.get("force") === "true";
+
   const existing = await store.get(key);
-  if (existing) {
+
+  if (existing && !force) {
     return Response.json({
       status: "already-generated",
-      date: today
+      date: today,
+      hint: "Add ?force=true to regenerate"
     });
   }
 
   /* ------------------------------------------------------------------
-     Snapshot (sample — intentionally premium + vibe-coder friendly)
-     This will later be replaced by live synthesis logic
+     Snapshot (sample, premium, vibe-coder friendly)
   ------------------------------------------------------------------ */
 
   const snapshot = {
@@ -65,8 +68,8 @@ export default async () => {
           "Build a lightweight narrative layer that translates raw error messages or dense documentation into clear, human explanations that describe what happened, why it happened, and what to try next.",
 
         worth: [
-          "High-empathy project with immediate DX impact",
-          "Excellent playground for language-first UX and AI summarization",
+          "High-empathy DX improvement with immediate value",
+          "Great playground for language-first UX and AI summarization",
           "Easy to scope as a browser extension, CLI wrapper, or docs overlay"
         ],
 
@@ -85,7 +88,7 @@ export default async () => {
   };
 
   /* ------------------------------------------------------------------
-     Persistence (CRITICAL: always JSON.stringify)
+     Persistence (ALWAYS JSON)
   ------------------------------------------------------------------ */
 
   await store.set(key, JSON.stringify(snapshot));
@@ -96,7 +99,7 @@ export default async () => {
   ------------------------------------------------------------------ */
 
   return Response.json({
-    status: "generated",
+    status: force ? "regenerated" : "generated",
     date: today
   });
 };
