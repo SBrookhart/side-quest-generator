@@ -1,138 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tech Murmurs — Methodology</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Methodology — Tech Murmurs</title>
 
-  <style>
-    body {
-      margin: 0;
-      background: #0b0d12;
-      color: #e6e9f0;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
-      line-height: 1.7;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;700&display=swap" rel="stylesheet">
 
-    main {
-      max-width: 900px;
-      margin: 4rem auto 6rem;
-      padding: 0 1.5rem;
-    }
+<style>
+:root {
+  --bg: #0b0d12;
+  --panel: #121622;
+  --border: #1f2538;
+  --text: #e8ebf3;
+  --muted: #9aa3b2;
+}
 
-    h1 {
-      font-size: 2.6rem;
-      margin-bottom: 2rem;
-    }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
-    h2 {
-      margin-top: 3rem;
-      font-size: 1.8rem;
-    }
+main {
+  max-width: 860px;
+  margin: 4rem auto;
+  padding: 0 2rem 4rem;
+}
 
-    h3 {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      color: #7aa2ff;
-    }
+h1 {
+  font-family: Fraunces, serif;
+  font-size: 3rem;
+  margin-bottom: 2rem;
+}
 
-    p {
-      max-width: 800px;
-    }
+h2 {
+  font-family: Fraunces, serif;
+  font-size: 2rem;
+  margin-top: 3.5rem;
+  margin-bottom: 1.2rem;
+}
 
-    ul {
-      margin-left: 1.2rem;
-    }
+h3 {
+  font-size: 1.1rem;
+  margin-top: 2.4rem;
+  margin-bottom: .6rem;
+  font-weight: 600;
+}
 
-    a {
-      color: #7aa2ff;
-      text-decoration: none;
-    }
-  </style>
+p {
+  line-height: 1.75;
+  color: #cfd5e6;
+  margin-bottom: 1.2rem;
+}
+
+ul {
+  margin-left: 1.4rem;
+  margin-bottom: 1.2rem;
+}
+
+li {
+  margin-bottom: .5rem;
+  line-height: 1.6;
+  color: #cfd5e6;
+}
+
+.section {
+  border-left: 2px solid var(--border);
+  padding-left: 1.6rem;
+  margin-top: 2.5rem;
+}
+
+.note {
+  color: var(--muted);
+  font-size: .9rem;
+}
+</style>
 </head>
 
 <body>
 
 <main>
 
-<h1>Tech Murmurs — Methodology</h1>
+<h1>Methodology</h1>
 
-<h2>What Does the Generator Do?</h2>
+<h2>What The Generator Does</h2>
 
-<h3>Purpose</h3>
 <p>
-Tech Murmurs is a creative discovery engine designed for vibe coders —
-builders who enjoy small, expressive, front-end-friendly projects.
-It turns unfinished public intent into approachable side quests.
+Tech Murmurs is an ideation and synthesis system designed to surface small, buildable opportunities from public builder activity. It listens for early signals — ideas that are being discussed, hinted at, or partially articulated — before they harden into roadmaps, products, or narratives.
 </p>
 
-<h3>Core Insight</h3>
 <p>
-Most ideas fail not because they’re bad, but because they’re buried,
-indirect, or framed in intimidating language.
-Tech Murmurs translates how builders talk into how builders build.
+The system draws from places where builders naturally express intent: open-source issue threads, hackathon prompts, protocol updates, and public developer conversations. These sources are chosen not for volume, but for proximity to real, unfinished work.
 </p>
 
-<h3>The Side Quest Model</h3>
 <p>
-Ideas are framed as optional, bounded explorations — not mandates.
-Each is survivable if abandoned and valuable even when incomplete.
+Rather than treating every signal as equally meaningful, Tech Murmurs looks for specific expressions of friction or absence. Language such as “missing,” “wish there was,” “no tool for,” or recurring feature requests are treated as higher-signal than general commentary. Vague or speculative input is intentionally ignored.
 </p>
 
-<h3>Editorial Curation</h3>
 <p>
-The generator intentionally excludes deep infrastructure, migrations,
-and correctness-critical work. It optimizes for clarity, momentum,
-and creative confidence.
+Each signal is then distilled into a constrained “side quest”: a small, concrete project idea that can plausibly be explored by an individual or small team. Side quests are designed to be scoped, actionable, and incomplete by design — starting points rather than prescriptions.
 </p>
 
-<h2>How Does the Generator Work?</h2>
-
-<h3>Architecture</h3>
 <p>
-Tech Murmurs is a client-rendered web application supported by
-serverless ingestion functions that safely proxy public data sources.
+Tech Murmurs publishes ideas as a daily snapshot rather than a continuous feed. This is a deliberate choice. A fixed daily set preserves context, avoids recency bias, and makes it possible to review how certain needs emerge, fade, or recur over time.
 </p>
 
-<h3>Data Sources</h3>
+<p>
+When live sources are temporarily unavailable, the system falls back to a curated baseline of representative ideas. This ensures continuity while making the system’s state explicit to the reader.
+</p>
+
+<p>
+Tech Murmurs does not attempt to evaluate market size, adoption likelihood, or commercial success. It is not a recommendation engine. Its role is to make early, often-quiet signals visible — ideas waiting for someone to care enough to ship them.
+</p>
+
+<p>
+All inputs are public. Attribution is preserved through outbound links, and no private or user-restricted data is accessed.
+</p>
+
+<h2>How The Generator Works <span class="note">(For Transparency)</span></h2>
+
+<p>
+The sections below describe how the system operates at a technical level. They are included for transparency and auditability, not as a prerequisite for using the tool.
+</p>
+
+<div class="section">
+<h3>System Architecture</h3>
+<p>
+Tech Murmurs is a client-rendered web application backed by serverless ingestion functions. Data collection is performed via Netlify Functions, which proxy public APIs and feeds. This design allows the system to gather live signals while preventing credential exposure in the browser.
+</p>
+</div>
+
+<div class="section">
+<h3>Integrated Data Sources</h3>
+<p>
+Current integrations include the GitHub Search API (for open issues and repository activity), GitHub Releases (used as proxies for protocol roadmaps), and public hackathon feeds accessed via RSS. Each source is queried independently and normalized into a common structure before synthesis.
+</p>
+
+<p>
+Sources are treated as complementary rather than authoritative. No single platform is assumed to represent the full landscape of builder intent.
+</p>
+</div>
+
+<div class="section">
+<h3>Language Analysis &amp; Signal Identification</h3>
+<p>
+During ingestion, Tech Murmurs applies lightweight language analysis to distinguish actionable signals from general discussion. The goal is not semantic understanding or sentiment analysis, but the identification of explicit expressions of unmet need.
+</p>
+
+<p>
+Incoming text from issues, prompts, and posts is scanned for a small, evolving vocabulary of intent-bearing phrases. These include expressions that typically indicate absence, friction, or unfinished work, such as:
+</p>
+
 <ul>
-  <li>GitHub issues and repositories</li>
-  <li>Hackathon prompts and submissions</li>
-  <li>Public roadmaps and articles</li>
-  <li>Developer posts on X</li>
+  <li>“missing” or “lacking”</li>
+  <li>“wish there was” or “it would be great if”</li>
+  <li>“no tool for” or “hard to”</li>
+  <li>repeated feature requests across issues or discussions</li>
 </ul>
 
-<h3>Language Analysis</h3>
 <p>
-The system uses lightweight heuristics — not opaque AI models —
-to detect frustration, confusion, desire language, and repetition.
-Infra-heavy and maintenance-only signals are filtered out early.
+These phrases are treated as heuristic markers rather than definitive signals. Their presence increases the likelihood that a piece of text represents a genuine builder need, but does not automatically qualify it for inclusion.
 </p>
 
-<h3>Quest Derivation</h3>
 <p>
-Raw signals are translated into buildable shapes:
-confusion becomes explainers, invisibility becomes dashboards,
-and repetition becomes reference tools.
+In addition to phrase matching, the system considers contextual signals, such as:
 </p>
 
-<h3>Value Framing</h3>
+<ul>
+  <li>whether the statement appears in a problem description rather than commentary</li>
+  <li>whether similar requests appear across multiple sources or over time</li>
+  <li>whether the need is described with enough specificity to suggest a concrete build</li>
+</ul>
+
 <p>
-Each quest includes a “For What It’s Worth” section that reassures
-builders why the idea is safe, shippable, and low-regret.
+Text that is vague, speculative, or purely opinion-based is intentionally deprioritized. The system favors clarity over enthusiasm, and repetition over novelty.
 </p>
 
-<h3>Transparency</h3>
 <p>
-Signals are cited as context, not authority.
-Sources are shown openly, without implying determinism or prediction.
+This approach keeps the analysis transparent and interpretable. Rather than relying on opaque machine-learning models, Tech Murmurs uses simple, explainable heuristics that can be inspected, adjusted, and reasoned about as the system evolves.
+</p>
+</div>
+
+<div class="section">
+<h3>Transformation Pipeline</h3>
+<p>
+Raw inputs that pass initial filtering are transformed into a standardized side quest format. Each side quest includes:
 </p>
 
-<h3>Limitations</h3>
+<ul>
+  <li>the origin of the signal</li>
+  <li>the underlying problem being expressed</li>
+  <li>a proposed build or exploration direction</li>
+  <li>the intended audience</li>
+  <li>an estimated level of difficulty</li>
+</ul>
+
 <p>
-Tech Murmurs does not predict success, viability, or adoption.
-It exists to help builders notice what might be worth trying.
+This structure ensures consistency while leaving room for interpretation and creative implementation by builders.
 </p>
+</div>
+
+<div class="section">
+<h3>Snapshot &amp; Archival Logic</h3>
+<p>
+Rather than streaming signals continuously, Tech Murmurs publishes a fixed daily snapshot. This reduces noise, avoids recency bias, and creates a time-series archive that can be reviewed longitudinally to observe how certain needs persist, evolve, or disappear.
+</p>
+
+<p>
+Each day’s snapshot represents a point-in-time synthesis rather than a constantly updating feed.
+</p>
+</div>
+
+<div class="section">
+<h3>Failure Modes &amp; Fallbacks</h3>
+<p>
+If one or more live data sources fail due to rate limits, network errors, or upstream API changes, the system enters Sample Data Mode. In this state, representative ideas are shown in place of live signals, and the system’s status is explicitly surfaced in the interface.
+</p>
+
+<p>
+This behavior ensures continuity without masking system state or over-claiming real-time coverage.
+</p>
+</div>
+
+<div class="section">
+<h3>Scope &amp; Limitations</h3>
+<p>
+Tech Murmurs does not evaluate commercial viability, adoption likelihood, or technical feasibility. It does not attempt to predict outcomes or recommend specific paths forward.
+</p>
+
+<p>
+All inputs are public, and no private, gated, or user-identifiable data is accessed or inferred.
+</p>
+</div>
 
 </main>
 
