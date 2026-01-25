@@ -7,7 +7,7 @@ import getRoadmapSignals from "./roadmaps.js";
 const MAX_IDEAS = 5;
 const SIGNAL_WINDOW_DAYS = 14;
 
-/* ---------- helpers ---------- */
+/* ---------------- helpers ---------------- */
 
 function daysAgo(n) {
   const d = new Date();
@@ -15,64 +15,52 @@ function daysAgo(n) {
   return d;
 }
 
-// tolerate missing / malformed dates
 function withinWindow(signal) {
-  if (!signal.date) return true;
-  const d = new Date(signal.date);
-  if (isNaN(d.getTime())) return true;
-  return d >= daysAgo(SIGNAL_WINDOW_DAYS);
-}
-
-function clamp(arr, n) {
-  return arr.slice(0, n);
+  return signal?.date && new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
 function inferDifficulty(sourceCount) {
-  if (sourceCount >= 5) return "Hard";
+  if (sourceCount >= 6) return "Hard";
   if (sourceCount >= 3) return "Medium";
   return "Easy";
 }
 
 /**
- * Simple, explainable clustering:
- * overlap on uncommon keywords
+ * Transparent clustering:
+ * overlapping long keywords → same cluster
  */
 function clusterSignals(signals) {
   const clusters = [];
 
   for (const signal of signals) {
-    let placed = false;
+    const text = signal.text.toLowerCase();
 
-    for (const cluster of clusters) {
-      if (
-        cluster.keywords.some(k =>
-          signal.text.toLowerCase().includes(k)
-        )
-      ) {
-        cluster.signals.push(signal);
-        placed = true;
-        break;
-      }
+    let matched = clusters.find(c =>
+      c.keywords.some(k => text.includes(k))
+    );
+
+    if (matched) {
+      matched.signals.push(signal);
+      continue;
     }
 
-    if (!placed) {
-      const keywords = signal.text
-        .toLowerCase()
-        .split(/\W+/)
-        .filter(w => w.length > 5)
-        .slice(0, 5);
+    const keywords = text
+      .split(/\W+/)
+      .filter(w => w.length > 6)
+      .slice(0, 6);
 
-      clusters.push({
-        keywords,
-        signals: [signal]
-      });
-    }
+    clusters.push({
+      keywords,
+      signals: [signal]
+    });
   }
 
   return clusters;
 }
 
-function synthesizeIdea(cluster) {
+/* ---------------- AI synthesis ---------------- */
+
+async function synthesizeIdeaWithAI(cluster) {
   const sources = cluster.signals.map(s => ({
     type: s.type,
     name:
@@ -86,20 +74,76 @@ function synthesizeIdea(cluster) {
     url: s.url
   }));
 
-  return {
-    title: "Unclaimed Builder Opportunity",
-    murmur:
-      "Multiple independent signals point to the same unresolved friction, but no clear owner has emerged.",
-    quest:
-      "Design a narrowly scoped tool or workflow that resolves this recurring pain without over-engineering.",
-    value:
-      "Converts ambient, repeated frustration into a concrete, shippable side project.",
-    difficulty: inferDifficulty(sources.length),
-    sources
-  };
+  const prompt = `
+You are an experienced product thinker.
+
+Given the raw builder signals below, extract ONE concrete side-quest idea.
+
+Rules:
+- Do NOT summarize the inputs
+- Do NOT repeat phrases from the inputs
+- Infer the latent opportunity
+- Be specific and buildable
+- Output must feel like a fresh idea, not analysis
+
+Signals:
+${cluster.signals
+  .map((s, i) => `${i + 1}. ${s.text}`)
+  .join("\n")}
+
+Return JSON with:
+title
+murmur
+quest
+value
+`;
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: 0.7,
+        messages: [
+          { role: "system", content: "You synthesize early-stage product opportunities." },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
+
+    const json = await res.json();
+    const content = json.choices?.[0]?.message?.content;
+
+    const parsed = JSON.parse(content);
+
+    return {
+      ...parsed,
+      difficulty: inferDifficulty(sources.length),
+      sources
+    };
+  } catch (e) {
+    console.error("AI synthesis failed:", e);
+
+    // graceful fallback (still live, still valid)
+    return {
+      title: "Unclaimed Builder Opportunity",
+      murmur:
+        "Repeated signals suggest a gap that builders are circling but not yet owning.",
+      quest:
+        "Build a narrowly scoped tool that tests whether this friction is real and recurring.",
+      value:
+        "Turns weak but repeated signals into a concrete exploration.",
+      difficulty: inferDifficulty(sources.length),
+      sources
+    };
+  }
 }
 
-/* ---------- handler ---------- */
+/* ---------------- handler ---------------- */
 
 export default async function handler(request) {
   const store = getStore({
@@ -111,7 +155,6 @@ export default async function handler(request) {
   const force =
     new URL(request.url).searchParams.get("force") === "true";
 
-  /* ---------- reuse snapshot unless forced ---------- */
   if (!force) {
     const existing = await store.get("latest");
     if (existing) {
@@ -135,50 +178,38 @@ export default async function handler(request) {
     }
   });
 
-  /* ---------- rolling window (resilient) ---------- */
   signals = signals.filter(withinWindow);
 
-  /* ---------- cluster + synthesize ---------- */
-  const clusters = clusterSignals(signals);
-
-  let ideas = clamp(
-    clusters.map(synthesizeIdea),
-    MAX_IDEAS
-  );
-
-  /* ---------- hard guarantee: always 5 ideas ---------- */
-  let i = 0;
-  while (ideas.length < MAX_IDEAS && signals[i]) {
-    ideas.push(
-      synthesizeIdea({
-        signals: [signals[i]]
-      })
-    );
-    i++;
+  if (!signals.length) {
+    return Response.json({
+      mode: "sample",
+      ideas: []
+    });
   }
 
-  /* ---------- absolute fallback (still live) ---------- */
+  /* ---------- cluster → synthesize ---------- */
+  const clusters = clusterSignals(signals).slice(0, MAX_IDEAS);
+
+  const ideas = [];
+  for (const cluster of clusters) {
+    ideas.push(await synthesizeIdeaWithAI(cluster));
+  }
+
+  /* ---------- hard guarantee: always 5 ---------- */
   while (ideas.length < MAX_IDEAS) {
     ideas.push({
       title: "Unclaimed Builder Opportunity",
       murmur:
-        "A persistent gap exists in the ecosystem, but it remains underexplored by dedicated builders.",
+        "Signals point to an unresolved need that has not yet been claimed.",
       quest:
-        "Prototype a small, opinionated solution that tests whether this pain is real and recurring.",
+        "Explore a small, opinionated build to test this latent opportunity.",
       value:
-        "Transforms weak but repeated signals into a concrete starting point.",
+        "Creates momentum where there is currently ambiguity.",
       difficulty: "Easy",
-      sources: [
-        {
-          type: "github",
-          name: "GitHub",
-          url: "https://github.com"
-        }
-      ]
+      sources: ideas[0]?.sources || []
     });
   }
 
-  /* ---------- persist snapshot ---------- */
   const today = new Date().toISOString().slice(0, 10);
 
   const payload = {
