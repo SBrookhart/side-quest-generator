@@ -1,27 +1,23 @@
 import { getStore } from "@netlify/blobs";
 
-function generateIdeas(date) {
-  return {
-    date,
-    mode: "editorial",
-    ideas: Array.from({ length: 5 }).map((_, i) => ({
-      title: `Unclaimed Builder Opportunity`,
-      murmur:
-        "Builders repeatedly circle the same unresolved friction without a clear owner.",
-      quest:
-        "Create a narrowly scoped tool or workflow that resolves this specific recurring pain.",
-      value:
-        "Turns ambient frustration into a concrete, shippable side project.",
-      difficulty: ["Easy", "Medium", "Hard"][i % 3],
-      sources: [
-        {
-          type: "github",
-          name: "Seeded Archive",
-          url: "https://github.com"
-        }
-      ]
-    }))
-  };
+function makeIdeas(seedLabel) {
+  return Array.from({ length: 5 }).map((_, i) => ({
+    title: `Unclaimed Builder Opportunity`,
+    murmur:
+      "Public builder activity hints at an unresolved problem that hasn’t yet attracted a focused solution.",
+    quest:
+      "Prototype a small, opinionated tool to explore whether this need is real and recurring.",
+    value:
+      "Turns early, ambient intent into a concrete starting point.",
+    difficulty: ["Easy", "Medium", "Hard"][i % 3],
+    sources: [
+      {
+        type: "github",
+        name: seedLabel,
+        url: "https://github.com"
+      }
+    ]
+  }));
 }
 
 export default async function handler() {
@@ -31,14 +27,23 @@ export default async function handler() {
     token: process.env.NETLIFY_AUTH_TOKEN
   });
 
-  const days = ["2026-01-23", "2026-01-24"];
+  await store.set(
+    "daily-2026-01-23",
+    JSON.stringify({
+      date: "2026-01-23",
+      mode: "editorial",
+      ideas: makeIdeas("Seed 01-23")
+    })
+  );
 
-  for (const day of days) {
-    await store.set(
-      `daily-${day}`,
-      JSON.stringify(generateIdeas(day))
-    );
-  }
+  await store.set(
+    "daily-2026-01-24",
+    JSON.stringify({
+      date: "2026-01-24",
+      mode: "editorial",
+      ideas: makeIdeas("Seed 01-24")
+    })
+  );
 
-  return Response.json({ seeded: days });
+  return Response.json({ status: "archive seeded" });
 }
