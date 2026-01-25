@@ -1,14 +1,14 @@
 import { getStore } from "@netlify/blobs";
 
 export default async () => {
-  const siteID =
-    process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
-
-  const token =
-    process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN;
+  const siteID = process.env.NETLIFY_SITE_ID;
+  const token = process.env.NETLIFY_AUTH_TOKEN;
 
   if (!siteID || !token) {
-    return Response.json([]);
+    return Response.json(
+      { error: "Missing siteID or token" },
+      { status: 500 }
+    );
   }
 
   const store = getStore({
@@ -17,18 +17,40 @@ export default async () => {
     token
   });
 
-  const raw = await store.get("latest");
-
-  if (!raw) {
-    return Response.json([]);
-  }
-
-  let snapshot;
+  let listing;
   try {
-    snapshot = typeof raw === "string" ? JSON.parse(raw) : raw;
-  } catch {
-    return Response.json([]);
+    listing = await store.list();
+  } catch (err) {
+    return Response.json(
+      { error: "Failed to list archive blobs" },
+      { status: 500 }
+    );
   }
 
-  return Response.json([snapshot]);
+  const blobs = listing.blobs || [];
+
+  // Only include daily snapshots written as `daily-YYYY-MM-DD`
+  const dailyKeys = blobs
+    .map(b => b.key)
+    .filter(key => key.startsWith("daily-"));
+
+  const entries = [];
+
+  for (const key of dailyKeys) {
+    try {
+      const raw = await store.get(key);
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+
+      if (parsed?.ideas && parsed?.date) {
+        entries.push(parsed);
+      }
+    } catch {
+      // skip corrupt entries
+    }
+  }
+
+  // Sort newest → oldest
+  entries.sort((a, b) => b.date.localeCompare(a.date));
+
+  return Response.json({ days: entries }, { status: 200 });
 };
