@@ -5,7 +5,10 @@ export default async () => {
   const token = process.env.NETLIFY_AUTH_TOKEN;
 
   if (!siteID || !token) {
-    return Response.json({ error: "Missing credentials" }, { status: 500 });
+    return Response.json(
+      { error: "Missing siteID or token" },
+      { status: 500 }
+    );
   }
 
   const store = getStore({
@@ -14,10 +17,14 @@ export default async () => {
     token
   });
 
-  const keys = [];
-
-  for await (const key of store.list()) {
-    keys.push(key);
+  let keys;
+  try {
+    keys = await store.list();
+  } catch (err) {
+    return Response.json(
+      { error: "Failed to list blobs", detail: String(err) },
+      { status: 500 }
+    );
   }
 
   return Response.json({ keys });
