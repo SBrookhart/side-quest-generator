@@ -2,10 +2,11 @@
 
 export async function getHackathonSignals() {
   const feeds = [
-    "https://devpost.com/software/popular.rss"
+    "https://devpost.com/feed",
+    "https://mlh.io/rss"
   ];
 
-  const signals = [];
+  const results = [];
 
   for (const feed of feeds) {
     try {
@@ -14,45 +15,26 @@ export async function getHackathonSignals() {
 
       const text = await res.text();
 
-      const matches =
-        text.match(/<title>(.*?)<\/title>|<description>(.*?)<\/description>/gi) || [];
+      // very lightweight RSS scan (intentional)
+      const matches = [...text.matchAll(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g)];
 
-      for (const m of matches) {
-        const cleaned = m
-          .replace(/<\/?[^>]+(>|$)/g, "")
-          .toLowerCase();
-
-        if (
-          cleaned.includes("build") ||
-          cleaned.includes("challenge") ||
-          cleaned.includes("problem") ||
-          cleaned.includes("idea")
-        ) {
-          signals.push({
-            type: "hackathon",
-            name: "Hackathon Prompt",
-            text: cleaned.slice(0, 300),
-            url: feed
-          });
-        }
-      }
+      matches.slice(0, 5).forEach(m => {
+        results.push({
+          type: "rss",
+          name: "Hackathon",
+          text: m[1],
+          url: feed
+        });
+      });
     } catch {
       continue;
     }
   }
 
-  return signals.slice(0, 5);
+  return results;
 }
 
-// Netlify HTTP handler
 export default async function handler() {
-  try {
-    const signals = await getHackathonSignals();
-    return Response.json(signals, { status: 200 });
-  } catch {
-    return Response.json(
-      { error: "Hackathon ingestion failed" },
-      { status: 500 }
-    );
-  }
+  const signals = await getHackathonSignals();
+  return Response.json(signals);
 }
