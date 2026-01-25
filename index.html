@@ -3,84 +3,145 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
 <title>Tech Murmurs</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
   --bg: #0b0d12;
-  --card: #121622;
-  --text: #e6e9f0;
+  --panel: #121622;
+  --panel-soft: #151a2a;
+  --border: #1f2538;
+  --text: #e8ebf3;
   --muted: #9aa3b2;
-  --accent: #7aa2ff;
-  --border: #1e2333;
-  --sparkle: #f4d47c;
-  --warn: #f5c16c;
+  --accent: #8da2ff;
+  --spark: #f3d37a;
+  --warn-bg: rgba(243,211,122,.15);
 }
+
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
-  background: var(--bg);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #141a33 0%, transparent 60%),
+    radial-gradient(800px 400px at 90% 0%, #1b2342 0%, transparent 55%),
+    var(--bg);
   color: var(--text);
 }
+
 header {
-  max-width: 900px;
-  margin: 3rem auto 1rem;
-  padding: 0 1.5rem;
+  max-width: 980px;
+  margin: 4rem auto 2.5rem;
+  padding: 0 2rem;
 }
+
 h1 {
-  font-size: 3rem;
-  margin-bottom: .2rem;
+  font-family: Fraunces, serif;
+  font-size: 3.4rem;
+  letter-spacing: -.02em;
+  margin-bottom: .5rem;
 }
+
+.motto {
+  max-width: 720px;
+  font-size: 1.05rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+nav {
+  margin-top: 1.8rem;
+  display: flex;
+  gap: 1.2rem;
+}
+
 nav a {
+  padding: .55rem .9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-soft);
   color: var(--accent);
   text-decoration: none;
-  margin-right: 1.5rem;
+  font-size: .9rem;
 }
+
 #banner {
   display: none;
-  background: rgba(245,193,108,.15);
-  border: 1px solid rgba(245,193,108,.4);
-  padding: 1rem;
-  margin: 1rem 1.5rem;
-  border-radius: 10px;
-  color: var(--warn);
+  max-width: 980px;
+  margin: 0 auto 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 14px;
+  background: var(--warn-bg);
+  border: 1px solid rgba(243,211,122,.4);
+  color: var(--spark);
 }
+
 main {
-  max-width: 900px;
+  max-width: 980px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem 5rem;
 }
+
 .card {
-  background: linear-gradient(180deg,#121622,#0f1320);
+  background:
+    linear-gradient(180deg, #161c33, #0f1323);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 2.5rem;
+  border-radius: 22px;
+  padding: 2.4rem 2.6rem;
+  margin-bottom: 3rem;
 }
-.section-title {
+
+.card h2 {
+  font-family: Fraunces, serif;
+  font-size: 2rem;
+  margin-bottom: 1.6rem;
+}
+
+.section {
+  margin-bottom: 1.8rem;
+}
+
+.section-header {
   display: flex;
   align-items: center;
-  font-size: 1rem;
+  gap: .6rem;
   font-weight: 600;
-  margin-bottom: 0.4rem;
+  margin-bottom: .25rem;
 }
-.descriptor {
-  font-size: .8rem;
-  color: var(--muted);
+
+.section-desc {
   margin-left: 1.7rem;
-  margin-top: .2rem;
+  font-size: .78rem;
+  color: var(--muted);
 }
-ul {
+
+.section p, .section ul {
   margin-left: 1.7rem;
   margin-top: .6rem;
+  line-height: 1.55;
 }
-a.idea-link {
+
+.section ul {
+  padding-left: 1.2rem;
+}
+
+.section li {
+  margin-bottom: .4rem;
+}
+
+a.source {
   color: var(--accent);
   text-decoration: none;
 }
+
 footer {
   text-align: center;
-  padding: 2.5rem 1.5rem;
+  padding: 3rem 2rem 4rem;
   color: var(--muted);
   font-size: .85rem;
 }
@@ -93,108 +154,84 @@ footer {
   <h1>Tech Murmurs</h1>
   <div class="motto">
     Side-Quest Generator for Builders sits at the intersection of unmet needs,
-    unfinished ambition, and public signals. A quiet machine for turning ambient
-    internet intent into actionable mini-projects.
+    unfinished ambition, and public signals.
+    A quiet machine for turning ambient internet intent into actionable mini-projects.
   </div>
+
   <nav>
     <a href="archive.html">Archive</a>
     <a href="methodology.html">Methodology</a>
   </nav>
 </header>
 
-<div id="banner">⚠️ Live APIs are quiet — showing sample ideas.</div>
+<div id="banner">
+⚠️ Live signals were quiet or unavailable today.  
+You’re seeing a curated sample snapshot.
+</div>
+
 <main id="ideas"></main>
 
 <footer>
-Built quietly. Shipped deliberately.<br/>© 2026 Brookhart Labs
+Built quietly. Shipped deliberately.<br/>
+© 2026 Brookhart Labs
 </footer>
 
 <script>
-const SAMPLE = [
-  {
-    title: "Explain This Repo Like I’m New Here",
-    murmur: "Developers share repos assuming shared context; many wonder what they do.",
-    quest: "Build a tiny app that explains a GitHub repo in plain English and suggests a weekend build.",
-    worth: [
-      "No deep technical knowledge required",
-      "Useful even if imperfect",
-      "Translation over correctness"
-    ],
-    signals: [
-      {name:"GitHub", url:"https://github.com/search?q=confusing+readme&type=Issues"},
-      {name:"X", url:"https://x.com/search?q=what%20does%20this%20repo%20do"}
-    ]
-  },
-  {
-    title: "Why Is This So Hard to See?",
-    murmur: "People complain about data being buried or invisible across tools.",
-    quest: "Build a lightweight dashboard that surfaces what people say is hard to find.",
-    worth: [
-      "Visual UX does most of the work",
-      "Ambiguity clarifies design quickly",
-      "Great portfolio piece"
-    ],
-    signals: [
-      {name:"GitHub", url:"https://github.com/search?q=hard+to+find&type=Issues"},
-      {name:"X", url:"https://x.com/search?q=hard%20to%20see"}
-    ]
-  }
-];
+async function loadToday() {
+  const res = await fetch("/.netlify/functions/archive");
+  const days = await res.json();
 
-async function fetchAll() {
-  const urls = [
-    "/.netlify/functions/github",
-    "/.netlify/functions/hackathon",
-    "/.netlify/functions/roadmaps",
-    "/.netlify/functions/twitter"
-  ];
-  try {
-    const results = await Promise.all(urls.map(u=>fetch(u).then(r=>r.json())));
-    const flattened = results.flat();
-    if (!flattened.length) throw Error();
-    render(flattened.slice(0,5), false);
-  } catch {
-    document.getElementById("banner").style.display="block";
-    render(SAMPLE, true);
+  if (!days.length) return;
+
+  const today = days[0];
+  if (today.mode === "sample") {
+    document.getElementById("banner").style.display = "block";
   }
+
+  render(today.ideas);
 }
 
-function render(list, sample) {
-  const container = document.getElementById("ideas");
-  container.innerHTML = "";
-  list.forEach(i=>{
-    container.innerHTML += `
+function render(ideas) {
+  const root = document.getElementById("ideas");
+  root.innerHTML = "";
+
+  ideas.forEach(i => {
+    root.innerHTML += `
 <div class="card">
   <h2>${i.title}</h2>
 
   <div class="section">
-    <div class="section-title">🫧 Murmur</div>
-    <div class="descriptor">Why this exists</div>
+    <div class="section-header">🫧 Murmur</div>
+    <div class="section-desc">Why this exists</div>
     <p>${i.murmur}</p>
   </div>
 
   <div class="section">
-    <div class="section-title">🧭 Side Quest</div>
-    <div class="descriptor">What to build</div>
+    <div class="section-header">🧭 Side Quest</div>
+    <div class="section-desc">What to build</div>
     <p>${i.quest}</p>
   </div>
 
   <div class="section">
-    <div class="section-title">✨ For What It’s Worth</div>
-    <div class="descriptor">Why it’s worth your energy</div>
-    <ul>${i.worth.map(w=>`<li>${w}</li>`).join("")}</ul>
+    <div class="section-header">✨ For What It’s Worth</div>
+    <div class="section-desc">Why it’s worth your energy</div>
+    <ul>${i.worth.map(w => `<li>${w}</li>`).join("")}</ul>
   </div>
 
   <div class="section">
-    <div class="section-title">🧾 Signals Observed</div>
-    <div class="descriptor">Receipts, if you want them</div>
-    <ul>${i.signals.map(s=>`<li>Source: <a class="idea-link" href="${s.url}" target="_blank">${s.name}</a></li>`).join("")}</ul>
+    <div class="section-header">🧾 Signals Observed</div>
+    <div class="section-desc">Receipts, if you want them</div>
+    <ul>
+      ${i.signals.map(s =>
+        `<li>Source: <a class="source" href="${s.url}" target="_blank">${s.name}</a></li>`
+      ).join("")}
+    </ul>
   </div>
 </div>`;
   });
 }
 
-fetchAll();
+loadToday();
 </script>
 
 </body>
