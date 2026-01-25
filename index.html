@@ -442,9 +442,23 @@
     const data = await res.json();
     const container = document.getElementById("ideas");
 
-    if (!data || !data.ideas) return;
+    // 🔧 FIX: support both array + object formats
+    const ideas = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.ideas)
+        ? data.ideas
+        : [];
 
-    container.innerHTML = data.ideas.map(q => `
+const banner = document.querySelector(".banner");
+if (banner) {
+  banner.textContent = ideas.some(i => i.sources && i.sources.length)
+    ? "Live editorial signals detected."
+    : "Sample data mode — live signals unavailable.";
+}
+
+if (!ideas.length) return;
+    
+    container.innerHTML = ideas.map(q => `
       <div class="quest">
         <h2>${q.title}</h2>
 
@@ -462,7 +476,16 @@
           <div class="section-title">✨ For What It’s Worth → Why it’s worth your energy</div>
           <div>${q.value}</div>
         </div>
-
+<div class="section">
+  <div class="section-title">🧾 Signals Observed → Receipts, if you want them</div>
+  <div class="sources">
+    ${(q.sources || []).map(s => `
+      <a href="${s.url}" target="_blank">
+        <i data-lucide="${s.type}"></i> ${s.name}
+      </a>
+    `).join("")}
+  </div>
+</div>
         <div class="meta">
           <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
         </div>
