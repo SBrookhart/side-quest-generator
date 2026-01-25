@@ -37,10 +37,31 @@
       background: var(--bg);
     }
 
+    /* ===== TOP BANNER ===== */
+    .state-banner {
+      max-width: 1100px;
+      margin: 1.5rem auto 0;
+      border-radius: 14px;
+      padding: 0.9rem 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    .state-banner.live {
+      background: var(--live-bg);
+      border: 1px solid var(--live-border);
+      color: #d1fae5;
+    }
+
+    .state-banner.sample {
+      background: var(--sample-bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
     header {
       max-width: 1100px;
       margin: auto;
-      padding: 4rem 2rem 2.5rem;
+      padding: 3.2rem 2rem 2.5rem;
     }
 
     h1 {
@@ -66,19 +87,17 @@
       margin-bottom: 1.4rem;
     }
 
-    .top-row {
+    .nav-row {
       display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      margin-top: 1.8rem;
+      flex-direction: column;
+      gap: 0.9rem;
+      margin-top: 2rem;
     }
 
     .nav {
       display: flex;
-      align-items: center;
       gap: 0.8rem;
-      flex-wrap: wrap;
+      align-items: center;
     }
 
     .nav a, .nav button {
@@ -92,18 +111,28 @@
       text-decoration: none;
     }
 
-    /* Legend */
+    /* ===== LEGEND ===== */
     .legend {
       display: flex;
+      align-items: center;
       gap: 1.2rem;
-      margin-left: 0.5rem;
+      padding-left: 0.2rem;
+    }
+
+    .legend-title {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 0.6rem;
     }
 
     .legend-item {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.25rem;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.75rem;
+      color: var(--muted);
     }
 
     .badge {
@@ -111,43 +140,17 @@
       border-radius: 999px;
       font-weight: 600;
       font-size: 0.7rem;
-      width: fit-content;
+      line-height: 1;
     }
 
     .easy { background: var(--easy); color:#052e16; }
     .medium { background: var(--medium); color:#422006; }
     .hard { background: var(--hard); color:#450a0a; }
 
-    .legend-desc {
-      font-size: 0.7rem;
-      color: var(--muted);
-      line-height: 1.2;
-      max-width: 120px;
-    }
-
     main {
       max-width: 1100px;
       margin: auto;
       padding: 0 2rem 4rem;
-    }
-
-    .state-banner {
-      border-radius: 14px;
-      padding: 0.9rem 1.1rem;
-      font-size: 0.9rem;
-      margin: 1.6rem 0 2.4rem;
-    }
-
-    .state-banner.live {
-      background: var(--live-bg);
-      border: 1px solid var(--live-border);
-      color: #d1fae5;
-    }
-
-    .state-banner.sample {
-      background: var(--sample-bg);
-      border: 1px solid var(--border);
-      color: var(--muted);
     }
 
     .section-title {
@@ -222,41 +225,15 @@
       font-size: 0.85rem;
       color: var(--muted);
     }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      z-index: 100;
-    }
-
-    .modal-content {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.4rem;
-      max-width: 900px;
-      max-height: 80vh;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    .close {
-      position: absolute;
-      top: 1.2rem;
-      right: 1.2rem;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 1.2rem;
-    }
   </style>
 </head>
 
 <body>
+
+<!-- TOP STATE BANNER -->
+<div id="stateBanner" class="state-banner sample">
+  ⚪ Live signals unavailable — showing representative editorial sample.
+</div>
 
 <header>
   <h1>Tech Murmurs</h1>
@@ -273,34 +250,31 @@
     experiments hiding in plain sight — ideas waiting for someone to care enough to ship them.
   </p>
 
-  <div class="top-row">
+  <div class="nav-row">
     <div class="nav">
       <a href="archive.html">Archive</a>
       <button onclick="toggleMethodology()">Methodology</button>
+    </div>
 
-      <div class="legend">
-        <div class="legend-item">
-          <span class="badge easy">Easy</span>
-          <span class="legend-desc">Weekend-build friendly</span>
-        </div>
-        <div class="legend-item">
-          <span class="badge medium">Medium</span>
-          <span class="legend-desc">Some thinking required</span>
-        </div>
-        <div class="legend-item">
-          <span class="badge hard">Hard</span>
-          <span class="legend-desc">Deep dive / ambitious</span>
-        </div>
+    <div class="legend">
+      <span class="legend-title">Legend</span>
+      <div class="legend-item">
+        <span class="badge easy">Easy</span>
+        <span>Weekend-build friendly</span>
+      </div>
+      <div class="legend-item">
+        <span class="badge medium">Medium</span>
+        <span>Some thinking required</span>
+      </div>
+      <div class="legend-item">
+        <span class="badge hard">Hard</span>
+        <span>Deep dive / ambitious</span>
       </div>
     </div>
   </div>
 </header>
 
 <main>
-  <div id="stateBanner" class="state-banner sample">
-    Live signals unavailable — showing representative editorial sample.
-  </div>
-
   <div class="section-title">Daily Drop</div>
   <div id="ideas"></div>
 </main>
