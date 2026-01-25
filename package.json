@@ -1,5 +1,25 @@
 {
   "dependencies": {
+    "@netlify/blobs": "^10.5.0",
     "rss-parser": "^3.13.0"
-  }
+  },
+  "name": "side-quest-generator",
+  "version": "1.0.0",
+  "description": "A small web app that, every day, generates 3–5 bite-sized build ideas (“side quests”) pulled from live signals across crypto + dev culture.",
+  "main": "quests.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SBrookhart/side-quest-generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SBrookhart/side-quest-generator/issues"
+  },
+  "homepage": "https://github.com/SBrookhart/side-quest-generator#readme"
 }
