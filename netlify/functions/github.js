@@ -4,7 +4,7 @@
 export async function getGithubSignals() {
   const query = `
     ("missing" OR "wish there was" OR "hard to" OR "no tool")
-    in:body
+    in:title,body
     is:issue
     is:open
   `;
