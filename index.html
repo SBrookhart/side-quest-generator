@@ -20,7 +20,6 @@
       --border:#1f2937;
       --text:#e5e7eb;
       --muted:#9ca3af;
-      --accent:#38bdf8;
 
       --easy:#4ade80;
       --medium:#facc15;
@@ -55,40 +54,28 @@
     .motto {
       font-family: "Space Grotesk", sans-serif;
       font-size: 0.95rem;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 1.5rem;
     }
 
     header p {
-      max-width: 820px;
+      max-width: 780px;
       line-height: 1.7;
       color: var(--muted);
       margin-bottom: 1.2rem;
     }
 
-    .banner {
-      background: rgba(56,189,248,0.12);
-      border: 1px solid rgba(56,189,248,0.4);
-      color: var(--accent);
-      border-radius: 12px;
-      padding: 0.7rem 1rem;
-      font-size: 0.85rem;
-      margin: 1.5rem 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
+    .nav-row {
+      display:flex;
+      align-items:center;
+      gap:1rem;
+      margin-top:1.5rem;
+      flex-wrap:wrap;
     }
 
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .nav a, .nav button {
+    .nav-row a, .nav-row button {
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text);
@@ -103,20 +90,31 @@
     }
 
     .legend {
-      display: flex;
-      gap: 0.8rem;
-      margin-left: auto;
-      font-size: 0.7rem;
-      color: var(--muted);
-      align-items: center;
-      flex-wrap: wrap;
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+      font-size:0.75rem;
+      color:var(--muted);
+      margin-left:0.5rem;
     }
 
     .legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
+      display:flex;
+      align-items:center;
+      gap:0.35rem;
     }
+
+    .difficulty {
+      font-size:0.7rem;
+      font-weight:600;
+      padding:0.25rem 0.7rem;
+      border-radius:999px;
+      color:#020617;
+    }
+
+    .easy { background:var(--easy); }
+    .medium { background:var(--medium); }
+    .hard { background:var(--hard); }
 
     main {
       max-width: 1100px;
@@ -124,96 +122,71 @@
       padding: 0 2rem 4rem;
     }
 
-    .section-title {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 1.4rem;
-      margin: 3rem 0 2rem;
+    .day-label {
+      font-family:"Space Grotesk",sans-serif;
+      font-size:1.2rem;
+      margin:2.5rem 0 1.5rem;
     }
-
-    .quest {
-      background: rgba(255,255,255,0.035);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .quest h2 {
-      font-family: "Space Grotesk", sans-serif;
-      margin: 0.4rem 0 1rem;
-    }
-
-    .subhead {
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 1.4rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .difficulty {
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      color: #020617;
-      margin-top: 1.5rem;
-      display: inline-block;
-    }
-
-    .easy { background: var(--easy); }
-    .medium { background: var(--medium); }
-    .hard { background: var(--hard); }
 
     footer {
-      border-top: 1px solid var(--border);
-      padding: 2rem;
-      margin-top: 4rem;
+      border-top:1px solid var(--border);
+      padding:2rem;
+      margin-top:4rem;
     }
 
     .footer-inner {
-      max-width: 1100px;
-      margin: auto;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--muted);
+      max-width:1100px;
+      margin:auto;
+      display:flex;
+      justify-content:space-between;
+      font-size:0.85rem;
+      color:var(--muted);
     }
 
+    /* Modal */
     .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      z-index: 10;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.7);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:2rem;
+      z-index:100;
     }
 
     .modal-content {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.2rem;
-      max-width: 900px;
-      max-height: 80vh;
-      overflow-y: auto;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:2.5rem;
+      max-width:900px;
+      max-height:85vh;
+      overflow-y:auto;
     }
 
-    .modal-content h2, .modal-content h3 {
-      font-family: "Space Grotesk", sans-serif;
-      margin-top: 2rem;
+    .modal-content h2,
+    .modal-content h3 {
+      font-family:"Space Grotesk",sans-serif;
+      margin-top:2rem;
+    }
+
+    .modal-content p,
+    .modal-content li {
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    .modal-content ul {
+      padding-left:1.2rem;
     }
 
     .close {
-      float: right;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 1.2rem;
+      position:absolute;
+      top:1.5rem;
+      right:1.5rem;
+      cursor:pointer;
+      color:var(--muted);
     }
   </style>
 </head>
@@ -235,48 +208,20 @@
     experiments hiding in plain sight — ideas waiting for someone to care enough to ship them.
   </p>
 
-  <div class="banner">
-    <i data-lucide="pen-line"></i>
-    Editorial Daily Drop
-  </div>
-
-  <div class="nav">
+  <div class="nav-row">
     <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
     <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
 
     <div class="legend">
-      <strong>Legend</strong>
-      <span><span class="difficulty easy">Easy</span> approachable, playful, minimal setup</span>
-      <span><span class="difficulty medium">Medium</span> some glue code, light APIs, light thinking</span>
-      <span><span class="difficulty hard">Hard</span> ambitious, multi-source, deeper systems thinking</span>
+      <span><span class="difficulty easy">Easy</span> Quick, playful</span>
+      <span><span class="difficulty medium">Medium</span> Weekend build</span>
+      <span><span class="difficulty hard">Hard</span> Deep dive</span>
     </div>
   </div>
 </header>
 
 <main>
-  <div class="section-title">Daily Drop</div>
-
-  <!-- EDITORIAL CARDS -->
-  <div class="quest">
-    <h2>The Market Has Feelings</h2>
-
-    <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-    Crypto Twitter reacts emotionally long before prices move, but that sentiment is scattered and fleeting.
-
-    <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-    Build a real-time emotional dashboard that translates crypto Twitter tone into simple, human-readable signals.
-
-    <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
-    Helps builders and researchers notice mood shifts early without staring at feeds all day.
-
-    <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-    X posts expressing fear, hype, boredom, and fatigue during market inflection points.
-
-    <span class="difficulty medium">Medium</span>
-  </div>
-
-  <!-- 4 more cards follow (included in full version) -->
-
+  <div class="day-label">Daily Drop</div>
 </main>
 
 <footer>
@@ -286,85 +231,90 @@
   </div>
 </footer>
 
-<!-- METHODOLOGY MODAL -->
+<!-- Methodology Modal -->
 <div class="modal" id="methodology">
   <div class="modal-content">
-    <span class="close" onclick="toggleMethodology()">✕</span>
+    <div class="close" onclick="toggleMethodology()"><i data-lucide="x"></i></div>
+
+    <!-- ===== FULL METHODOLOGY VERBATIM ===== -->
 
     <h2>What The Generator Does</h2>
 
-    <p>
-      Tech Murmurs is an ideation and synthesis system designed to surface small, buildable opportunities from public builder activity. It listens for early signals — ideas that are being discussed, hinted at, or partially articulated — before they harden into roadmaps, products, or narratives.
-    </p>
+    <p>Tech Murmurs is an ideation and synthesis system designed to surface small, buildable opportunities from public builder activity. It listens for early signals — ideas that are being discussed, hinted at, or partially articulated — before they harden into roadmaps, products, or narratives.</p>
 
-    <p>
-      The system draws from places where builders naturally express intent: open-source issue threads, hackathon prompts, protocol updates, and public developer conversations. These sources are chosen not for volume, but for proximity to real, unfinished work.
-    </p>
+    <p>The system draws from places where builders naturally express intent: open-source issue threads, hackathon prompts, protocol updates, and public developer conversations. These sources are chosen not for volume, but for proximity to real, unfinished work.</p>
 
-    <p>
-      Rather than treating every signal as equally meaningful, Tech Murmurs looks for specific expressions of friction or absence. Language such as “missing,” “wish there was,” “no tool for,” or recurring feature requests are treated as higher-signal than general commentary. Vague or speculative input is intentionally ignored.
-    </p>
+    <p>Rather than treating every signal as equally meaningful, Tech Murmurs looks for specific expressions of friction or absence. Language such as “missing,” “wish there was,” “no tool for,” or recurring feature requests are treated as higher-signal than general commentary. Vague or speculative input is intentionally ignored.</p>
 
-    <p>
-      Each signal is then distilled into a constrained “side quest”: a small, concrete project idea that can plausibly be explored by an individual or small team. Side quests are designed to be scoped, actionable, and incomplete by design — starting points rather than prescriptions.
-    </p>
+    <p>Each signal is then distilled into a constrained “side quest”: a small, concrete project idea that can plausibly be explored by an individual or small team. Side quests are designed to be scoped, actionable, and incomplete by design — starting points rather than prescriptions.</p>
 
-    <p>
-      Tech Murmurs publishes ideas as a daily snapshot rather than a continuous feed. This is a deliberate choice. A fixed daily set preserves context, avoids recency bias, and makes it possible to review how certain needs emerge, fade, or recur over time.
-    </p>
+    <p>Tech Murmurs publishes ideas as a daily snapshot rather than a continuous feed. This is a deliberate choice. A fixed daily set preserves context, avoids recency bias, and makes it possible to review how certain needs emerge, fade, or recur over time.</p>
 
-    <p>
-      When live sources are temporarily unavailable, the system falls back to a curated baseline of representative ideas. This ensures continuity while making the system’s state explicit to the reader.
-    </p>
+    <p>When live sources are temporarily unavailable, the system falls back to a curated baseline of representative ideas. This ensures continuity while making the system’s state explicit to the reader.</p>
 
-    <p>
-      Tech Murmurs does not attempt to evaluate market size, adoption likelihood, or commercial success. It is not a recommendation engine. Its role is to make early, often-quiet signals visible — ideas waiting for someone to care enough to ship them.
-    </p>
+    <p>Tech Murmurs does not attempt to evaluate market size, adoption likelihood, or commercial success. It is not a recommendation engine. Its role is to make early, often-quiet signals visible — ideas waiting for someone to care enough to ship them.</p>
 
-    <p>
-      All inputs are public. Attribution is preserved through outbound links, and no private or user-restricted data is accessed.
-    </p>
+    <p>All inputs are public. Attribution is preserved through outbound links, and no private or user-restricted data is accessed.</p>
 
     <h2>How The Generator Works (For Transparency)</h2>
 
+    <p>The sections below describe how the system operates at a technical level. They are included for transparency and auditability, not as a prerequisite for using the tool.</p>
+
     <h3>System Architecture</h3>
-    <p>
-      Tech Murmurs is a client-rendered web application backed by serverless ingestion functions. Data collection is performed via Netlify Functions, which proxy public APIs and feeds. This design allows the system to gather live signals while preventing credential exposure in the browser.
-    </p>
+    <p>Tech Murmurs is a client-rendered web application backed by serverless ingestion functions. Data collection is performed via Netlify Functions, which proxy public APIs and feeds. This design allows the system to gather live signals while preventing credential exposure in the browser.</p>
 
     <h3>Integrated Data Sources</h3>
-    <p>
-      Current integrations include the GitHub Search API (for open issues and repository activity), GitHub Releases (used as proxies for protocol roadmaps), and public hackathon feeds accessed via RSS. Each source is queried independently and normalized into a common structure before synthesis.
-    </p>
+    <p>Current integrations include the GitHub Search API (for open issues and repository activity), GitHub Releases (used as proxies for protocol roadmaps), and public hackathon feeds accessed via RSS. Each source is queried independently and normalized into a common structure before synthesis.</p>
+
+    <p>Sources are treated as complementary rather than authoritative. No single platform is assumed to represent the full landscape of builder intent.</p>
 
     <h3>Language Analysis & Signal Identification</h3>
-    <p>
-      During ingestion, Tech Murmurs applies lightweight language analysis to distinguish actionable signals from general discussion. The goal is not semantic understanding or sentiment analysis, but the identification of explicit expressions of unmet need.
-    </p>
+    <p>During ingestion, Tech Murmurs applies lightweight language analysis to distinguish actionable signals from general discussion. The goal is not semantic understanding or sentiment analysis, but the identification of explicit expressions of unmet need.</p>
 
-    <p>
-      Incoming text is scanned for intent-bearing phrases such as “missing,” “wish there was,” “no tool for,” or repeated feature requests. Context and specificity are considered before inclusion.
-    </p>
+    <ul>
+      <li>“missing” or “lacking”</li>
+      <li>“wish there was” or “it would be great if”</li>
+      <li>“no tool for” or “hard to”</li>
+      <li>repeated feature requests across issues or discussions</li>
+    </ul>
+
+    <p>In addition to phrase matching, the system considers contextual signals, such as:</p>
+
+    <ul>
+      <li>whether the statement appears in a problem description rather than commentary</li>
+      <li>whether similar requests appear across multiple sources or over time</li>
+      <li>whether the need is described with enough specificity to suggest a concrete build</li>
+    </ul>
+
+    <p>Text that is vague, speculative, or purely opinion-based is intentionally deprioritized. The system favors clarity over enthusiasm, and repetition over novelty.</p>
+
+    <p>This approach keeps the analysis transparent and interpretable. Rather than relying on opaque machine-learning models, Tech Murmurs uses simple, explainable heuristics that can be inspected, adjusted, and reasoned about as the system evolves.</p>
 
     <h3>Transformation Pipeline</h3>
-    <p>
-      Raw inputs are transformed into standardized side quests containing origin, problem, proposed build, audience, and difficulty.
-    </p>
+    <p>Raw inputs that pass initial filtering are transformed into a standardized side quest format. Each side quest includes:</p>
+
+    <ul>
+      <li>the origin of the signal</li>
+      <li>the underlying problem being expressed</li>
+      <li>a proposed build or exploration direction</li>
+      <li>the intended audience</li>
+      <li>an estimated level of difficulty</li>
+    </ul>
 
     <h3>Snapshot & Archival Logic</h3>
-    <p>
-      The system publishes a fixed daily snapshot to reduce noise and create a longitudinal archive.
-    </p>
+    <p>Rather than streaming signals continuously, Tech Murmurs publishes a fixed daily snapshot. This reduces noise, avoids recency bias, and creates a time-series archive that can be reviewed longitudinally to observe how certain needs persist, evolve, or disappear.</p>
+
+    <p>Each day’s snapshot represents a point-in-time synthesis rather than a constantly updating feed.</p>
 
     <h3>Failure Modes & Fallbacks</h3>
-    <p>
-      If live sources fail, the system enters Sample Data Mode and explicitly surfaces that state.
-    </p>
+    <p>If one or more live data sources fail due to rate limits, network errors, or upstream API changes, the system enters Sample Data Mode. In this state, representative ideas are shown in place of live signals, and the system’s status is explicitly surfaced in the interface.</p>
+
+    <p>This behavior ensures continuity without masking system state or over-claiming real-time coverage.</p>
 
     <h3>Scope & Limitations</h3>
-    <p>
-      The system does not assess feasibility or commercial success. All inputs are public.
-    </p>
+    <p>Tech Murmurs does not evaluate commercial viability, adoption likelihood, or technical feasibility. It does not attempt to predict outcomes or recommend specific paths forward.</p>
+
+    <p>All inputs are public, and no private, gated, or user-identifiable data is accessed or inferred.</p>
 
   </div>
 </div>
