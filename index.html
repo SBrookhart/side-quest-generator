@@ -69,7 +69,7 @@
     .top-row {
       display: flex;
       align-items: center;
-      gap: 1.2rem;
+      gap: 1.5rem;
       flex-wrap: wrap;
       margin-top: 1.8rem;
     }
@@ -78,6 +78,7 @@
       display: flex;
       align-items: center;
       gap: 0.8rem;
+      flex-wrap: wrap;
     }
 
     .nav a, .nav button {
@@ -91,24 +92,38 @@
       text-decoration: none;
     }
 
+    /* Legend */
     .legend {
       display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.75rem;
-      color: var(--muted);
+      gap: 1.2rem;
+      margin-left: 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
     }
 
     .badge {
-      padding: 0.25rem 0.6rem;
+      padding: 0.25rem 0.65rem;
       border-radius: 999px;
       font-weight: 600;
       font-size: 0.7rem;
+      width: fit-content;
     }
 
     .easy { background: var(--easy); color:#052e16; }
     .medium { background: var(--medium); color:#422006; }
     .hard { background: var(--hard); color:#450a0a; }
+
+    .legend-desc {
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.2;
+      max-width: 120px;
+    }
 
     main {
       max-width: 1100px;
@@ -264,9 +279,18 @@
       <button onclick="toggleMethodology()">Methodology</button>
 
       <div class="legend">
-        <span class="badge easy">Easy</span>
-        <span class="badge medium">Medium</span>
-        <span class="badge hard">Hard</span>
+        <div class="legend-item">
+          <span class="badge easy">Easy</span>
+          <span class="legend-desc">Weekend-build friendly</span>
+        </div>
+        <div class="legend-item">
+          <span class="badge medium">Medium</span>
+          <span class="legend-desc">Some thinking required</span>
+        </div>
+        <div class="legend-item">
+          <span class="badge hard">Hard</span>
+          <span class="legend-desc">Deep dive / ambitious</span>
+        </div>
       </div>
     </div>
   </div>
@@ -287,13 +311,6 @@
     <div>© 2026 Brookhart Labs</div>
   </div>
 </footer>
-
-<div class="modal" id="methodology">
-  <div class="modal-content">
-    <span class="close" onclick="toggleMethodology()">✕</span>
-    <!-- methodology content unchanged -->
-  </div>
-</div>
 
 <script>
 async function loadIdeas() {
