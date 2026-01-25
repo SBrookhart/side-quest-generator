@@ -20,7 +20,7 @@ export async function getHackathonSignals() {
         type: "rss",
         text: title,
         url: link,
-        timestamp: new Date().toISOString()
+        date: new Date().toISOString()
       };
     });
   } catch {
