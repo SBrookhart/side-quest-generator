@@ -1,65 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Archive — Tech Murmurs</title>
 
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
 <style>
-body{margin:0;font-family:system-ui;background:#0b0d12;color:#e6e9f0;}
-main{max-width:900px;margin:auto;padding:2rem 1rem;}
-h1{font-size:2.6rem;margin-bottom:1rem;}
-input,button{margin-right:.5rem;margin-bottom:1rem;padding:.5rem;border-radius:6px;border:1px solid #444;}
-.idea{background:#121622;border:1px solid #1e2333;border-radius:14px;padding:1.8rem;margin-bottom:1.8rem;}
-a{color:#7aa2ff;text-decoration:none;}
+:root {
+  --bg:#0b0e14;
+  --panel:#121826;
+  --border:#1f2937;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text);
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+    var(--bg);
+}
+
+header {
+  max-width: 1100px;
+  margin: auto;
+  padding: 4rem 2rem 2.5rem;
+}
+
+h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 3rem;
+  letter-spacing: -0.02em;
+  margin-bottom: .6rem;
+}
+
+header p {
+  color: var(--muted);
+  max-width: 720px;
+  line-height: 1.6;
+}
+
+.nav {
+  margin-top: 1.5rem;
+}
+
+.nav a {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 0 2rem 4rem;
+}
+
+.day {
+  margin-bottom: 3rem;
+}
+
+.day h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.4rem;
+  margin-bottom: .4rem;
+}
+
+.day small {
+  color: var(--muted);
+}
+
+.quest {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.6rem 1.8rem;
+  margin-top: 1.4rem;
+}
+
+.quest h3 {
+  font-family: "Space Grotesk", sans-serif;
+  margin: 0 0 .6rem;
+}
+
+.label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-top: .9rem;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  margin-top: 4rem;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
 </style>
 </head>
+
 <body>
 
-<main>
-<h1>Archive</h1>
+<header>
+  <h1>Archive</h1>
+  <p>
+    A chronological record of Tech Murmurs side quests.
+    Each day represents a fixed snapshot — not a continuously updating feed.
+  </p>
 
-<label>From: <input id="from" type="date"></label>
-<label>To: <input id="to" type="date"></label>
-<label>Keyword: <input id="kw" type="text" placeholder="search"></label>
-<button onclick="filter()">Search</button>
+  <div class="nav">
+    <a href="index.html"><i data-lucide="arrow-left"></i> Back to today</a>
+  </div>
+</header>
 
-<div id="results"></div>
-</main>
+<main id="archive"></main>
+
+<footer>
+  <div class="footer-inner">
+    <div>Built quietly, shipped deliberately.</div>
+    <div>© 2026 Brookhart Labs</div>
+  </div>
+</footer>
 
 <script>
-let archive = [];
-
-async function loadArchive(){
+async function loadArchive() {
   const res = await fetch("/.netlify/functions/archive");
-  archive = await res.json();
-  render(archive);
-}
+  const days = await res.json();
+  const root = document.getElementById("archive");
 
-function filter(){
-  const from = document.getElementById("from").value;
-  const to = document.getElementById("to").value;
-  const kw = document.getElementById("kw").value.toLowerCase();
+  if (!days || !days.length) {
+    root.innerHTML = "<p style='color:#9ca3af'>No archived days yet.</p>";
+    return;
+  }
 
-  const filtered = archive.filter(i=>{
-    const d = new Date(i.date);
-    if(from && d < new Date(from)) return false;
-    if(to && d > new Date(to)) return false;
-    if(kw && !i.title.toLowerCase().includes(kw) && !i.murmur.toLowerCase().includes(kw)) return false;
-    return true;
+  days.forEach(day => {
+    const dateLabel = new Date(day.date).toLocaleDateString(
+      "en-US",
+      { month: "long", day: "numeric", year: "numeric" }
+    );
+
+    root.innerHTML += `
+      <div class="day">
+        <h2>${dateLabel}</h2>
+        <small>${day.ideas.length} side quests</small>
+
+        ${day.ideas.map(i => `
+          <div class="quest">
+            <h3>${i.title}</h3>
+            <div class="label">Murmur</div>${i.murmur}
+            <div class="label">Side Quest</div>${i.quest}
+          </div>
+        `).join("")}
+      </div>
+    `;
   });
-  render(filtered);
-}
 
-function render(list){
-  const out = document.getElementById("results");
-  out.innerHTML = list.map(i=>`
-    <div class="idea">
-      <h2><a href="${i.url}" target="_blank">${i.title}</a></h2>
-      <p>${i.murmur}</p>
-      <small>${new Date(i.date).toLocaleDateString()}</small>
-    </div>
-  `).join("");
+  lucide.createIcons();
 }
 
 loadArchive();
