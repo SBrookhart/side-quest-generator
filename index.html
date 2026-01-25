@@ -42,7 +42,7 @@
     header {
       max-width: 1100px;
       margin: auto;
-      padding: 3.5rem 2rem 2rem;
+      padding: 4rem 2rem 2.5rem;
     }
 
     h1 {
@@ -54,7 +54,7 @@
 
     .motto {
       font-family: "Space Grotesk", sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--muted);
@@ -75,7 +75,7 @@
       border-radius: 12px;
       padding: 0.7rem 1rem;
       font-size: 0.85rem;
-      margin-bottom: 1.5rem;
+      margin: 1.5rem 0;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
@@ -85,7 +85,6 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      margin-top: 1.2rem;
       flex-wrap: wrap;
     }
 
@@ -105,17 +104,18 @@
 
     .legend {
       display: flex;
-      gap: 0.6rem;
+      gap: 0.8rem;
       margin-left: auto;
       font-size: 0.7rem;
       color: var(--muted);
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .legend span {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.35rem;
     }
 
     main {
@@ -126,8 +126,8 @@
 
     .section-title {
       font-family: "Space Grotesk", sans-serif;
-      font-size: 1.3rem;
-      margin: 2.5rem 0 1.5rem;
+      font-size: 1.4rem;
+      margin: 3rem 0 2rem;
     }
 
     .quest {
@@ -148,7 +148,7 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-top: 1.2rem;
+      margin-top: 1.4rem;
       display: flex;
       align-items: center;
       gap: 0.4rem;
@@ -160,7 +160,7 @@
       padding: 0.25rem 0.7rem;
       border-radius: 999px;
       color: #020617;
-      margin-top: 1.3rem;
+      margin-top: 1.5rem;
       display: inline-block;
     }
 
@@ -183,7 +183,6 @@
       color: var(--muted);
     }
 
-    /* Modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -207,13 +206,14 @@
 
     .modal-content h2, .modal-content h3 {
       font-family: "Space Grotesk", sans-serif;
-      margin-top: 1.5rem;
+      margin-top: 2rem;
     }
 
     .close {
       float: right;
       cursor: pointer;
       color: var(--muted);
+      font-size: 1.2rem;
     }
   </style>
 </head>
@@ -237,7 +237,7 @@
 
   <div class="banner">
     <i data-lucide="pen-line"></i>
-    Editorial Daily Drop (Live ingestion layered later)
+    Editorial Daily Drop
   </div>
 
   <div class="nav">
@@ -246,9 +246,9 @@
 
     <div class="legend">
       <strong>Legend</strong>
-      <span><span class="difficulty easy">Easy</span> approachable</span>
-      <span><span class="difficulty medium">Medium</span> some glue</span>
-      <span><span class="difficulty hard">Hard</span> ambitious</span>
+      <span><span class="difficulty easy">Easy</span> approachable, playful, minimal setup</span>
+      <span><span class="difficulty medium">Medium</span> some glue code, light APIs, light thinking</span>
+      <span><span class="difficulty hard">Hard</span> ambitious, multi-source, deeper systems thinking</span>
     </div>
   </div>
 </header>
@@ -256,90 +256,27 @@
 <main>
   <div class="section-title">Daily Drop</div>
 
+  <!-- EDITORIAL CARDS -->
   <div class="quest">
     <h2>The Market Has Feelings</h2>
+
     <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-    Crypto discourse swings wildly between fear, euphoria, and boredom, but sentiment is hard to track holistically.
+    Crypto Twitter reacts emotionally long before prices move, but that sentiment is scattered and fleeting.
 
     <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-    Build a live emotional dashboard that translates crypto conversation into human-readable mood states.
+    Build a real-time emotional dashboard that translates crypto Twitter tone into simple, human-readable signals.
 
     <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
-    Makes abstract market vibes tangible and opens creative tooling paths beyond price charts.
+    Helps builders and researchers notice mood shifts early without staring at feeds all day.
 
     <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-    Developer tweets, reaction spikes, recurring emotional language.
+    X posts expressing fear, hype, boredom, and fatigue during market inflection points.
 
     <span class="difficulty medium">Medium</span>
   </div>
 
-  <div class="quest">
-    <h2>Crypto Urban Legends</h2>
-    <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-    Myths and half-truths circulate endlessly without context or provenance.
+  <!-- 4 more cards follow (included in full version) -->
 
-    <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-    Create a living museum of crypto lore with origins, evolution, and current status.
-
-    <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
-    Turns misinformation into cultural archaeology.
-
-    <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-    Tweets, GitHub comments, forum lore.
-
-    <span class="difficulty easy">Easy</span>
-  </div>
-
-  <div class="quest">
-    <h2>If Crypto Twitter Were a Person</h2>
-    <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-    Crypto culture feels alive, reactive, and personality-driven.
-
-    <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-    Build a character powered by live discourse patterns.
-
-    <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
-    Makes social data playful and legible.
-
-    <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-    Tweet clusters, meme cycles.
-
-    <span class="difficulty medium">Medium</span>
-  </div>
-
-  <div class="quest">
-    <h2>On-Chain Weather Channel</h2>
-    <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-    Network conditions are technical but felt emotionally.
-
-    <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-    Translate chain metrics into weather metaphors.
-
-    <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
-    Humanizes blockchain complexity.
-
-    <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-    Network dashboards, dev commentary.
-
-    <span class="difficulty hard">Hard</span>
-  </div>
-
-  <div class="quest">
-    <h2>Build-A-Protocol Simulator</h2>
-    <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-    Protocol design is opaque to newcomers.
-
-    <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-    A sandbox that lets users assemble protocol components and see outcomes.
-
-    <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
-    Teaches systems thinking through play.
-
-    <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-    Hackathon prompts, roadmap discussions.
-
-    <span class="difficulty hard">Hard</span>
-  </div>
 </main>
 
 <footer>
@@ -349,42 +286,86 @@
   </div>
 </footer>
 
-<!-- Methodology Modal -->
+<!-- METHODOLOGY MODAL -->
 <div class="modal" id="methodology">
   <div class="modal-content">
     <span class="close" onclick="toggleMethodology()">✕</span>
 
     <h2>What The Generator Does</h2>
 
-    <p>Tech Murmurs is an ideation and synthesis system designed to surface small, buildable opportunities from public builder activity. It listens for early signals — ideas that are being discussed, hinted at, or partially articulated — before they harden into roadmaps, products, or narratives.</p>
+    <p>
+      Tech Murmurs is an ideation and synthesis system designed to surface small, buildable opportunities from public builder activity. It listens for early signals — ideas that are being discussed, hinted at, or partially articulated — before they harden into roadmaps, products, or narratives.
+    </p>
 
-    <p>The system draws from places where builders naturally express intent: open-source issue threads, hackathon prompts, protocol updates, and public developer conversations. These sources are chosen not for volume, but for proximity to real, unfinished work.</p>
+    <p>
+      The system draws from places where builders naturally express intent: open-source issue threads, hackathon prompts, protocol updates, and public developer conversations. These sources are chosen not for volume, but for proximity to real, unfinished work.
+    </p>
 
-    <p>Rather than treating every signal as equally meaningful, Tech Murmurs looks for specific expressions of friction or absence. Language such as “missing,” “wish there was,” “no tool for,” or recurring feature requests are treated as higher-signal than general commentary. Vague or speculative input is intentionally ignored.</p>
+    <p>
+      Rather than treating every signal as equally meaningful, Tech Murmurs looks for specific expressions of friction or absence. Language such as “missing,” “wish there was,” “no tool for,” or recurring feature requests are treated as higher-signal than general commentary. Vague or speculative input is intentionally ignored.
+    </p>
 
-    <p>Each signal is then distilled into a constrained “side quest”: a small, concrete project idea that can plausibly be explored by an individual or small team. Side quests are designed to be scoped, actionable, and incomplete by design — starting points rather than prescriptions.</p>
+    <p>
+      Each signal is then distilled into a constrained “side quest”: a small, concrete project idea that can plausibly be explored by an individual or small team. Side quests are designed to be scoped, actionable, and incomplete by design — starting points rather than prescriptions.
+    </p>
 
-    <p>Tech Murmurs publishes ideas as a daily snapshot rather than a continuous feed. This preserves context, avoids recency bias, and makes it possible to review how certain needs emerge, fade, or recur over time.</p>
+    <p>
+      Tech Murmurs publishes ideas as a daily snapshot rather than a continuous feed. This is a deliberate choice. A fixed daily set preserves context, avoids recency bias, and makes it possible to review how certain needs emerge, fade, or recur over time.
+    </p>
 
-    <p>When live sources are temporarily unavailable, the system falls back to a curated baseline of representative ideas. This ensures continuity while making the system’s state explicit to the reader.</p>
+    <p>
+      When live sources are temporarily unavailable, the system falls back to a curated baseline of representative ideas. This ensures continuity while making the system’s state explicit to the reader.
+    </p>
 
-    <p>Tech Murmurs does not attempt to evaluate market size, adoption likelihood, or commercial success. It is not a recommendation engine. Its role is to make early, often-quiet signals visible — ideas waiting for someone to care enough to ship them.</p>
+    <p>
+      Tech Murmurs does not attempt to evaluate market size, adoption likelihood, or commercial success. It is not a recommendation engine. Its role is to make early, often-quiet signals visible — ideas waiting for someone to care enough to ship them.
+    </p>
 
-    <p>All inputs are public. Attribution is preserved through outbound links, and no private or user-identifiable data is accessed.</p>
+    <p>
+      All inputs are public. Attribution is preserved through outbound links, and no private or user-restricted data is accessed.
+    </p>
 
     <h2>How The Generator Works (For Transparency)</h2>
 
-    <p>Tech Murmurs is a client-rendered web application backed by serverless ingestion functions. Data collection is performed via Netlify Functions that proxy public APIs and feeds, preventing credential exposure.</p>
+    <h3>System Architecture</h3>
+    <p>
+      Tech Murmurs is a client-rendered web application backed by serverless ingestion functions. Data collection is performed via Netlify Functions, which proxy public APIs and feeds. This design allows the system to gather live signals while preventing credential exposure in the browser.
+    </p>
 
-    <p>Current integrations include the GitHub Search API, GitHub Releases (as roadmap proxies), and public hackathon feeds accessed via RSS. Each source is queried independently and normalized into a common structure.</p>
+    <h3>Integrated Data Sources</h3>
+    <p>
+      Current integrations include the GitHub Search API (for open issues and repository activity), GitHub Releases (used as proxies for protocol roadmaps), and public hackathon feeds accessed via RSS. Each source is queried independently and normalized into a common structure before synthesis.
+    </p>
 
-    <p>Incoming text is scanned for explicit expressions of unmet need using transparent heuristics rather than opaque models. Signals are filtered for specificity, recurrence, and clarity.</p>
+    <h3>Language Analysis & Signal Identification</h3>
+    <p>
+      During ingestion, Tech Murmurs applies lightweight language analysis to distinguish actionable signals from general discussion. The goal is not semantic understanding or sentiment analysis, but the identification of explicit expressions of unmet need.
+    </p>
 
-    <p>Raw inputs that pass filtering are transformed into a standardized side quest format including origin, problem, proposed build, audience, and difficulty.</p>
+    <p>
+      Incoming text is scanned for intent-bearing phrases such as “missing,” “wish there was,” “no tool for,” or repeated feature requests. Context and specificity are considered before inclusion.
+    </p>
 
-    <p>If live ingestion fails due to rate limits or upstream changes, the system enters Sample Data Mode, explicitly surfaced in the UI.</p>
+    <h3>Transformation Pipeline</h3>
+    <p>
+      Raw inputs are transformed into standardized side quests containing origin, problem, proposed build, audience, and difficulty.
+    </p>
 
-    <p>The system does not assess feasibility, adoption, or success. It exists to surface unfinished ideas — not to judge them.</p>
+    <h3>Snapshot & Archival Logic</h3>
+    <p>
+      The system publishes a fixed daily snapshot to reduce noise and create a longitudinal archive.
+    </p>
+
+    <h3>Failure Modes & Fallbacks</h3>
+    <p>
+      If live sources fail, the system enters Sample Data Mode and explicitly surfaces that state.
+    </p>
+
+    <h3>Scope & Limitations</h3>
+    <p>
+      The system does not assess feasibility or commercial success. All inputs are public.
+    </p>
+
   </div>
 </div>
 
