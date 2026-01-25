@@ -6,17 +6,17 @@ import { getStore } from "@netlify/blobs";
 
 const SITE_BASE = "https://side-quest-generator.netlify.app";
 
-const FRICTION_REGEX =
-  /(someone should|wish there was|why is there no|hard to|confusing|unclear|missing|feels early|keep seeing people)/i;
+const STRONG_SIGNAL_REGEX =
+  /(someone should|wish there was|why is there no|feels like nobody|hard to|confusing|missing|keeps coming up)/i;
 
 /* ---------------------------------------------------------
    Helpers
 --------------------------------------------------------- */
 
-function classifyDifficulty({ sources, openEnded }) {
-  if (openEnded && sources.length >= 3) return "Hard";
-  if (sources.length >= 2) return "Medium";
-  return "Easy";
+function classifyDifficulty(index) {
+  if (index <= 1) return "Easy";
+  if (index <= 3) return "Medium";
+  return "Hard";
 }
 
 function normalizeSignal(raw) {
@@ -24,12 +24,12 @@ function normalizeSignal(raw) {
     type: raw.type,
     name:
       raw.type === "github"
-        ? "GitHub issue"
+        ? "GitHub Issue"
         : raw.type === "x"
-        ? "X post"
+        ? "X Post"
         : raw.type === "article"
         ? "Article"
-        : "Hackathon prompt",
+        : "Hackathon Prompt",
     icon:
       raw.type === "github"
         ? "github"
@@ -42,27 +42,78 @@ function normalizeSignal(raw) {
   };
 }
 
-function synthesizeIdea({
-  title,
-  murmur,
-  quest,
-  worth,
-  signals,
-  openEnded
-}) {
-  const difficulty = classifyDifficulty({
-    sources: signals,
-    openEnded
-  });
+/* ---------------------------------------------------------
+   Editorial Idea Templates
+--------------------------------------------------------- */
 
-  return {
-    title,
-    difficulty,
-    murmur,
-    sideQuest: quest,
-    worth,
-    signals: signals.map(normalizeSignal)
-  };
+function editorialTemplates(signals) {
+  return [
+    {
+      title: "The Market Has Feelings",
+      murmur:
+        "People consistently react emotionally to market movement before rational explanations surface. These emotional signals are visible in conversation, but never captured coherently.",
+      sideQuest:
+        "Build a lightweight emotional dashboard that translates live crypto conversation into a simple daily mood report.",
+      worth: [
+        "Surfaces sentiment before narratives harden",
+        "Useful without pretending to predict markets",
+        "Turns noise into atmosphere"
+      ],
+      signals,
+    },
+    {
+      title: "Someone Should Build This",
+      murmur:
+        "Explicit unmet needs surface regularly in passing comments, often without follow-up. These moments reveal genuine white space that quietly disappears.",
+      sideQuest:
+        "Build a collector that captures and curates explicit “someone should build…” moments into actionable side quests.",
+      worth: [
+        "Directly converts intent into action",
+        "Strong sense of purpose with minimal scope",
+        "Feels human, not institutional"
+      ],
+      signals,
+    },
+    {
+      title: "Crypto Urban Legends",
+      murmur:
+        "Certain ideas persist long after they stop being true, passed down as cultural inheritance. Newcomers absorb myths without knowing their origin.",
+      sideQuest:
+        "Build a living archive of recurring crypto myths, showing where they came from and how they evolved.",
+      worth: [
+        "Makes cultural baggage visible",
+        "Improves ecosystem literacy",
+        "Fun without being trivial"
+      ],
+      signals,
+    },
+    {
+      title: "On-Chain Weather Channel",
+      murmur:
+        "People experience on-chain conditions intuitively—calm, congestion, turbulence—but those states are never described in human terms.",
+      sideQuest:
+        "Build a metaphor-driven interface that frames on-chain conditions like a weather report.",
+      worth: [
+        "Reduces cognitive load",
+        "Makes infrastructure legible",
+        "Invites curiosity instead of fear"
+      ],
+      signals,
+    },
+    {
+      title: "If Crypto Twitter Were a Person",
+      murmur:
+        "Collective discourse behaves like a single personality, cycling through optimism, cynicism, and obsession. Nobody ever zooms out.",
+      sideQuest:
+        "Build an evolving character that reflects the collective personality of crypto conversation over time.",
+      worth: [
+        "Encourages reflection over reaction",
+        "Turns patterns into narrative",
+        "More insight than analytics"
+      ],
+      signals,
+    }
+  ];
 }
 
 /* ---------------------------------------------------------
@@ -103,120 +154,41 @@ export default async (request) => {
   }
 
   /* ---------------------------------------------------------
-     Fetch GitHub signals
+     Fetch live signals
   --------------------------------------------------------- */
 
-  let githubSignals = [];
+  let signals = [];
+
   try {
-    const res = await fetch(
-      `${SITE_BASE}/.netlify/functions/github`
+    const gh = await fetch(`${SITE_BASE}/.netlify/functions/github`);
+    const ghRaw = await gh.json();
+    signals.push(
+      ...ghRaw.filter(r => r.text && STRONG_SIGNAL_REGEX.test(r.text))
+        .slice(0, 3)
+        .map(r => ({ type: "github", url: r.url }))
     );
-    const raw = await res.json();
-    githubSignals = raw.filter(
-      r => r.text && FRICTION_REGEX.test(r.text)
-    );
-  } catch {
-    githubSignals = [];
-  }
+  } catch {}
 
-  /* ---------------------------------------------------------
-     Fetch X signals
-  --------------------------------------------------------- */
-
-  let xSignals = [];
   try {
-    const res = await fetch(
-      `${SITE_BASE}/.netlify/functions/twitter`
+    const x = await fetch(`${SITE_BASE}/.netlify/functions/twitter`);
+    const xRaw = await x.json();
+    signals.push(
+      ...xRaw.filter(r => r.text && STRONG_SIGNAL_REGEX.test(r.text))
+        .slice(0, 3)
+        .map(r => ({ type: "x", url: r.url }))
     );
-    const raw = await res.json();
-    xSignals = raw.filter(
-      r => r.text && FRICTION_REGEX.test(r.text)
-    );
-  } catch {
-    xSignals = [];
-  }
+  } catch {}
 
-  /* ---------------------------------------------------------
-     Synthesis
-  --------------------------------------------------------- */
+  const normalizedSignals = signals.map(normalizeSignal);
 
-  const ideas = [];
+  const ideas = editorialTemplates(normalizedSignals)
+    .map((idea, i) => ({
+      ...idea,
+      difficulty: classifyDifficulty(i),
+      signals: normalizedSignals.slice(0, 2)
+    }));
 
-  if (githubSignals.length >= 1 && xSignals.length >= 1) {
-    ideas.push(
-      synthesizeIdea({
-        title: "The Internet Is Whispering About…",
-        murmur:
-          "Across builder conversations, people keep sensing shifts before they show up in metrics or roadmaps. These early signals surface as confusion, friction, or half-formed ideas — and then quietly disappear.",
-        quest:
-          "Build a daily snapshot that captures and names these background signals before they evaporate.",
-        worth: [
-          "Preserves early signals others overlook",
-          "Clear daily scope without chasing trends",
-          "Feels meaningful without needing precision"
-        ],
-        signals: [
-          { type: "github", url: githubSignals[0].url },
-          { type: "x", url: xSignals[0].url }
-        ],
-        openEnded: true
-      })
-    );
-  }
-
-  if (githubSignals.length >= 2 && xSignals.length >= 2) {
-    ideas.push(
-      synthesizeIdea({
-        title: "Someone Should Build This",
-        murmur:
-          "People regularly articulate unmet needs in passing, without expecting anything to come of it. These moments reveal real white space — but vanish unless someone captures them.",
-        quest:
-          "Build a collector that surfaces explicit “someone should build…” moments and turns them into concrete side quests.",
-        worth: [
-          "Directly converts intent into action",
-          "Strong sense of purpose with minimal scope",
-          "Encourages experimentation over polish"
-        ],
-        signals: [
-          { type: "github", url: githubSignals[1].url },
-          { type: "x", url: xSignals[1].url }
-        ],
-        openEnded: false
-      })
-    );
-  }
-
-  /* ---------------------------------------------------------
-     Live vs Sample Mode
-  --------------------------------------------------------- */
-
-  let mode = "sample";
-  if (ideas.length >= 2) {
-    mode = "live";
-  }
-
-  while (ideas.length < 5) {
-    ideas.push(
-      synthesizeIdea({
-        title: "Recurring Questions That Won’t Go Away",
-        murmur:
-          "Some problems keep resurfacing because nothing has addressed them clearly or completely. Repetition itself becomes a signal.",
-        quest:
-          "Build a lightweight tracker that highlights ideas the internet keeps returning to over time.",
-        worth: [
-          "Turns repetition into signal",
-          "Helps choose problems that actually matter",
-          "Naturally improves as history accumulates"
-        ],
-        signals: [],
-        openEnded: true
-      })
-    );
-  }
-
-  /* ---------------------------------------------------------
-     Persist Snapshot
-  --------------------------------------------------------- */
+  const mode = normalizedSignals.length >= 2 ? "live" : "sample";
 
   const snapshot = {
     date: today,
