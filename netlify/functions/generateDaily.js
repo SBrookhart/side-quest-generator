@@ -1,18 +1,8 @@
 export const config = {
   schedule: "@daily"
 };
-import { getStore } from "@netlify/blobs";
 
-/**
- * Tech Murmurs – Daily Generator
- * --------------------------------
- * Role:
- * - Pull live signals from multiple sources
- * - Filter aggressively for non-trivial, non-mechanical content
- * - Shape into 5 vibe-coder-friendly side quests
- * - Persist a single immutable daily snapshot
- * - Explicitly mark live vs sample mode
- */
+import { getStore } from "@netlify/blobs";
 
 export async function handler() {
   const store = getStore({
@@ -23,7 +13,7 @@ export async function handler() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // Never overwrite an existing day
+  // Lock: never overwrite a day
   const existing = await store.get(today);
   if (existing) {
     return {
@@ -36,30 +26,23 @@ export async function handler() {
   let ideas = [];
 
   try {
-    // --- Fetch raw signals ---
-    const [githubSignals, twitterSignals] = await Promise.all([
+    const [github, twitter] = await Promise.all([
       fetch(`${process.env.URL}/.netlify/functions/github`).then(r => r.json()),
       fetch(`${process.env.URL}/.netlify/functions/twitter`).then(r => r.json())
     ]);
 
-    // --- Normalize + filter signals ---
-    const allSignals = [...githubSignals, ...twitterSignals].filter(s =>
+    const allSignals = [...github, ...twitter].filter(s =>
       s &&
       s.text &&
       s.text.length > 40 &&
       s.text.length < 400 &&
-      !/typo|version bump|dependabot|eslint|lint|ci|chore/i.test(s.text)
+      !/dependabot|bump|typo|eslint|lint|ci|chore|version/i.test(s.text)
     );
 
-    if (allSignals.length < 5) {
-      throw new Error("Insufficient high-quality live signals");
+    if (allSignals.length < 6) {
+      throw new Error("Not enough high-quality live signals");
     }
 
-    /**
-     * Light thematic grouping.
-     * This is intentionally heuristic, not ML-heavy.
-     * We are optimizing for *clarity*, not exhaustiveness.
-     */
     const buckets = {
       explanation: [],
       visibility: [],
@@ -70,74 +53,70 @@ export async function handler() {
 
     allSignals.forEach(s => {
       const t = s.text.toLowerCase();
-      if (t.match(/what does|explain|confusing|hard to understand/)) {
+      if (/what does|explain|confusing|hard to understand/.test(t)) {
         buckets.explanation.push(s);
-      } else if (t.match(/hard to find|buried|discover|see/)) {
+      } else if (/hard to find|buried|discover|see/.test(t)) {
         buckets.visibility.push(s);
-      } else if (t.match(/workflow|process|too many steps|manual/)) {
+      } else if (/workflow|manual|steps|process/.test(t)) {
         buckets.workflow.push(s);
-      } else if (t.match(/wish there was|would be cool|should exist/)) {
+      } else if (/wish there was|should exist|would be cool/.test(t)) {
         buckets.creativity.push(s);
       } else {
         buckets.misc.push(s);
       }
     });
 
-    const pick = (arr, n = 1) => arr.slice(0, n);
+    const pick = (arr, n) => arr.slice(0, n);
 
-    // --- Shape into 5 ideas ---
     ideas = [
       {
         title: "Explain This Like I’m New Here",
         murmur:
-          "Builders frequently encounter tools and repositories that assume shared context, leaving newcomers unsure what they actually do.",
+          "Builders regularly encounter tools and repos that assume shared context, leaving newcomers unsure what they actually do.",
         quest:
-          "Build a small web tool where someone drops a link (repo, product, API) and gets a plain-English explanation plus a concrete weekend use case.",
+          "Build a small web tool where someone drops a link and gets a plain-English explanation plus a realistic weekend use case.",
         worth: [
-          "Focuses on translation, not technical depth",
-          "Immediately useful even in rough form",
-          "Great portfolio piece for vibe coders"
+          "Translation over technical depth",
+          "Useful even if imperfect",
+          "Strong vibe-coder portfolio piece"
         ],
         signals: [
           ...pick(buckets.explanation, 2),
           ...pick(buckets.creativity, 1)
         ]
       },
-
       {
         title: "Surface What’s Hard to See",
         murmur:
-          "People regularly complain that important information is buried across dashboards, docs, and tools.",
+          "Important information is often buried across dashboards, docs, and tools.",
         quest:
-          "Create a lightweight visual layer that surfaces the one thing people say is hardest to find in a given tool or workflow.",
+          "Create a lightweight visual layer that surfaces the one thing people say is hardest to find.",
         worth: [
-          "Design does most of the heavy lifting",
-          "Scope stays intentionally small",
-          "Strong UX storytelling value"
+          "Design-led build",
+          "Clear scope",
+          "Immediate usability"
         ],
         signals: [
           ...pick(buckets.visibility, 2),
           ...pick(buckets.explanation, 1)
         ]
       },
-
       {
-        title: "Make the Invisible Step Obvious",
+        title: "Make the Missing Step Obvious",
         murmur:
-          "Many workflows fail not because they’re broken, but because one critical step is never made explicit.",
+          "Many workflows fail because one critical step is never made explicit.",
         quest:
-          "Build a micro-guide or interactive checklist that reveals the missing step in a common developer workflow.",
+          "Build a micro-guide or checklist that reveals the invisible step in a common workflow.",
         worth: [
-          "Low technical complexity",
+          "Low complexity",
           "High clarity payoff",
-          "Easy to test with real users"
+          "Easy to validate"
         ],
         signals: [
           ...pick(buckets.workflow, 2),
           ...pick(buckets.misc, 1)
         ]
       },
-
       {
         title: "Turn Frustration Into a One-Click Helper",
         murmur:
@@ -145,26 +124,25 @@ export async function handler() {
         quest:
           "Identify a repeated complaint and build a tiny helper that does exactly one thing to reduce that friction.",
         worth: [
-          "Clear problem-solution loop",
-          "Great for shipping fast",
-          "Teaches product instinct"
+          "Fast to ship",
+          "Teaches product instinct",
+          "Highly focused"
         ],
         signals: [
           ...pick(buckets.creativity, 2),
           ...pick(buckets.workflow, 1)
         ]
       },
-
       {
         title: "Make the First Five Minutes Better",
         murmur:
           "First-time experiences with tools are frequently overwhelming or under-guided.",
         quest:
-          "Design a first-five-minutes experience that helps someone orient themselves without reading full documentation.",
+          "Design a first-five-minutes experience that orients users without forcing them to read docs.",
         worth: [
-          "Empathy-driven design",
-          "Doesn’t require backend complexity",
-          "Highly shareable"
+          "Empathy-driven",
+          "No backend required",
+          "Very shareable"
         ],
         signals: [
           ...pick(buckets.explanation, 1),
@@ -174,15 +152,12 @@ export async function handler() {
       }
     ];
 
-    // Final guardrail
-    ideas = ideas.filter(i => i.signals.length >= 2);
-    if (ideas.length < 5) {
-      throw new Error("Signal diversity insufficient");
+    if (ideas.some(i => i.signals.length < 2)) {
+      throw new Error("Signal diversity too low");
     }
 
-  } catch (err) {
+  } catch {
     mode = "sample";
-
     ideas = [
       {
         title: "Explain This Like I’m New Here",
@@ -196,7 +171,7 @@ export async function handler() {
           "High empathy payoff"
         ],
         signals: [
-          { type: "sample", name: "Sample Signal", url: "#" }
+          { type: "sample", name: "Sample Data", url: "#" }
         ]
       }
     ];
