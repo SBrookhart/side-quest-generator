@@ -3,23 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
 <title>Tech Murmurs</title>
 
 <!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
 
 <style>
 :root {
-  --bg: #0b0d12;
-  --panel: #121622;
-  --panel-soft: #151a2a;
-  --border: #1f2538;
-  --text: #e8ebf3;
-  --muted: #9aa3b2;
-  --accent: #8da2ff;
-  --spark: #f3d37a;
-  --warn-bg: rgba(243,211,122,.15);
+  --bg:#0b0e14;
+  --panel:#121826;
+  --border:#1f2937;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+
+  --easy:#4ade80;
+  --medium:#facc15;
+  --hard:#f87171;
+
+  --github:#9ca3af;
+  --twitter:#38bdf8;
 }
 
 * { box-sizing: border-box; }
@@ -27,122 +34,159 @@
 body {
   margin: 0;
   font-family: Inter, system-ui, sans-serif;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #141a33 0%, transparent 60%),
-    radial-gradient(800px 400px at 90% 0%, #1b2342 0%, transparent 55%),
-    var(--bg);
   color: var(--text);
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+    var(--bg);
 }
 
 header {
-  max-width: 980px;
-  margin: 4rem auto 2.5rem;
-  padding: 0 2rem;
+  max-width: 1100px;
+  margin: auto;
+  padding: 4rem 2rem 2.5rem;
 }
 
 h1 {
-  font-family: Fraunces, serif;
-  font-size: 3.4rem;
-  letter-spacing: -.02em;
-  margin-bottom: .5rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 3.2rem;
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.02em;
 }
 
 .motto {
-  max-width: 720px;
-  font-size: 1.05rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--muted);
-  line-height: 1.6;
+  margin-bottom: 1.5rem;
 }
 
-nav {
-  margin-top: 1.8rem;
+header p {
+  max-width: 780px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
+}
+
+.nav {
   display: flex;
-  gap: 1.2rem;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-nav a {
-  padding: .55rem .9rem;
-  border-radius: 10px;
+.nav a, .nav button {
   border: 1px solid var(--border);
-  background: var(--panel-soft);
-  color: var(--accent);
+  background: transparent;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   text-decoration: none;
-  font-size: .9rem;
 }
 
 #banner {
+  max-width: 1100px;
+  margin: auto;
+  padding: 1rem 2rem;
+  color: #fde68a;
   display: none;
-  max-width: 980px;
-  margin: 0 auto 2rem;
-  padding: 1rem 1.5rem;
-  border-radius: 14px;
-  background: var(--warn-bg);
-  border: 1px solid rgba(243,211,122,.4);
-  color: var(--spark);
 }
 
 main {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 0 2rem 5rem;
+  max-width: 1100px;
+  margin: auto;
+  padding: 0 2rem 4rem;
 }
 
-.card {
-  background: linear-gradient(180deg, #161c33, #0f1323);
+.day-label {
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.quest {
+  background: rgba(255,255,255,0.03);
   border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 2.4rem 2.6rem;
-  margin-bottom: 3rem;
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
 }
 
-.card h2 {
-  font-family: Fraunces, serif;
-  font-size: 2rem;
-  margin-bottom: 1.6rem;
+.quest h2 {
+  font-family: "Space Grotesk", sans-serif;
+  margin: 0.4rem 0 1.2rem;
 }
 
-.section {
-  margin-bottom: 1.8rem;
+.label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-top: 1.2rem;
 }
 
-.section-header {
+.meta {
   display: flex;
   align-items: center;
-  gap: .6rem;
-  font-weight: 600;
-  margin-bottom: .25rem;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
-.section-desc {
-  margin-left: 1.7rem;
-  font-size: .78rem;
-  color: var(--muted);
+.sources {
+  margin-left: auto;
+  display: flex;
+  gap: 0.6rem;
 }
 
-.section p, .section ul {
-  margin-left: 1.7rem;
-  margin-top: .6rem;
-  line-height: 1.55;
-}
+.source svg { width: 16px; height: 16px; }
 
-.section ul {
-  padding-left: 1.2rem;
-}
-
-.section li {
-  margin-bottom: .4rem;
-}
-
-a.source {
-  color: var(--accent);
-  text-decoration: none;
-}
+.source.github svg { color: var(--github); }
+.source.twitter svg { color: var(--twitter); }
 
 footer {
-  text-align: center;
-  padding: 3rem 2rem 4rem;
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  margin-top: 4rem;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
   color: var(--muted);
-  font-size: .85rem;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modal-content {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.2rem;
+  max-width: 860px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-content h2, .modal-content h3 {
+  font-family: "Space Grotesk", sans-serif;
 }
 </style>
 </head>
@@ -151,91 +195,97 @@ footer {
 
 <header>
   <h1>Tech Murmurs</h1>
-  <div class="motto">
-    Side-Quest Generator for Builders sits at the intersection of unmet needs,
-    unfinished ambition, and public signals.
-    A quiet machine for turning ambient internet intent into actionable mini-projects.
-  </div>
+  <div class="motto">Side-Quest Generator for Builders</div>
 
-  <nav>
-    <a href="archive.html">Archive</a>
-    <a href="methodology.html">Methodology</a>
-  </nav>
+  <p>
+    Side-Quest Generator for Builders sits at the intersection of unmet needs, unfinished ambition, and public signals.
+    It’s a quiet machine for turning ambient internet intent into actionable mini-projects, listening to the places
+    where builders talk — issues, roadmaps, hackathons, and posts — and extracting what hasn’t been built yet.
+  </p>
+
+  <p>
+    Every day, it publishes a small set of unclaimed side quests: weird micro-projects, unbuilt features, and abandoned
+    experiments hiding in plain sight. Ideas waiting for someone to care enough to ship them.
+  </p>
+
+  <div class="nav">
+    <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
+    <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
+  </div>
 </header>
 
 <div id="banner">
-⚠️ Live signals were insufficient today.  
-You’re seeing a clearly labeled sample snapshot.
+⚠️ Live signals were unavailable or insufficient today. You are viewing a sample snapshot.
 </div>
 
-<main id="ideas"></main>
+<main>
+  <div class="day-label" id="dayLabel"></div>
+  <div id="today"></div>
+</main>
 
 <footer>
-Built quietly. Shipped deliberately.<br/>
-© 2026 Brookhart Labs
+  <div class="footer-inner">
+    <div>Built quietly, shipped deliberately.</div>
+    <div>© 2026 Brookhart Labs</div>
+  </div>
 </footer>
 
+<!-- Methodology Modal -->
+<div class="modal" id="methodology">
+  <div class="modal-content">
+    <button onclick="toggleMethodology()">Close</button>
+    <div id="methodologyContent"></div>
+  </div>
+</div>
+
 <script>
-async function loadToday() {
+function toggleMethodology() {
+  const m = document.getElementById("methodology");
+  m.style.display = m.style.display === "flex" ? "none" : "flex";
+}
+
+async function loadIdeas() {
   const res = await fetch("/.netlify/functions/archive");
   const days = await res.json();
-
-  if (!days || !days.length) {
-    document.getElementById("ideas").innerHTML =
-      "<p style='color:#9aa3b2'>No ideas published yet.</p>";
-    return;
-  }
+  if (!days || !days.length) return;
 
   const today = days[0];
-
   if (today.mode === "sample") {
     document.getElementById("banner").style.display = "block";
   }
 
-  render(today.ideas);
+  document.getElementById("dayLabel").innerText =
+    "Ideas for " + new Date(today.date).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
+  document.getElementById("today").innerHTML =
+    today.ideas.map(i => `
+      <div class="quest">
+        <h2>${i.title}</h2>
+
+        <div class="label">Murmur</div>${i.murmur}
+        <div class="label">Side Quest</div>${i.quest}
+        <div class="label">For What It’s Worth</div>
+        <ul>${i.worth.map(w=>`<li>${w}</li>`).join("")}</ul>
+
+        <div class="meta">
+          <div class="sources">
+            ${i.signals.map(s=>`
+              <a class="source ${s.type}" href="${s.url}" target="_blank">
+                <i data-lucide="${s.type}"></i>
+              </a>`).join("")}
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+  lucide.createIcons();
 }
 
-function render(ideas) {
-  const root = document.getElementById("ideas");
-  root.innerHTML = "";
+fetch("methodology.html")
+  .then(r=>r.text())
+  .then(t=>document.getElementById("methodologyContent").innerHTML=t);
 
-  ideas.forEach(i => {
-    root.innerHTML += `
-<div class="card">
-  <h2>${i.title}</h2>
-
-  <div class="section">
-    <div class="section-header">🫧 Murmur</div>
-    <div class="section-desc">Why this exists</div>
-    <p>${i.murmur}</p>
-  </div>
-
-  <div class="section">
-    <div class="section-header">🧭 Side Quest</div>
-    <div class="section-desc">What to build</div>
-    <p>${i.quest}</p>
-  </div>
-
-  <div class="section">
-    <div class="section-header">✨ For What It’s Worth</div>
-    <div class="section-desc">Why it’s worth your energy</div>
-    <ul>${i.worth.map(w => `<li>${w}</li>`).join("")}</ul>
-  </div>
-
-  <div class="section">
-    <div class="section-header">🧾 Signals Observed</div>
-    <div class="section-desc">Receipts, if you want them</div>
-    <ul>
-      ${i.signals.map(s =>
-        `<li>Source: <a class="source" href="${s.url}" target="_blank">${s.name}</a></li>`
-      ).join("")}
-    </ul>
-  </div>
-</div>`;
-  });
-}
-
-loadToday();
+loadIdeas();
 </script>
 
 </body>
