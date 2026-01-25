@@ -46,13 +46,15 @@
 
     h1 {
       font-family: "Space Grotesk", sans-serif;
-      font-size: 2.6rem;
-      margin-bottom: 0.3rem;
+      font-size: 2.8rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
     }
 
     header p {
       color: var(--muted);
-      max-width: 700px;
+      max-width: 720px;
+      line-height: 1.6;
     }
 
     main {
@@ -62,33 +64,34 @@
     }
 
     .day {
-      margin-bottom: 3rem;
+      margin-bottom: 3.5rem;
     }
 
     .day-label {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: var(--muted);
-      margin-bottom: 1.2rem;
+      margin-bottom: 1.6rem;
     }
 
     .quest {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 1.8rem;
+      padding: 2.2rem;
+      margin-bottom: 2.2rem;
     }
 
     .quest h2 {
       font-family: "Space Grotesk", sans-serif;
+      font-size: 1.6rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 1rem;
+      gap: 0.7rem;
+      margin-bottom: 1.4rem;
     }
 
     .difficulty-badge {
-      padding: 0.25rem 0.7rem;
+      padding: 0.28rem 0.75rem;
       border-radius: 999px;
       font-size: 0.7rem;
       font-weight: 600;
@@ -99,28 +102,49 @@
     .hard { background: var(--hard); color:#450a0a; }
 
     .section {
-      margin-top: 1.2rem;
+      margin-top: 1.6rem;
     }
 
-    .section h4 {
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #6b7280;
+    .section-header {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      margin-bottom: 0.4rem;
+      gap: 0.6rem;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.05rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .section-header i {
+      opacity: 0.85;
+    }
+
+    .descriptor {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.6rem;
+    }
+
+    .section p,
+    .section ul {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .section ul {
+      padding-left: 1.2rem;
     }
 
     .signals a {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--muted);
       text-decoration: none;
-      margin-top: 0.3rem;
+      margin-top: 0.4rem;
     }
 
     .signals a:hover {
@@ -194,22 +218,34 @@ async function loadArchive() {
           </h2>
 
           <div class="section">
-            <h4><i data-lucide="message-circle"></i> Murmur</h4>
+            <div class="section-header">
+              <i data-lucide="message-circle"></i> Murmur
+            </div>
+            <div class="descriptor">Why this exists</div>
             <p>${i.murmur}</p>
           </div>
 
           <div class="section">
-            <h4><i data-lucide="compass"></i> Side Quest</h4>
+            <div class="section-header">
+              <i data-lucide="compass"></i> Side Quest
+            </div>
+            <div class="descriptor">What to build</div>
             <p>${i.sideQuest}</p>
           </div>
 
           <div class="section">
-            <h4><i data-lucide="sparkles"></i> For What It’s Worth</h4>
+            <div class="section-header">
+              <i data-lucide="sparkles"></i> For What It’s Worth
+            </div>
+            <div class="descriptor">Why it’s worth your energy</div>
             <ul>${i.worth.map(w => `<li>${w}</li>`).join("")}</ul>
           </div>
 
           <div class="section signals">
-            <h4><i data-lucide="receipt"></i> Signals Observed</h4>
+            <div class="section-header">
+              <i data-lucide="receipt"></i> Signals Observed
+            </div>
+            <div class="descriptor">Receipts, if you want them</div>
             ${i.signals.map(s => `
               <a href="${s.url}" target="_blank">
                 <i data-lucide="${s.icon}"></i>${s.name}
