@@ -6,7 +6,7 @@ export async function getTwitterSignals() {
       type: "twitter",
       text: "Developers keep rebuilding the same infra dashboards.",
       url: "https://x.com",
-      timestamp: new Date().toISOString()
+      date: new Date().toISOString()
     }
   ];
 }
