@@ -27,8 +27,7 @@ export default async (req) => {
   let ideas = [];
 
   try {
-    // placeholder for live synthesis (GitHub, X, etc.)
-    // intentionally conservative for now
+    // Placeholder for live ingestion synthesis
     ideas = [];
   } catch {
     ideas = [];
@@ -41,35 +40,40 @@ export default async (req) => {
         murmur:"Crypto discourse oscillates between euphoria and despair.",
         sideQuest:"Build a real-time emotional dashboard of crypto Twitter.",
         worthIt:"Provides intuition for narrative momentum without trading.",
-        difficulty:"Easy"
+        difficulty:"Easy",
+        mode:"editorial"
       },
       {
         title:"Crypto Urban Legends",
-        murmur:"Myths and half-truths persist across on-chain culture.",
-        sideQuest:"Create a living museum of on-chain myths and memes.",
-        worthIt:"Preserves cultural context and reduces misinformation.",
-        difficulty:"Easy"
+        murmur:"On-chain myths persist without attribution or provenance.",
+        sideQuest:"Create a living museum of crypto myths and memes.",
+        worthIt:"Preserves cultural memory and reduces misinformation.",
+        difficulty:"Easy",
+        mode:"editorial"
       },
       {
         title:"If Crypto Twitter Were a Person",
         murmur:"Collective behavior often feels like a single personality.",
         sideQuest:"Build an AI character powered by live crypto discourse.",
-        worthIt:"Makes sentiment legible and entertaining.",
-        difficulty:"Medium"
+        worthIt:"Turns sentiment into something legible and playful.",
+        difficulty:"Medium",
+        mode:"editorial"
       },
       {
         title:"On-Chain Weather Channel",
-        murmur:"Users lack intuitive signals for network conditions.",
+        murmur:"Network conditions are unintuitive to non-technical users.",
         sideQuest:"Visualize on-chain activity like a weather forecast.",
-        worthIt:"Improves understanding without technical dashboards.",
-        difficulty:"Medium"
+        worthIt:"Improves comprehension without dashboards.",
+        difficulty:"Medium",
+        mode:"editorial"
       },
       {
         title:"Build-A-Protocol Simulator",
         murmur:"Protocol design is opaque to newcomers.",
         sideQuest:"Create a sandbox for simulating protocol tradeoffs.",
-        worthIt:"Lowers barrier to systems thinking.",
-        difficulty:"Hard"
+        worthIt:"Lowers the barrier to systems thinking.",
+        difficulty:"Hard",
+        mode:"editorial"
       }
     ];
   }
@@ -77,5 +81,10 @@ export default async (req) => {
   await store.set("latest", JSON.stringify(ideas));
   await store.set(`daily-${today}`, JSON.stringify(ideas));
 
-  return Response.json({ status:"generated", date:today, count:ideas.length });
+  return Response.json({
+    status:"generated",
+    date:today,
+    count:ideas.length,
+    mode:"editorial"
+  });
 };
