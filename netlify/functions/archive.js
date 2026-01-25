@@ -1,23 +1,27 @@
 import { getStore } from "@netlify/blobs";
 
 export async function handler() {
-  const store = getStore({
-    name: "tech-murmurs-archive",
-    siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_AUTH_TOKEN
-  });
+  const store = getStore("tech-murmurs-archive");
+  const indexKey = "archive:index";
 
-  const entries = [];
+  const index = await store.get(indexKey, { type: "json" });
 
-  for await (const key of store.list()) {
-    const day = await store.get(key);
-    entries.push(day);
+  if (!index || !index.length) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify([])
+    };
   }
 
-  entries.sort((a, b) => b.date.localeCompare(a.date));
+  const days = [];
+
+  for (const date of index) {
+    const day = await store.get(`day:${date}`, { type: "json" });
+    if (day) days.push(day);
+  }
 
   return {
     statusCode: 200,
-    body: JSON.stringify(entries)
+    body: JSON.stringify(days)
   };
 }
