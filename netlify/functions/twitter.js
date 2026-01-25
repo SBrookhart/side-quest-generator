@@ -1,40 +1,35 @@
 export async function handler() {
   const token = process.env.X_BEARER_TOKEN;
-  if(!token) return {statusCode:200, body:"[]"};
+  if (!token) return { statusCode: 200, body: "[]" };
 
-  const queries = [
-    `"what does this do" (repo OR tool) -is:retweet -is:reply lang:en`,
-    `"hard to explain" (tool OR repo) -is:retweet -is:reply lang:en`
-  ];
-  const signals=[];
+  const query =
+    '"what does this do" OR "why is this so confusing" OR "wish there was" ' +
+    '(tool OR repo OR project) -is:retweet -is:reply lang:en';
 
-  for(const q of queries){
-    try{
-      const url="https://api.twitter.com/2/tweets/search/recent?query="+encodeURIComponent(q)+"&max_results=8&tweet.fields=public_metrics";
-      const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`}});
-      const j=await r.json();
-      (j.data||[]).forEach(t=>{
-        if(t.text.length>40 && !/lol|💀/i.test(t.text)){
-          signals.push({name:"X",url:`https://x.com/i/web/status/${t.id}`,signal:t.text});
-        }
-      });
-    }catch{}
-  }
-  const unique=[];
-  const seen=new Set();
-  signals.forEach(s=>{
-    const k=s.signal.slice(0,60);
-    if(!seen.has(k)){seen.add(k);unique.push(s);}
+  const url =
+    "https://api.twitter.com/2/tweets/search/recent" +
+    `?query=${encodeURIComponent(query)}` +
+    "&max_results=10&tweet.fields=created_at";
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
   });
+  const json = await res.json();
+
+  const signals = (json.data || [])
+    .filter(t =>
+      t.text.length > 40 &&
+      !/lol|lmao|wtf|bro|💀/i.test(t.text)
+    )
+    .map(t => ({
+      type: "twitter",
+      name: "X",
+      url: `https://x.com/i/web/status/${t.id}`,
+      text: t.text
+    }));
 
   return {
-    statusCode:200,
-    body:JSON.stringify(unique.slice(0,5).map(s=>({
-      title:"Ambient Developer Signal",
-      murmur:s.signal,
-      quest:"Use this developer expression to enrich an idea from other sources.",
-      worth:["Adds emotional context","Supports another idea","Creative insight"],
-      signals:[{name:s.name,url:s.url}]
-    })))
+    statusCode: 200,
+    body: JSON.stringify(signals)
   };
 }
