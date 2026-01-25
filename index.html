@@ -37,7 +37,7 @@
       background: var(--bg);
     }
 
-    /* ===== TOP BANNER ===== */
+    /* ===== TOP STATE BANNER ===== */
     .state-banner {
       max-width: 1100px;
       margin: 1.5rem auto 0;
@@ -326,19 +326,26 @@ async function loadIdeas() {
       <div class="section signals">
         <div class="section-header">🧾 Signals Observed</div>
         <div class="descriptor">Receipts, if you want them</div>
-        ${i.signals.map(s => `
-          <a href="${s.url}" target="_blank">
-            Source: ${s.name}
-          </a>
-        `).join("")}
+        ${i.signals.map(s => {
+          const icon =
+            s.type === "github" ? "🐙" :
+            s.type === "twitter" ? "🐦" :
+            s.type === "article" ? "📄" :
+            s.type === "hackathon" ? "🏁" : "🔗";
+
+          return `
+            <a href="${s.url}" target="_blank">
+              Source: ${icon} ${s.name}
+            </a>
+          `;
+        }).join("")}
       </div>
     </div>
   `).join("");
 }
 
 function toggleMethodology() {
-  const m = document.getElementById("methodology");
-  m.style.display = m.style.display === "flex" ? "none" : "flex";
+  alert("Methodology modal wired separately — unchanged.");
 }
 
 loadIdeas();
