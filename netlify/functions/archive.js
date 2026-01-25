@@ -1,8 +1,11 @@
 import { getStore } from "@netlify/blobs";
 
 export default async () => {
-  const siteID = process.env.NETLIFY_SITE_ID;
-  const token = process.env.NETLIFY_API_TOKEN;
+  const siteID =
+    process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
+
+  const token =
+    process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN;
 
   if (!siteID || !token) {
     return Response.json([], { status: 200 });
@@ -15,7 +18,6 @@ export default async () => {
   });
 
   const latest = await store.get("latest");
-
   if (!latest) {
     return Response.json([]);
   }
