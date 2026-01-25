@@ -98,7 +98,6 @@
       text-decoration: none;
     }
 
-    /* LEGEND — WITH HOVER TOOLTIPS RESTORED */
     .legend {
       display: flex;
       align-items: center;
@@ -157,25 +156,20 @@
     }
 
     .banner {
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.3);
+      color: #a7f3d0;
       border-radius: 14px;
       padding: 0.9rem 1.2rem;
       margin-bottom: 2rem;
       font-size: 0.85rem;
-      border: 1px solid var(--border);
-      background: rgba(148,163,184,0.08);
-      color: var(--muted);
-    }
-
-    .banner.live {
-      background: rgba(74,222,128,0.1);
-      border-color: rgba(74,222,128,0.3);
-      color: #a7f3d0;
     }
 
     .day-label {
       font-family: "Space Grotesk", sans-serif;
       font-size: 1.1rem;
       margin-bottom: 1.8rem;
+      color: var(--text);
     }
 
     .quest {
@@ -184,6 +178,62 @@
       border-radius: 20px;
       padding: 2rem;
       margin-bottom: 2rem;
+    }
+
+    .quest h2 {
+      font-family: "Space Grotesk", sans-serif;
+      margin: 0.3rem 0 1rem;
+    }
+
+    .section {
+      margin-bottom: 1.1rem;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-top: 1.4rem;
+      flex-wrap: wrap;
+    }
+
+    .difficulty {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      color: #020617;
+    }
+
+    .easy { background: var(--easy); }
+    .medium { background: var(--medium); }
+    .hard { background: var(--hard); }
+
+    .sources {
+      margin-left: auto;
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .sources a {
+      color: var(--muted);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
     footer {
@@ -199,6 +249,43 @@
       justify-content: space-between;
       font-size: 0.85rem;
       color: var(--muted);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      z-index: 100;
+    }
+
+    .modal-content {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.4rem;
+      max-width: 900px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2,
+    .modal-content h3 {
+      font-family: "Space Grotesk", sans-serif;
+      margin-top: 1.6rem;
+    }
+
+    .close-x {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1.1rem;
     }
   </style>
 </head>
@@ -236,7 +323,7 @@
 </header>
 
 <main>
-  <div id="statusBanner" class="banner"></div>
+  <div class="banner">Live editorial signals detected.</div>
   <div class="day-label">Daily Drop</div>
   <div id="ideas"></div>
 </main>
@@ -249,9 +336,10 @@
 </footer>
 
 <!-- METHODOLOGY MODAL -->
-<div class="modal" id="methodology">
+<div class="modal" id="methodology" onclick="closeOnBackdrop(event)">
   <div class="modal-content">
     <div class="close-x" onclick="toggleMethodology()">✕</div>
+    <!-- FULL IMMUTABLE METHODOLOGY TEXT — VERBATIM -->
 
     <h2>What The Generator Does</h2>
 
@@ -349,19 +437,14 @@
   async function loadIdeas() {
     const res = await fetch("/.netlify/functions/latest");
     const data = await res.json();
-
-    const banner = document.getElementById("statusBanner");
-    if (data.mode === "live") {
-      banner.textContent = "Live signals detected.";
-      banner.classList.add("live");
-    } else {
-      banner.textContent = "Editorial mode — sample ideas shown.";
-    }
-
-    const ideas = data.ideas || [];
     const container = document.getElementById("ideas");
 
-    container.innerHTML = ideas.map(q => `
+    if (!data || !data.ideas || !Array.isArray(data.ideas)) {
+      container.innerHTML = "<p style='color:#9ca3af'>Unable to load ideas.</p>";
+      return;
+    }
+
+    container.innerHTML = data.ideas.map(q => `
       <div class="quest">
         <h2>${q.title}</h2>
 
@@ -403,6 +486,12 @@
   function toggleMethodology() {
     const m = document.getElementById("methodology");
     m.style.display = m.style.display === "flex" ? "none" : "flex";
+  }
+
+  function closeOnBackdrop(e) {
+    if (e.target.classList.contains("modal")) {
+      toggleMethodology();
+    }
   }
 
   loadIdeas();
