@@ -34,7 +34,7 @@ export default async () => {
     .map(b => b.key)
     .filter(key => key.startsWith("daily-"));
 
-  const entries = [];
+  const archiveData = {};
 
   for (const key of dailyKeys) {
     try {
@@ -42,15 +42,13 @@ export default async () => {
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
 
       if (parsed?.ideas && parsed?.date) {
-        entries.push(parsed);
+        // Store by date as the key
+        archiveData[parsed.date] = parsed.ideas;
       }
     } catch {
       // skip corrupt entries
     }
   }
 
-  // Sort newest → oldest
-  entries.sort((a, b) => b.date.localeCompare(a.date));
-
-  return Response.json({ days: entries }, { status: 200 });
+  return Response.json(archiveData, { status: 200 });
 };
