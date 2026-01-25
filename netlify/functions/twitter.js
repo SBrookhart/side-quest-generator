@@ -1,70 +1,38 @@
 // netlify/functions/twitter.js
 
 export async function getTwitterSignals() {
-  const token =
-    process.env.TWITTER_BEARER_TOKEN ||
-    process.env.X_BEARER_TOKEN;
+  const feeds = [
+    "https://nitter.net/search/rss?f=tweets&q=missing+tool",
+    "https://nitter.net/search/rss?f=tweets&q=wish+there+was"
+  ];
 
-  if (!token) {
-    return [];
-  }
+  const results = [];
 
-  // Strong “someone should build” / unmet-need energy
-  const query = [
-    '"someone should build"',
-    '"wish there was"',
-    '"why isn’t there"',
-    '"missing tool"',
-    '"there should be a"',
-    '"no good way to"'
-  ].join(" OR ");
+  for (const feed of feeds) {
+    try {
+      const res = await fetch(feed);
+      if (!res.ok) continue;
 
-  const url =
-    "https://api.twitter.com/2/tweets/search/recent?" +
-    new URLSearchParams({
-      query,
-      "tweet.fields": "author_id,created_at,public_metrics",
-      expansions: "author_id",
-      "user.fields": "username",
-      max_results: "10"
-    }).toString();
+      const text = await res.text();
+      const matches = [...text.matchAll(/<title>(.*?)<\/title>/g)];
 
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`
+      matches.slice(0, 5).forEach(m => {
+        results.push({
+          type: "twitter",
+          name: "X / Twitter",
+          text: m[1],
+          url: feed
+        });
+      });
+    } catch {
+      continue;
     }
-  });
-
-  if (!res.ok) {
-    return [];
   }
 
-  const data = await res.json();
-  if (!data.data || !data.includes?.users) {
-    return [];
-  }
-
-  const users = Object.fromEntries(
-    data.includes.users.map(u => [u.id, u])
-  );
-
-  return data.data.map(tweet => ({
-    type: "twitter",
-    name: "X Post",
-    text: tweet.text,
-    url: `https://x.com/${users[tweet.author_id]?.username}/status/${tweet.id}`
-  }));
+  return results;
 }
 
-// ----- HTTP handler (for manual testing) -----
 export default async function handler() {
-  try {
-    const signals = await getTwitterSignals();
-    return Response.json(signals, { status: 200 });
-  } catch {
-    return Response.json(
-      { error: "Twitter ingestion failed" },
-      { status: 500 }
-    );
-  }
+  const signals = await getTwitterSignals();
+  return Response.json(signals);
 }
