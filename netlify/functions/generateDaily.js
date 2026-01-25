@@ -5,6 +5,7 @@ import { getStore } from "@netlify/blobs";
 --------------------------------------------------------- */
 
 const SITE_BASE = "https://side-quest-generator.netlify.app";
+
 const FRICTION_REGEX =
   /(someone should|wish there was|why is there no|hard to|confusing|unclear|missing|feels early|keep seeing people)/i;
 
@@ -27,7 +28,7 @@ function normalizeSignal(raw) {
         : raw.type === "x"
         ? "X post"
         : raw.type === "article"
-        ? "Blog essay"
+        ? "Article"
         : "Hackathon prompt",
     icon:
       raw.type === "github"
@@ -41,7 +42,14 @@ function normalizeSignal(raw) {
   };
 }
 
-function synthesizeIdea({ title, murmur, quest, worth, signals, openEnded }) {
+function synthesizeIdea({
+  title,
+  murmur,
+  quest,
+  worth,
+  signals,
+  openEnded
+}) {
   const difficulty = classifyDifficulty({
     sources: signals,
     openEnded
@@ -95,7 +103,7 @@ export default async (request) => {
   }
 
   /* ---------------------------------------------------------
-     Fetch GitHub signals (existing function)
+     Fetch GitHub signals
   --------------------------------------------------------- */
 
   let githubSignals = [];
@@ -112,61 +120,77 @@ export default async (request) => {
   }
 
   /* ---------------------------------------------------------
-     Synthesis (vibe-coder + purpose)
+     Fetch X signals
+  --------------------------------------------------------- */
+
+  let xSignals = [];
+  try {
+    const res = await fetch(
+      `${SITE_BASE}/.netlify/functions/twitter`
+    );
+    const raw = await res.json();
+    xSignals = raw.filter(
+      r => r.text && FRICTION_REGEX.test(r.text)
+    );
+  } catch {
+    xSignals = [];
+  }
+
+  /* ---------------------------------------------------------
+     Synthesis
   --------------------------------------------------------- */
 
   const ideas = [];
 
-  if (githubSignals.length >= 2) {
+  if (githubSignals.length >= 1 && xSignals.length >= 1) {
     ideas.push(
       synthesizeIdea({
         title: "The Internet Is Whispering About…",
         murmur:
-          "Across builder conversations, people keep sensing shifts before they show up in metrics or headlines. These early signals are fragile and often disappear before anyone acts on them.",
+          "Across builder conversations, people keep sensing shifts before they show up in metrics or roadmaps. These early signals surface as confusion, friction, or half-formed ideas — and then quietly disappear.",
         quest:
-          "Build a small daily generator that captures and names the internet’s background thoughts before they evaporate.",
+          "Build a daily snapshot that captures and names these background signals before they evaporate.",
         worth: [
-          "Preserves early signals before they harden",
-          "Clear daily scope with room for interpretation",
-          "Feels meaningful without needing to be precise"
+          "Preserves early signals others overlook",
+          "Clear daily scope without chasing trends",
+          "Feels meaningful without needing precision"
         ],
-        signals: githubSignals.slice(0, 2).map(s => ({
-          type: "github",
-          url: s.url
-        })),
+        signals: [
+          { type: "github", url: githubSignals[0].url },
+          { type: "x", url: xSignals[0].url }
+        ],
         openEnded: true
       })
     );
   }
 
-  if (githubSignals.length >= 4) {
+  if (githubSignals.length >= 2 && xSignals.length >= 2) {
     ideas.push(
       synthesizeIdea({
         title: "Someone Should Build This",
         murmur:
-          "All over public conversations, people casually name unmet needs and then move on. These ideas disappear even though they point to real white space.",
+          "People regularly articulate unmet needs in passing, without expecting anything to come of it. These moments reveal real white space — but vanish unless someone captures them.",
         quest:
-          "Build a collector that captures and surfaces “someone should build…” moments before they vanish.",
+          "Build a collector that surfaces explicit “someone should build…” moments and turns them into concrete side quests.",
         worth: [
-          "Directly surfaces white space",
-          "Minimal logic, strong sense of purpose",
-          "Encourages remixing instead of perfection"
+          "Directly converts intent into action",
+          "Strong sense of purpose with minimal scope",
+          "Encourages experimentation over polish"
         ],
-        signals: githubSignals.slice(2, 4).map(s => ({
-          type: "github",
-          url: s.url
-        })),
+        signals: [
+          { type: "github", url: githubSignals[1].url },
+          { type: "x", url: xSignals[1].url }
+        ],
         openEnded: false
       })
     );
   }
 
   /* ---------------------------------------------------------
-     Fallback (Sample Mode)
+     Live vs Sample Mode
   --------------------------------------------------------- */
 
   let mode = "sample";
-
   if (ideas.length >= 2) {
     mode = "live";
   }
@@ -174,21 +198,25 @@ export default async (request) => {
   while (ideas.length < 5) {
     ideas.push(
       synthesizeIdea({
-        title: "The Internet’s Collective Attention Span",
+        title: "Recurring Questions That Won’t Go Away",
         murmur:
-          "Some questions refuse to go away. They keep resurfacing because nothing has fully addressed them yet.",
+          "Some problems keep resurfacing because nothing has addressed them clearly or completely. Repetition itself becomes a signal.",
         quest:
-          "Build a tracker that highlights ideas the internet keeps returning to over time.",
+          "Build a lightweight tracker that highlights ideas the internet keeps returning to over time.",
         worth: [
           "Turns repetition into signal",
           "Helps choose problems that actually matter",
-          "Naturally improves as time passes"
+          "Naturally improves as history accumulates"
         ],
         signals: [],
         openEnded: true
       })
     );
   }
+
+  /* ---------------------------------------------------------
+     Persist Snapshot
+  --------------------------------------------------------- */
 
   const snapshot = {
     date: today,
