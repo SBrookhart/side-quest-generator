@@ -3,5 +3,8 @@
   "private": true,
   "scripts": {
     "build": "echo \"No build step required\""
+  },
+  "dependencies": {
+    "@netlify/blobs": "^7.0.0"
   }
 }
