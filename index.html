@@ -24,6 +24,10 @@
       --easy:#4ade80;
       --medium:#facc15;
       --hard:#f87171;
+
+      --live-bg:#0f2e1e;
+      --live-border:#1f6f4a;
+      --sample-bg:#111827;
     }
 
     * { box-sizing: border-box; }
@@ -70,9 +74,15 @@
     .top-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.2rem;
       flex-wrap: wrap;
       margin-top: 1.8rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
     }
 
     .nav a, .nav button {
@@ -92,11 +102,9 @@
     .legend {
       display: flex;
       align-items: center;
-      gap: 0.8rem;
+      gap: 0.6rem;
       font-size: 0.75rem;
       color: var(--muted);
-      margin-left: auto;
-      flex-wrap: wrap;
     }
 
     .badge {
@@ -116,29 +124,57 @@
       padding: 0 2rem 4rem;
     }
 
+    .state-banner {
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.85rem;
+      margin: 1.6rem 0 2.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .state-banner.live {
+      background: var(--live-bg);
+      border: 1px solid var(--live-border);
+      color: #c7f9dd;
+    }
+
+    .state-banner.sample {
+      background: var(--sample-bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
     .section-title {
       font-family: "Space Grotesk", sans-serif;
       font-size: 1.6rem;
       margin: 3rem 0 1.8rem;
     }
 
-    .banner {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      border-radius: 14px;
-      padding: 1rem;
-      margin-bottom: 2rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-
     .quest {
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.035);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 2.2rem;
-      margin-bottom: 2.4rem;
+      margin-bottom: 2.6rem;
+      position: relative;
     }
+
+    .quest::before {
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:3px;
+      border-radius:20px 0 0 20px;
+      background: var(--border);
+    }
+
+    .quest.easy::before { background: var(--easy); }
+    .quest.medium::before { background: var(--medium); }
+    .quest.hard::before { background: var(--hard); }
 
     .quest h2 {
       font-family: "Space Grotesk", sans-serif;
@@ -146,7 +182,7 @@
       display: flex;
       align-items: center;
       gap: 0.7rem;
-      margin-bottom: 1.6rem;
+      margin-bottom: 1.8rem;
     }
 
     .section {
@@ -156,10 +192,10 @@
     .section-header {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.55rem;
       font-family: "Space Grotesk", sans-serif;
       font-size: 1.05rem;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.35rem;
     }
 
     .descriptor {
@@ -167,13 +203,13 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: #6b7280;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.9rem;
     }
 
     .signals a {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.55rem;
       font-size: 0.85rem;
       color: var(--muted);
       text-decoration: none;
@@ -250,21 +286,23 @@
     <div class="nav">
       <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
       <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
-    </div>
 
-    <div class="legend">
-      <span class="badge easy">Easy</span> playful, weekend-sized
-      <span class="badge medium">Medium</span> synthesis + iteration
-      <span class="badge hard">Hard</span> open-ended experiments
+      <div class="legend">
+        <span class="badge easy">Easy</span>
+        <span class="badge medium">Medium</span>
+        <span class="badge hard">Hard</span>
+      </div>
     </div>
   </div>
 </header>
 
 <main>
-  <div id="banner" class="banner">Listening for murmurs…</div>
+  <div id="stateBanner" class="state-banner sample">
+    <i data-lucide="circle"></i>
+    Listening for murmurs…
+  </div>
 
   <div class="section-title">Daily Drop</div>
-
   <div id="ideas"></div>
 </main>
 
@@ -278,7 +316,7 @@
 <div class="modal" id="methodology">
   <div class="modal-content">
     <i class="close" data-lucide="x" onclick="toggleMethodology()"></i>
-    <!-- Methodology content lives here and remains unchanged -->
+    <!-- methodology content unchanged -->
   </div>
 </div>
 
@@ -288,42 +326,50 @@ async function loadIdeas() {
     const res = await fetch("/.netlify/functions/latest");
     const data = await res.json();
 
-    document.getElementById("banner").innerText =
+    const banner = document.getElementById("stateBanner");
+    banner.className = "state-banner " + data.mode;
+    banner.innerHTML =
       data.mode === "live"
-        ? "Live editorial signals detected."
-        : "Live data unavailable — showing representative editorial sample.";
+        ? '<i data-lucide="check-circle"></i> Live editorial signals detected.'
+        : '<i data-lucide="circle"></i> Live signals unavailable — showing representative editorial sample.';
 
     document.getElementById("ideas").innerHTML = data.ideas.map(i => `
-      <div class="quest">
+      <div class="quest ${i.difficulty.toLowerCase()}">
         <h2>
           ${i.title}
           <span class="badge ${i.difficulty.toLowerCase()}">${i.difficulty}</span>
         </h2>
 
         <div class="section">
-          <div class="section-header"><i data-lucide="message-circle"></i> Murmur</div>
+          <div class="section-header"><i data-lucide="message-circle" style="color:#a78bfa"></i> Murmur</div>
           <div class="descriptor">Why this exists</div>
           <p>${i.murmur}</p>
         </div>
 
         <div class="section">
-          <div class="section-header"><i data-lucide="compass"></i> Side Quest</div>
+          <div class="section-header"><i data-lucide="compass" style="color:#38bdf8"></i> Side Quest</div>
           <div class="descriptor">What to build</div>
           <p>${i.sideQuest}</p>
         </div>
 
         <div class="section">
-          <div class="section-header"><i data-lucide="sparkles"></i> For What It’s Worth</div>
+          <div class="section-header"><i data-lucide="sparkles" style="color:#facc15"></i> For What It’s Worth</div>
           <div class="descriptor">Why it’s worth your energy</div>
           <ul>${i.worth.map(w => `<li>${w}</li>`).join("")}</ul>
         </div>
 
         <div class="section signals">
-          <div class="section-header"><i data-lucide="receipt"></i> Signals Observed</div>
+          <div class="section-header"><i data-lucide="receipt" style="color:#9ca3af"></i> Signals Observed</div>
           <div class="descriptor">Receipts, if you want them</div>
           ${i.signals.map(s => `
             <a href="${s.url}" target="_blank">
-              <i data-lucide="${s.icon}"></i> Source: ${s.name}
+              <i data-lucide="${s.icon}" style="color:${
+                s.icon === "twitter" ? "#38bdf8" :
+                s.icon === "github" ? "#9ca3af" :
+                s.icon === "file-text" ? "#94a3b8" :
+                "#facc15"
+              }"></i>
+              Source: ${s.name}
             </a>
           `).join("")}
         </div>
@@ -332,7 +378,7 @@ async function loadIdeas() {
 
     lucide.createIcons();
   } catch {
-    document.getElementById("banner").innerText =
+    document.getElementById("stateBanner").innerText =
       "Unable to load ideas. Please try again.";
   }
 }
