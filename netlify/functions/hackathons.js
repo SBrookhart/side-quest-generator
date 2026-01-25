@@ -1,40 +1,33 @@
 // netlify/functions/hackathons.js
-
 export async function getHackathonSignals() {
-  const feeds = [
-    "https://devpost.com/feed",
-    "https://mlh.io/rss"
-  ];
+  const FEED =
+    "https://devpost.com/hackathons.rss";
 
-  const results = [];
+  try {
+    const res = await fetch(FEED);
+    if (!res.ok) return [];
 
-  for (const feed of feeds) {
-    try {
-      const res = await fetch(feed);
-      if (!res.ok) continue;
+    const text = await res.text();
+    const items = [...text.matchAll(/<item>([\s\S]*?)<\/item>/g)];
 
-      const text = await res.text();
+    return items.slice(0, 5).map(raw => {
+      const title =
+        raw[1].match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] || "";
+      const link =
+        raw[1].match(/<link>(.*?)<\/link>/)?.[1] || "";
 
-      // very lightweight RSS scan (intentional)
-      const matches = [...text.matchAll(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g)];
-
-      matches.slice(0, 5).forEach(m => {
-        results.push({
-          type: "rss",
-          name: "Hackathon",
-          text: m[1],
-          url: feed
-        });
-      });
-    } catch {
-      continue;
-    }
+      return {
+        type: "rss",
+        text: title,
+        url: link,
+        timestamp: new Date().toISOString()
+      };
+    });
+  } catch {
+    return [];
   }
-
-  return results;
 }
 
 export default async function handler() {
-  const signals = await getHackathonSignals();
-  return Response.json(signals);
+  return Response.json(await getHackathonSignals());
 }
