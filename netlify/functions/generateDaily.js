@@ -3,7 +3,6 @@ import { getGithubSignals } from "./github.js";
 
 /**
  * Convert a GitHub signal into a Tech Murmurs side quest
- * Editorial framing, vibe-coder friendly, non-destructive
  */
 function synthesizeGithubIdea(signal) {
   return {
@@ -51,7 +50,6 @@ export default async function generateDaily(req) {
   const force =
     new URL(req.url).searchParams.get("force") === "true";
 
-  // Prevent duplicate generation unless forced
   if (!force) {
     const existing = await store.get(`daily-${today}`);
     if (existing) {
@@ -125,17 +123,21 @@ export default async function generateDaily(req) {
 
   /**
    * 2. Controlled GitHub augmentation (OPTION B)
-   * Append at most ONE synthesized GitHub idea
+   * Append at most ONE high-signal GitHub idea
    */
   try {
     const githubSignals = await getGithubSignals();
 
-    if (githubSignals.length > 0) {
-      const bestSignal = githubSignals[0];
-      const githubIdea = synthesizeGithubIdea(bestSignal);
-      editorialIdeas.push(githubIdea);
+    const strongSignal = githubSignals.find(
+      s => (s.text || "").length > 300
+    );
+
+    if (strongSignal) {
+      editorialIdeas.push(
+        synthesizeGithubIdea(strongSignal)
+      );
     }
-  } catch (err) {
+  } catch {
     // Silent failure — editorial mode remains intact
   }
 
