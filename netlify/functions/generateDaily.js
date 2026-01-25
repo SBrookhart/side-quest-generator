@@ -3,6 +3,7 @@
 import { getStore } from "@netlify/blobs";
 import { getGithubSignals } from "./github.js";
 import { getArticleSignals } from "./articles.js";
+import { getHackathonSignals } from "./hackathons.js";
 
 export default async (req) => {
   const siteID = process.env.NETLIFY_SITE_ID;
@@ -28,7 +29,7 @@ export default async (req) => {
     }
   }
 
-  // ---- Editorial backbone (locked) ----
+  // ---- Editorial backbone (LOCKED) ----
   let ideas = [
     {
       title: "The Market Has Feelings",
@@ -79,20 +80,26 @@ export default async (req) => {
 
   // ---- Controlled live augmentation ----
   try {
-    const articleSignals = await getArticleSignals();
     const githubSignals = await getGithubSignals();
+    const articleSignals = await getArticleSignals();
+    const hackathonSignals = await getHackathonSignals();
 
+    // Articles gently reinforce idea #1
     if (articleSignals.length > 0) {
-      ideas[0] = {
-        ...ideas[0],
-        sources: [
-          ...articleSignals.slice(0, 1),
-          ...githubSignals.slice(0, 1)
-        ]
-      };
+      ideas[0].sources.push(...articleSignals.slice(0, 1));
+    }
+
+    // Hackathons inspire idea #2 at most
+    if (hackathonSignals.length > 0) {
+      ideas[1].sources.push(...hackathonSignals.slice(0, 1));
+    }
+
+    // GitHub always allowed as grounding signal
+    if (githubSignals.length > 0) {
+      ideas[0].sources.push(...githubSignals.slice(0, 1));
     }
   } catch {
-    // silent fail — editorial mode remains intact
+    // Silent failure — editorial mode remains intact
   }
 
   const snapshot = {
