@@ -1,5 +1,5 @@
 // netlify/functions/github.js
-export async function getGithubSignals() {
+export async function getGitHubSignals() {
   const queries = [
     `"missing" in:body is:issue is:open`,
     `"wish there was" in:body is:issue is:open`,
@@ -23,7 +23,7 @@ export async function getGithubSignals() {
           type: "github",
           text: item.body || item.title,
           url: item.html_url,
-          timestamp: item.created_at
+          date: item.created_at
         });
       }
     } catch {}
@@ -33,6 +33,6 @@ export async function getGithubSignals() {
 }
 
 export default async function handler() {
-  const signals = await getGithubSignals();
+  const signals = await getGitHubSignals();
   return Response.json(signals);
 }
