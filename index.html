@@ -8,7 +8,7 @@
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
 <!-- Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -20,10 +20,6 @@
   --border:#1f2937;
   --text:#e5e7eb;
   --muted:#9ca3af;
-
-  --easy:#4ade80;
-  --medium:#facc15;
-  --hard:#f87171;
 
   --github:#9ca3af;
   --twitter:#38bdf8;
@@ -144,7 +140,10 @@ main {
   gap: 0.6rem;
 }
 
-.source svg { width: 16px; height: 16px; }
+.source svg {
+  width: 16px;
+  height: 16px;
+}
 
 .source.github svg { color: var(--github); }
 .source.twitter svg { color: var(--twitter); }
@@ -173,6 +172,7 @@ footer {
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  z-index: 50;
 }
 
 .modal-content {
@@ -183,10 +183,18 @@ footer {
   max-width: 860px;
   max-height: 80vh;
   overflow-y: auto;
+  position: relative;
 }
 
-.modal-content h2, .modal-content h3 {
-  font-family: "Space Grotesk", sans-serif;
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+.modal-close:hover {
+  color: var(--text);
 }
 </style>
 </head>
@@ -233,7 +241,9 @@ footer {
 <!-- Methodology Modal -->
 <div class="modal" id="methodology">
   <div class="modal-content">
-    <button onclick="toggleMethodology()">Close</button>
+    <span class="modal-close" onclick="toggleMethodology()">
+      <i data-lucide="x"></i>
+    </span>
     <div id="methodologyContent"></div>
   </div>
 </div>
@@ -247,45 +257,62 @@ function toggleMethodology() {
 async function loadIdeas() {
   const res = await fetch("/.netlify/functions/archive");
   const days = await res.json();
-  if (!days || !days.length) return;
+
+  const root = document.getElementById("today");
+
+  if (!days || !days.length) {
+    root.innerHTML = `
+      <div class="quest">
+        <h2>No ideas published yet</h2>
+        <p style="color:#9ca3af">
+          The daily generator hasn’t produced its first snapshot yet.
+          Once it runs, ideas will appear here automatically.
+        </p>
+      </div>`;
+    return;
+  }
 
   const today = days[0];
+
   if (today.mode === "sample") {
     document.getElementById("banner").style.display = "block";
   }
 
   document.getElementById("dayLabel").innerText =
-    "Ideas for " + new Date(today.date).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    "Ideas for " + new Date(today.date).toLocaleDateString(
+      "en-US",
+      { month:"long", day:"numeric", year:"numeric" }
+    );
 
-  document.getElementById("today").innerHTML =
-    today.ideas.map(i => `
-      <div class="quest">
-        <h2>${i.title}</h2>
+  root.innerHTML = today.ideas.map(i => `
+    <div class="quest">
+      <h2>${i.title}</h2>
 
-        <div class="label">Murmur</div>${i.murmur}
-        <div class="label">Side Quest</div>${i.quest}
-        <div class="label">For What It’s Worth</div>
-        <ul>${i.worth.map(w=>`<li>${w}</li>`).join("")}</ul>
+      <div class="label">Murmur</div>${i.murmur}
+      <div class="label">Side Quest</div>${i.quest}
+      <div class="label">For What It’s Worth</div>
+      <ul>${i.worth.map(w=>`<li>${w}</li>`).join("")}</ul>
 
-        <div class="meta">
-          <div class="sources">
-            ${i.signals.map(s=>`
-              <a class="source ${s.type}" href="${s.url}" target="_blank">
-                <i data-lucide="${s.type}"></i>
-              </a>`).join("")}
-          </div>
+      <div class="meta">
+        <div class="sources">
+          ${i.signals.map(s=>`
+            <a class="source ${s.type}" href="${s.url}" target="_blank">
+              <i data-lucide="${s.type}"></i>
+            </a>`).join("")}
         </div>
       </div>
-    `).join("");
+    </div>
+  `).join("");
 
   lucide.createIcons();
 }
 
 fetch("methodology.html")
-  .then(r=>r.text())
-  .then(t=>document.getElementById("methodologyContent").innerHTML=t);
+  .then(r => r.text())
+  .then(t => document.getElementById("methodologyContent").innerHTML = t);
 
 loadIdeas();
+lucide.createIcons();
 </script>
 
 </body>
