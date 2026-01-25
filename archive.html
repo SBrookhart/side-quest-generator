@@ -1,54 +1,266 @@
-import { getStore } from "@netlify/blobs";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tech Murmurs — Archive</title>
 
-export default async () => {
-  const siteID = process.env.NETLIFY_SITE_ID;
-  const token = process.env.NETLIFY_AUTH_TOKEN;
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 
-  if (!siteID || !token) {
-    return Response.json(
-      { error: "Missing siteID or token" },
-      { status: 500 }
-    );
-  }
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-  const store = getStore({
-    name: "tech-murmurs",
-    siteID,
-    token
-  });
+  <style>
+    :root {
+      --bg:#0b0e14;
+      --panel:#121826;
+      --border:#1f2937;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --accent:#38bdf8;
 
-  let listing;
-  try {
-    listing = await store.list();
-  } catch (err) {
-    return Response.json(
-      { error: "Failed to list archive blobs" },
-      { status: 500 }
-    );
-  }
-
-  const blobs = listing.blobs || [];
-
-  // Only include daily snapshots written as `daily-YYYY-MM-DD`
-  const dailyKeys = blobs
-    .map(b => b.key)
-    .filter(key => key.startsWith("daily-"));
-
-  const archiveData = {};
-
-  for (const key of dailyKeys) {
-    try {
-      const raw = await store.get(key);
-      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-
-      if (parsed?.ideas && parsed?.date) {
-        // Store by date as the key
-        archiveData[parsed.date] = parsed.ideas;
-      }
-    } catch {
-      // skip corrupt entries
+      --easy:#4ade80;
+      --medium:#facc15;
+      --hard:#f87171;
     }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--text);
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
+        var(--bg);
+    }
+
+    header {
+      max-width: 1100px;
+      margin: auto;
+      padding: 4rem 2rem 2.5rem;
+    }
+
+    h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 3rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .motto {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+    }
+
+    .legend {
+      display: flex;
+      gap: 0.8rem;
+      margin-left: auto;
+      font-size: 0.7rem;
+      color: var(--muted);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 0 2rem 4rem;
+    }
+
+    .day {
+      margin-top: 3.5rem;
+    }
+
+    .day h2 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.4rem;
+      margin-bottom: 2rem;
+    }
+
+    .quest {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .quest h3 {
+      font-family: "Space Grotesk", sans-serif;
+      margin: 0.4rem 0 1rem;
+    }
+
+    .subhead {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .difficulty {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      color: #020617;
+      margin-top: 1.5rem;
+      display: inline-block;
+    }
+
+    .easy { background: var(--easy); }
+    .medium { background: var(--medium); }
+    .hard { background: var(--hard); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      margin-top: 4rem;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Archive</h1>
+  <div class="motto">Previous Daily Drops</div>
+
+  <div class="nav">
+    <a href="index.html"><i data-lucide="arrow-left"></i> Back to Today</a>
+
+    <div class="legend">
+      <strong>Legend</strong>
+      <span><span class="difficulty easy">Easy</span> approachable, playful, minimal setup</span>
+      <span><span class="difficulty medium">Medium</span> some glue code, light APIs, light thinking</span>
+      <span><span class="difficulty hard">Hard</span> ambitious, multi-source, deeper systems thinking</span>
+    </div>
+  </div>
+</header>
+
+<main id="archive">
+  <p style="color:#9ca3af">Loading archive…</p>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>Built quietly, shipped deliberately.</div>
+    <div>© 2026 Brookhart Labs</div>
+  </div>
+</footer>
+
+<script>
+  async function loadArchive() {
+    const container = document.getElementById("archive");
+    container.innerHTML = "";
+
+    let data = null;
+
+    try {
+      const res = await fetch("/.netlify/functions/archive");
+      if (res.ok) {
+        data = await res.json();
+      }
+    } catch {}
+
+    if (!data || Object.keys(data).length === 0) {
+      container.innerHTML =
+        "<p style='color:#9ca3af'>No archived ideas yet.</p>";
+      return;
+    }
+
+    Object.entries(data)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .forEach(([date, ideas]) => {
+        const day = document.createElement("div");
+        day.className = "day";
+
+        const label = new Date(date).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        });
+
+        day.innerHTML =
+          `<h2>${label}</h2>` +
+          ideas.map(q => `
+            <div class="quest">
+              <h3>${q.title}</h3>
+
+              <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
+              ${q.murmur}
+
+              <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
+              ${q.quest}
+
+              <div class="subhead"><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</div>
+              ${q.value}
+
+              <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
+              ${q.signals}
+
+              <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+            </div>
+          `).join("");
+
+        container.appendChild(day);
+      });
+
+    lucide.createIcons();
   }
 
-  return Response.json(archiveData, { status: 200 });
-};
+  loadArchive();
+  lucide.createIcons();
+</script>
+
+</body>
+</html>
