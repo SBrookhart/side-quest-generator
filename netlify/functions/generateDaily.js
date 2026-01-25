@@ -1,144 +1,141 @@
-import { getStore } from "@netlify/blobs";
+// netlify/functions/generateDaily.js
 
-export default async (req) => {
-  const siteID = process.env.NETLIFY_SITE_ID;
-  const token = process.env.NETLIFY_AUTH_TOKEN;
+import fetch from "node-fetch";
 
-  if (!siteID || !token) {
-    return Response.json(
-      { error: "Missing siteID or token" },
-      { status: 500 }
-    );
-  }
+/**
+ * Utility: today in YYYY-MM-DD
+ */
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
 
-  const store = getStore({
-    name: "tech-murmurs",
-    siteID,
-    token
-  });
-
-  const today = new Date().toISOString().slice(0, 10);
-  const force = new URL(req.url).searchParams.get("force") === "true";
-
-  if (!force) {
-    const existing = await store.get(`daily-${today}`);
-    if (existing) {
-      return Response.json({
-        status: "already-generated",
-        date: today
-      });
-    }
-  }
-
-  let ideas = [];
-
-  /*
-    LIVE INGESTION WILL BE RE-ENABLED LATER.
-    For now, we ensure editorial fallback data
-    matches the EXACT shape the UI expects.
-  */
-
-  ideas = [
+/**
+ * Editorial fallback ideas (used ONLY when live ingestion fails)
+ */
+function sampleIdeas() {
+  return [
     {
       title: "The Market Has Feelings",
-      murmur:
-        "Crypto discourse oscillates between euphoria and despair, but no one tracks it coherently.",
-      quest:
-        "Build a real-time emotional dashboard of crypto Twitter.",
-      value:
-        "Turns narrative chaos into something legible without trading.",
+      murmur: "Crypto discourse oscillates between euphoria and despair, but no one tracks it coherently.",
+      quest: "Build a real-time emotional dashboard of crypto Twitter.",
+      value: "Turns narrative chaos into something legible without trading.",
       difficulty: "Easy",
-      sources: [
-        {
-          type: "twitter",
-          name: "Crypto Twitter",
-          url: "https://x.com/search?q=crypto"
-        }
-      ]
+      sources: []
     },
     {
       title: "Crypto Urban Legends",
-      murmur:
-        "On-chain myths persist without attribution or provenance.",
-      quest:
-        "Create a living museum of crypto myths and memes.",
-      value:
-        "Preserves cultural memory and reduces misinformation.",
+      murmur: "On-chain myths persist without attribution or provenance.",
+      quest: "Create a living museum of crypto myths and memes.",
+      value: "Preserves cultural memory and reduces misinformation.",
       difficulty: "Easy",
-      sources: [
-        {
-          type: "github",
-          name: "GitHub Discussions",
-          url: "https://github.com/topics/cryptocurrency"
-        }
-      ]
+      sources: []
     },
     {
       title: "If Crypto Twitter Were a Person",
-      murmur:
-        "Collective behavior often feels like a single personality.",
-      quest:
-        "Build an AI character powered by live crypto discourse.",
-      value:
-        "Turns sentiment into something playful and interpretable.",
+      murmur: "Collective behavior often feels like a single personality.",
+      quest: "Build an AI character powered by live crypto discourse.",
+      value: "Turns sentiment into something playful and interpretable.",
       difficulty: "Medium",
-      sources: [
-        {
-          type: "twitter",
-          name: "Public X Threads",
-          url: "https://x.com/search?q=web3"
-        }
-      ]
+      sources: []
     },
     {
       title: "On-Chain Weather Channel",
-      murmur:
-        "Network conditions are unintuitive to non-technical users.",
-      quest:
-        "Visualize on-chain activity like a weather forecast.",
-      value:
-        "Improves comprehension without dashboards.",
+      murmur: "Network conditions are unintuitive to non-technical users.",
+      quest: "Visualize on-chain activity like a weather forecast.",
+      value: "Improves comprehension without dashboards.",
       difficulty: "Medium",
-      sources: [
-        {
-          type: "rss",
-          name: "Protocol Releases",
-          url: "https://github.com/ethereum/go-ethereum/releases"
-        }
-      ]
+      sources: []
     },
     {
       title: "Build-A-Protocol Simulator",
-      murmur:
-        "Protocol design is opaque to newcomers.",
-      quest:
-        "Create a sandbox for simulating protocol tradeoffs.",
-      value:
-        "Lowers the barrier to systems thinking.",
+      murmur: "Protocol design is opaque to newcomers.",
+      quest: "Create a sandbox for simulating protocol tradeoffs.",
+      value: "Lowers the barrier to systems thinking.",
       difficulty: "Hard",
-      sources: [
-        {
-          type: "github",
-          name: "Protocol Repos",
-          url: "https://github.com/ethereum"
-        }
-      ]
+      sources: []
     }
   ];
+}
+
+/**
+ * LIVE INGESTION — GitHub Issues as signal source
+ * (Lightweight, transparent, heuristic-based)
+ */
+async function fetchGitHubSignals() {
+  const token = process.env.GITHUB_TOKEN;
+
+  if (!token) {
+    throw new Error("Missing GITHUB_TOKEN");
+  }
+
+  const query = encodeURIComponent(
+    'language:JavaScript "wish there was" OR "missing" OR "no tool for"'
+  );
+
+  const url = `https://api.github.com/search/issues?q=${query}&sort=updated&order=desc&per_page=5`;
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "tech-murmurs"
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error("GitHub API failed");
+  }
+
+  const data = await res.json();
+
+  return data.items.map(item => ({
+    title: item.title,
+    murmur: item.body?.slice(0, 220) || "An unmet need surfaced in a public issue.",
+    quest: "Explore a lightweight tool or feature to resolve this expressed gap.",
+    value: "Addresses a real, publicly articulated builder friction.",
+    difficulty: "Medium",
+    sources: [
+      {
+        type: "github",
+        name: item.repository_url.replace("https://api.github.com/repos/", ""),
+        url: item.html_url
+      }
+    ]
+  }));
+}
+
+/**
+ * Main handler
+ */
+export async function handler() {
+  const date = todayISO();
+  let ideas = [];
+  let mode = "editorial";
+
+  try {
+    const liveIdeas = await fetchGitHubSignals();
+
+    if (liveIdeas.length) {
+      ideas = liveIdeas;
+      mode = "live";
+    } else {
+      ideas = sampleIdeas();
+    }
+  } catch (err) {
+    ideas = sampleIdeas();
+  }
 
   const payload = {
-    date: today,
-    mode: "editorial",
+    date,
+    mode,
     ideas
   };
 
-  await store.set("latest", JSON.stringify(payload));
-  await store.set(`daily-${today}`, JSON.stringify(payload));
-
-  return Response.json({
-    status: "generated",
-    date: today,
-    count: ideas.length,
-    mode: "editorial"
-  });
-};
+  return {
+    statusCode: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    },
+    body: JSON.stringify(payload, null, 2)
+  };
+}
