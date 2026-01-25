@@ -90,18 +90,25 @@
     }
 
     .legend {
-      display:flex;
-      align-items:center;
-      gap:0.75rem;
-      font-size:0.75rem;
-      color:var(--muted);
-      margin-left:0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
     }
 
-    .legend span {
-      display:flex;
-      align-items:center;
-      gap:0.35rem;
+    .legend-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .difficulty {
@@ -211,12 +218,13 @@
   <div class="nav-row">
     <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
     <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
+  </div>
 
-    <div class="legend">
-      <span><span class="difficulty easy">Easy</span> Quick, playful</span>
-      <span><span class="difficulty medium">Medium</span> Weekend build</span>
-      <span><span class="difficulty hard">Hard</span> Deep dive</span>
-    </div>
+  <div class="legend">
+    <span class="legend-label">Legend</span>
+    <span class="legend-item"><span class="difficulty easy">Easy</span> Low lift, playful build</span>
+    <span class="legend-item"><span class="difficulty medium">Medium</span> Weekend or short sprint</span>
+    <span class="legend-item"><span class="difficulty hard">Hard</span> Deep exploration</span>
   </div>
 </header>
 
