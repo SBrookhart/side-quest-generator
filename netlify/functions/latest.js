@@ -1,59 +1,42 @@
 import { getStore } from "@netlify/blobs";
+import generateDaily from "./generateDaily.js";
 
-export default async () => {
-  const siteID =
-    process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
-  const token =
-    process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN;
+export default async function handler(req) {
+  try {
+    const store = getStore("tech-murmurs-archive");
 
-  if (!siteID || !token) {
-    return Response.json(
-      { error: "Missing siteID or token" },
-      { status: 500 }
-    );
+    // Use UTC date to stay consistent
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `daily-${today}`;
+
+    // 1️⃣ Try to load today’s snapshot
+    const existing = await store.get(key, { type: "json" });
+
+    if (existing && Array.isArray(existing) && existing.length) {
+      return json(existing);
+    }
+
+    // 2️⃣ No snapshot yet → generate live data
+    const freshIdeas = await generateDaily();
+
+    // Safety: if generation failed, fallback gracefully
+    if (!Array.isArray(freshIdeas) || !freshIdeas.length) {
+      return json([], 200);
+    }
+
+    // 3️⃣ Persist today’s snapshot
+    await store.set(key, freshIdeas);
+
+    return json(freshIdeas);
+  } catch (err) {
+    console.error("latest.js error:", err);
+    return json([], 200);
   }
+}
 
-  const store = getStore({
-    name: "tech-murmurs",
-    siteID,
-    token
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" }
   });
-
-  let raw;
-  try {
-    raw = await store.get("latest");
-  } catch {
-    return Response.json(
-      { error: "Failed to read latest snapshot" },
-      { status: 500 }
-    );
-  }
-
-  if (!raw) {
-    return Response.json(
-      { error: "No ideas published yet." },
-      { status: 404 }
-    );
-  }
-
-  let snapshot;
-  try {
-    snapshot = typeof raw === "string" ? JSON.parse(raw) : raw;
-  } catch {
-    return Response.json(
-      { error: "Corrupt snapshot data" },
-      { status: 500 }
-    );
-  }
-
-  // 🔑 CRITICAL FIX:
-  // Frontend expects an ARRAY, not an object
-  if (!Array.isArray(snapshot.ideas)) {
-    return Response.json(
-      { error: "Invalid snapshot format" },
-      { status: 500 }
-    );
-  }
-
-  return Response.json(snapshot.ideas, { status: 200 });
-};
+}
