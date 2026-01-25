@@ -1,6 +1,10 @@
 import { getStore } from "@netlify/blobs";
 
 export default async () => {
+  /* ------------------------------------------------------------------
+     Environment
+  ------------------------------------------------------------------ */
+
   const siteID =
     process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
 
@@ -26,13 +30,26 @@ export default async () => {
     token
   });
 
+  /* ------------------------------------------------------------------
+     Date + keying
+  ------------------------------------------------------------------ */
+
   const today = new Date().toISOString().slice(0, 10);
   const key = `daily/${today}`;
 
+  // Prevent accidental re-generation for the same day
   const existing = await store.get(key);
   if (existing) {
-    return Response.json({ status: "already-generated", date: today });
+    return Response.json({
+      status: "already-generated",
+      date: today
+    });
   }
+
+  /* ------------------------------------------------------------------
+     Snapshot (sample — intentionally premium + vibe-coder friendly)
+     This will later be replaced by live synthesis logic
+  ------------------------------------------------------------------ */
 
   const snapshot = {
     date: today,
@@ -40,27 +57,46 @@ export default async () => {
     ideas: [
       {
         title: "Developer Narrative Layer",
+
         murmur:
-          "Developers frequently encounter tools that explain what happened but not why it happened or what to do next.",
+          "Across documentation, error messages, and setup flows, developers repeatedly encounter tools that surface information without explaining intent, cause, or next steps.",
+
         quest:
-          "Build a narrative layer that translates raw error messages and documentation into clear, human explanations with suggested next steps.",
+          "Build a lightweight narrative layer that translates raw error messages or dense documentation into clear, human explanations that describe what happened, why it happened, and what to try next.",
+
         worth: [
-          "High-empathy DX improvement",
-          "Great playground for language-first UX",
-          "Easy to scope as a demo or side project"
+          "High-empathy project with immediate DX impact",
+          "Excellent playground for language-first UX and AI summarization",
+          "Easy to scope as a browser extension, CLI wrapper, or docs overlay"
         ],
+
         signals: [
           {
             type: "github",
-            url: "https://github.com/rust-lang/rust-analyzer/issues"
+            url: "https://github.com/rust-lang/rust-analyzer/issues/21234"
+          },
+          {
+            type: "github",
+            url: "https://github.com/coinbase/mesh-cli/issues/429"
           }
         ]
       }
     ]
   };
 
-  await store.set(key, snapshot);
-  await store.set("latest", snapshot);
+  /* ------------------------------------------------------------------
+     Persistence (CRITICAL: always JSON.stringify)
+  ------------------------------------------------------------------ */
 
-  return Response.json({ status: "generated", date: today });
+  await store.set(key, JSON.stringify(snapshot));
+  await store.set("latest", JSON.stringify(snapshot));
+
+  /* ------------------------------------------------------------------
+     Response
+  ------------------------------------------------------------------ */
+
+  return Response.json({
+    status: "generated",
+    date: today
+  });
 };
