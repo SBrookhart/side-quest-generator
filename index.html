@@ -235,7 +235,6 @@
       align-items: center;
       gap: 0.25rem;
     }
-
     footer {
       border-top: 1px solid var(--border);
       padding: 2rem;
@@ -251,6 +250,7 @@
       color: var(--muted);
     }
 
+    /* Modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -336,10 +336,11 @@
 </footer>
 
 <!-- METHODOLOGY MODAL -->
-<div class="modal" id="methodology" onclick="closeOnBackdrop(event)">
-  <div class="modal-content">
+<div class="modal" id="methodology" onclick="toggleMethodology()">
+  <div class="modal-content" onclick="event.stopPropagation()">
     <div class="close-x" onclick="toggleMethodology()">✕</div>
-    <!-- FULL IMMUTABLE METHODOLOGY TEXT — VERBATIM -->
+
+    <!-- IMMUTABLE METHODOLOGY — VERBATIM -->
 
     <h2>What The Generator Does</h2>
 
@@ -364,9 +365,11 @@
     <p>The sections below describe how the system operates at a technical level. They are included for transparency and auditability, not as a prerequisite for using the tool.</p>
 
     <h3>System Architecture</h3>
+
     <p>Tech Murmurs is a client-rendered web application backed by serverless ingestion functions. Data collection is performed via Netlify Functions, which proxy public APIs and feeds. This design allows the system to gather live signals while preventing credential exposure in the browser.</p>
 
     <h3>Integrated Data Sources</h3>
+
     <p>Current integrations include the GitHub Search API (for open issues and repository activity), GitHub Releases (used as proxies for protocol roadmaps), and public hackathon feeds accessed via RSS. Each source is queried independently and normalized into a common structure before synthesis.</p>
 
     <p>Sources are treated as complementary rather than authoritative. No single platform is assumed to represent the full landscape of builder intent.</p>
@@ -439,10 +442,7 @@
     const data = await res.json();
     const container = document.getElementById("ideas");
 
-    if (!data || !data.ideas || !Array.isArray(data.ideas)) {
-      container.innerHTML = "<p style='color:#9ca3af'>Unable to load ideas.</p>";
-      return;
-    }
+    if (!data || !data.ideas) return;
 
     container.innerHTML = data.ideas.map(q => `
       <div class="quest">
@@ -463,17 +463,6 @@
           <div>${q.value}</div>
         </div>
 
-        <div class="section">
-          <div class="section-title">🧾 Signals Observed → Receipts, if you want them</div>
-          <div class="sources">
-            ${(q.sources || []).map(s => `
-              <a href="${s.url}" target="_blank">
-                <i data-lucide="${s.type}"></i> ${s.name}
-              </a>
-            `).join("")}
-          </div>
-        </div>
-
         <div class="meta">
           <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
         </div>
@@ -486,12 +475,6 @@
   function toggleMethodology() {
     const m = document.getElementById("methodology");
     m.style.display = m.style.display === "flex" ? "none" : "flex";
-  }
-
-  function closeOnBackdrop(e) {
-    if (e.target.classList.contains("modal")) {
-      toggleMethodology();
-    }
   }
 
   loadIdeas();
