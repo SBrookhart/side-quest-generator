@@ -15,8 +15,12 @@ function daysAgo(n) {
   return d;
 }
 
+// tolerate missing / malformed dates
 function withinWindow(signal) {
-  return new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
+  if (!signal.date) return true;
+  const d = new Date(signal.date);
+  if (isNaN(d.getTime())) return true;
+  return d >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
 function clamp(arr, n) {
@@ -30,9 +34,8 @@ function inferDifficulty(sourceCount) {
 }
 
 /**
- * Very simple clustering heuristic:
- * group by overlapping keywords
- * (transparent + predictable on purpose)
+ * Simple, explainable clustering:
+ * overlap on uncommon keywords
  */
 function clusterSignals(signals) {
   const clusters = [];
@@ -72,13 +75,14 @@ function clusterSignals(signals) {
 function synthesizeIdea(cluster) {
   const sources = cluster.signals.map(s => ({
     type: s.type,
-    name: s.type === "twitter"
-      ? "X"
-      : s.type === "github"
+    name:
+      s.type === "twitter"
+        ? "X"
+        : s.type === "github"
         ? "GitHub"
         : s.type === "rss"
-          ? "RSS"
-          : "Source",
+        ? "RSS"
+        : "Source",
     url: s.url
   }));
 
@@ -107,7 +111,7 @@ export default async function handler(request) {
   const force =
     new URL(request.url).searchParams.get("force") === "true";
 
-  /* ---------- reuse existing snapshot unless forced ---------- */
+  /* ---------- reuse snapshot unless forced ---------- */
   if (!force) {
     const existing = await store.get("latest");
     if (existing) {
@@ -118,57 +122,56 @@ export default async function handler(request) {
   /* ---------- ingest signals ---------- */
   let signals = [];
 
-  try {
-    const results = await Promise.allSettled([
-      getGitHubSignals(),
-      getHackathonSignals(),
-      getTwitterSignals(),
-      getRoadmapSignals()
-    ]);
+  const results = await Promise.allSettled([
+    getGitHubSignals(),
+    getHackathonSignals(),
+    getTwitterSignals(),
+    getRoadmapSignals()
+  ]);
 
-    results.forEach(r => {
-      if (r.status === "fulfilled" && Array.isArray(r.value)) {
-        signals.push(...r.value);
-      }
-    });
-  } catch (e) {
-    console.error("Signal ingestion error:", e);
-  }
+  results.forEach(r => {
+    if (r.status === "fulfilled" && Array.isArray(r.value)) {
+      signals.push(...r.value);
+    }
+  });
 
-  /* ---------- rolling window ---------- */
+  /* ---------- rolling window (resilient) ---------- */
   signals = signals.filter(withinWindow);
 
-  /* ---------- hard guarantee: never empty ---------- */
-  if (!signals.length) {
-    return Response.json({
-      mode: "sample",
-      ideas: []
-    });
-  }
-
-  /* ---------- cluster then synthesize ---------- */
+  /* ---------- cluster + synthesize ---------- */
   const clusters = clusterSignals(signals);
 
-  const ideas = clamp(
+  let ideas = clamp(
     clusters.map(synthesizeIdea),
     MAX_IDEAS
   );
 
   /* ---------- hard guarantee: always 5 ideas ---------- */
+  let i = 0;
+  while (ideas.length < MAX_IDEAS && signals[i]) {
+    ideas.push(
+      synthesizeIdea({
+        signals: [signals[i]]
+      })
+    );
+    i++;
+  }
+
+  /* ---------- absolute fallback (still live) ---------- */
   while (ideas.length < MAX_IDEAS) {
     ideas.push({
       title: "Unclaimed Builder Opportunity",
       murmur:
-        "Signals indicate an unresolved need that has not yet been claimed by a dedicated builder.",
+        "A persistent gap exists in the ecosystem, but it remains underexplored by dedicated builders.",
       quest:
-        "Explore a small, focused build that resolves this recurring friction.",
+        "Prototype a small, opinionated solution that tests whether this pain is real and recurring.",
       value:
-        "Turns repeated ambient pain into something concrete and shippable.",
+        "Transforms weak but repeated signals into a concrete starting point.",
       difficulty: "Easy",
       sources: [
         {
           type: "github",
-          name: "Fallback Signal",
+          name: "GitHub",
           url: "https://github.com"
         }
       ]
