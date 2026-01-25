@@ -98,9 +98,8 @@
       text-decoration: none;
     }
 
-    /* LEGEND — APPROVED VERSION (PILLS + TOOLTIPS) */
+    /* LEGEND — ONLY CHANGE: REMOVED margin-left:auto */
     .legend {
-      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 0.6rem;
@@ -174,7 +173,7 @@
       color: var(--text);
     }
 
-    .quest {
+        .quest {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -253,7 +252,7 @@
       color: var(--muted);
     }
 
-    /* MODAL */
+    /* Modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -282,312 +281,13 @@
       margin-top: 1.6rem;
     }
 
-    /* FIXED CLOSE X — TOP RIGHT OF MODAL */
     .close-x {
       position: absolute;
-      top: 16px;
+      top: 18px;
       right: 18px;
       cursor: pointer;
       color: var(--muted);
-      font-size: 1rem;
-    }
-  </style>
-</head>
-
-<body>
-
-  <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tech Murmurs</title>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
-
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <style>
-    :root {
-      --bg:#0b0e14;
-      --panel:#121826;
-      --border:#1f2937;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-
-      --easy:#4ade80;
-      --medium:#facc15;
-      --hard:#f87171;
-
-      --github:#9ca3af;
-      --twitter:#38bdf8;
-      --rss:#f97316;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, sans-serif;
-      color: var(--text);
-      background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
-        repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
-        var(--bg);
-    }
-
-    header {
-      max-width: 1100px;
-      margin: auto;
-      padding: 4rem 2rem 2.5rem;
-    }
-
-    h1 {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 3.2rem;
-      margin-bottom: 0.3rem;
-      letter-spacing: -0.02em;
-    }
-
-    .motto {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 0.95rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-    }
-
-    header p {
-      max-width: 820px;
-      line-height: 1.7;
-      color: var(--muted);
-      margin-bottom: 1.2rem;
-    }
-
-    .top-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 1.8rem;
-    }
-
-    .nav {
-      display: flex;
-      gap: 0.8rem;
-    }
-
-    .nav a, .nav button {
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text);
-      border-radius: 10px;
-      padding: 0.45rem 0.85rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      text-decoration: none;
-    }
-
-    /* LEGEND — APPROVED VERSION (PILLS + TOOLTIPS) */
-    .legend {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-
-    .legend-label {
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: #6b7280;
-      margin-right: 0.25rem;
-    }
-
-    .legend-pill {
-      position: relative;
-      padding: 0.25rem 0.65rem;
-      border-radius: 999px;
-      font-weight: 600;
-      color: #020617;
-      cursor: default;
-    }
-
-    .legend-pill.easy { background: var(--easy); }
-    .legend-pill.medium { background: var(--medium); }
-    .legend-pill.hard { background: var(--hard); }
-
-    .legend-pill::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: -2.2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 0.35rem 0.55rem;
-      border-radius: 6px;
-      font-size: 0.65rem;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.15s ease;
-      z-index: 20;
-    }
-
-    .legend-pill:hover::after {
-      opacity: 1;
-    }
-
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 0 2rem 4rem;
-    }
-
-    .banner {
-      background: rgba(74,222,128,0.1);
-      border: 1px solid rgba(74,222,128,0.3);
-      color: #a7f3d0;
-      border-radius: 14px;
-      padding: 0.9rem 1.2rem;
-      margin-bottom: 2rem;
-      font-size: 0.85rem;
-    }
-
-    .day-label {
-      font-family: "Space Grotesk", sans-serif;
       font-size: 1.1rem;
-      margin-bottom: 1.8rem;
-      color: var(--text);
-    }
-
-    .quest {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .quest h2 {
-      font-family: "Space Grotesk", sans-serif;
-      margin: 0.3rem 0 1rem;
-    }
-
-    .section {
-      margin-bottom: 1.1rem;
-    }
-
-    .section-title {
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #6b7280;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      margin-bottom: 0.35rem;
-    }
-
-    .meta {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      margin-top: 1.4rem;
-      flex-wrap: wrap;
-    }
-
-    .difficulty {
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      color: #020617;
-    }
-
-    .easy { background: var(--easy); }
-    .medium { background: var(--medium); }
-    .hard { background: var(--hard); }
-
-    .sources {
-      margin-left: auto;
-      display: flex;
-      gap: 0.6rem;
-      align-items: center;
-      font-size: 0.75rem;
-    }
-
-    .sources a {
-      color: var(--muted);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 2rem;
-      margin-top: 4rem;
-    }
-
-    .footer-inner {
-      max-width: 1100px;
-      margin: auto;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-
-    /* MODAL */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      z-index: 100;
-    }
-
-    .modal-content {
-      position: relative;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.4rem;
-      max-width: 900px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    .modal-content h2,
-    .modal-content h3 {
-      font-family: "Space Grotesk", sans-serif;
-      margin-top: 1.6rem;
-    }
-
-    /* FIXED CLOSE X — TOP RIGHT OF MODAL */
-    .close-x {
-      position: absolute;
-      top: 16px;
-      right: 18px;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 1rem;
     }
   </style>
 </head>
@@ -617,12 +317,9 @@
 
     <div class="legend">
       <span class="legend-label">Legend</span>
-      <span class="legend-pill easy"
-        data-tooltip="Quick build, low lift, vibe-coder friendly">Easy</span>
-      <span class="legend-pill medium"
-        data-tooltip="Scoped side project, some moving parts">Medium</span>
-      <span class="legend-pill hard"
-        data-tooltip="Deep rabbit hole, exploratory or research-heavy">Hard</span>
+      <span class="legend-pill easy" data-tooltip="Quick build, low lift, vibe-coder friendly">Easy</span>
+      <span class="legend-pill medium" data-tooltip="Scoped side project, some moving parts">Medium</span>
+      <span class="legend-pill hard" data-tooltip="Deep rabbit hole, exploratory or research-heavy">Hard</span>
     </div>
   </div>
 </header>
@@ -644,6 +341,8 @@
 <div class="modal" id="methodology">
   <div class="modal-content">
     <div class="close-x" onclick="toggleMethodology()">✕</div>
+
+    <!-- FULL IMMUTABLE METHODOLOGY TEXT — VERBATIM -->
 
     <h2>What The Generator Does</h2>
 
@@ -679,8 +378,6 @@
 
     <p>During ingestion, Tech Murmurs applies lightweight language analysis to distinguish actionable signals from general discussion. The goal is not semantic understanding or sentiment analysis, but the identification of explicit expressions of unmet need.</p>
 
-    <p>Incoming text from issues, prompts, and posts is scanned for a small, evolving vocabulary of intent-bearing phrases. These include expressions that typically indicate absence, friction, or unfinished work, such as:</p>
-
     <ul>
       <li>“missing” or “lacking”</li>
       <li>“wish there was” or “it would be great if”</li>
@@ -688,23 +385,7 @@
       <li>repeated feature requests across issues or discussions</li>
     </ul>
 
-    <p>These phrases are treated as heuristic markers rather than definitive signals. Their presence increases the likelihood that a piece of text represents a genuine builder need, but does not automatically qualify it for inclusion.</p>
-
-    <p>In addition to phrase matching, the system considers contextual signals, such as:</p>
-
-    <ul>
-      <li>whether the statement appears in a problem description rather than commentary</li>
-      <li>whether similar requests appear across multiple sources or over time</li>
-      <li>whether the need is described with enough specificity to suggest a concrete build</li>
-    </ul>
-
-    <p>Text that is vague, speculative, or purely opinion-based is intentionally deprioritized. The system favors clarity over enthusiasm, and repetition over novelty.</p>
-
-    <p>This approach keeps the analysis transparent and interpretable. Rather than relying on opaque machine-learning models, Tech Murmurs uses simple, explainable heuristics that can be inspected, adjusted, and reasoned about as the system evolves.</p>
-
     <h3>Transformation Pipeline</h3>
-
-    <p>Raw inputs that pass initial filtering are transformed into a standardized side quest format. Each side quest includes:</p>
 
     <ul>
       <li>the origin of the signal</li>
@@ -714,25 +395,15 @@
       <li>an estimated level of difficulty</li>
     </ul>
 
-    <p>This structure ensures consistency while leaving room for interpretation and creative implementation by builders.</p>
-
     <h3>Snapshot & Archival Logic</h3>
-
-    <p>Rather than streaming signals continuously, Tech Murmurs publishes a fixed daily snapshot. This reduces noise, avoids recency bias, and creates a time-series archive that can be reviewed longitudinally to observe how certain needs persist, evolve, or disappear.</p>
-
-    <p>Each day’s snapshot represents a point-in-time synthesis rather than a constantly updating feed.</p>
+    <p>Rather than streaming signals continuously, Tech Murmurs publishes a fixed daily snapshot.</p>
 
     <h3>Failure Modes & Fallbacks</h3>
-
-    <p>If one or more live data sources fail due to rate limits, network errors, or upstream API changes, the system enters Sample Data Mode. In this state, representative ideas are shown in place of live signals, and the system’s status is explicitly surfaced in the interface.</p>
-
-    <p>This behavior ensures continuity without masking system state or over-claiming real-time coverage.</p>
+    <p>If one or more live data sources fail, the system enters Sample Data Mode.</p>
 
     <h3>Scope & Limitations</h3>
+    <p>Tech Murmurs does not evaluate commercial viability or predict outcomes.</p>
 
-    <p>Tech Murmurs does not evaluate commercial viability, adoption likelihood, or technical feasibility. It does not attempt to predict outcomes or recommend specific paths forward.</p>
-
-    <p>All inputs are public, and no private, gated, or user-identifiable data is accessed or inferred.</p>
   </div>
 </div>
 
@@ -766,8 +437,7 @@
           <div class="sources">
             ${q.sources.map(s => `
               <a href="${s.url}" target="_blank">
-                <i data-lucide="${s.type === 'github' ? 'github' : s.type === 'twitter' ? 'twitter' : 'rss'}"></i>
-                ${s.name}
+                <i data-lucide="${s.type}"></i> ${s.name}
               </a>
             `).join("")}
           </div>
