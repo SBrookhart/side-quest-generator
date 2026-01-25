@@ -1,71 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tech Murmurs Archive</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background:#0b0e14;
-      color:#f3f4f6;
-      font-family:Inter,system-ui,sans-serif;
-      margin:0;
-    }
-    header, main {
-      max-width:1100px;
-      margin:auto;
-      padding:2.5rem 2rem;
-    }
-    h1 {
-      font-family:"Space Grotesk",sans-serif;
-      font-size:2.4rem;
-    }
-    .day {
-      margin-top:3rem;
-    }
-    .day h2 {
-      color:#b0b4bb;
-      font-size:1rem;
-      letter-spacing:0.1em;
-      text-transform:uppercase;
-    }
-    .quest {
-      background:#161922;
-      border:1px solid #1f2937;
-      border-radius:20px;
-      padding:2.2rem;
-      margin-top:1.5rem;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Tech Murmurs Archive</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0e14;color:#f3f4f6;font-family:Inter}
+header,main{max-width:1100px;margin:auto;padding:2.5rem 2rem}
+h1{font-family:Space Grotesk;font-size:2.4rem}
+.day{margin-top:3rem}
+.day h2{color:#b0b4bb;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase}
+.quest{background:#161922;border:1px solid #1f2937;border-radius:20px;padding:2rem;margin-top:1.2rem}
+</style>
 </head>
 
 <body>
 <header>
-  <h1>Archive</h1>
-  <a href="/">← Back to today</a>
+<h1>Archive</h1>
+<a href="/" style="color:#b0b4bb;text-decoration:none">← Back to today</a>
 </header>
 
 <main id="archive"></main>
 
 <script>
-async function loadArchive() {
-  const el = document.getElementById("archive");
-  const res = await fetch("/.netlify/functions/archive");
-  const days = await res.json();
-
-  el.innerHTML = days.map(d => `
-    <div class="day">
-      <h2>${d.date}</h2>
-      ${d.ideas.map(i => `
-        <div class="quest">
-          <h3>${i.title}</h3>
-          ${i.murmur}
-        </div>
-      `).join("")}
-    </div>
-  `).join("");
+async function loadArchive(){
+  const el=document.getElementById("archive");
+  try{
+    const res=await fetch("/.netlify/functions/archive");
+    const days=await res.json();
+    el.innerHTML=days.map(d=>`
+      <div class="day">
+        <h2>${d.date}</h2>
+        ${d.ideas.map(i=>`
+          <div class="quest">
+            <h3>${i.title}</h3>
+            ${i.murmur}
+          </div>
+        `).join("")}
+      </div>
+    `).join("");
+  }catch{
+    el.innerHTML="<p style='color:#b0b4bb'>Archive loading…</p>";
+  }
 }
-
 loadArchive();
 </script>
 </body>
