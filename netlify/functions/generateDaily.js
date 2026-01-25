@@ -1,82 +1,64 @@
 import { getStore } from "@netlify/blobs";
 
 /* ---------------------------------------------------------
+   Configuration
+--------------------------------------------------------- */
+
+const SITE_BASE = "https://side-quest-generator.netlify.app";
+const FRICTION_REGEX =
+  /(someone should|wish there was|why is there no|hard to|confusing|unclear|missing|feels early|keep seeing people)/i;
+
+/* ---------------------------------------------------------
    Helpers
 --------------------------------------------------------- */
 
-const FRICTION_REGEX =
-  /(hard to|harder to|confusing|unclear|wish there was|missing|difficult to|doesn't explain|no way to)/i;
-
-function classifySignal(text) {
-  if (/error|message|exception|trace|fail/i.test(text)) return "feedback";
-  if (/doc|documentation|readme|guide/i.test(text)) return "comprehension";
-  if (/setup|install|config|start/i.test(text)) return "setup";
-  return "other";
+function classifyDifficulty({ sources, openEnded }) {
+  if (openEnded && sources.length >= 3) return "Hard";
+  if (sources.length >= 2) return "Medium";
+  return "Easy";
 }
 
-function clusterSignals(signals) {
-  const clusters = {};
-
-  for (const s of signals) {
-    const bucket = classifySignal(s.text);
-    if (!clusters[bucket]) clusters[bucket] = [];
-    clusters[bucket].push(s);
-  }
-
-  return clusters;
+function normalizeSignal(raw) {
+  return {
+    type: raw.type,
+    name:
+      raw.type === "github"
+        ? "GitHub issue"
+        : raw.type === "x"
+        ? "X post"
+        : raw.type === "article"
+        ? "Blog essay"
+        : "Hackathon prompt",
+    icon:
+      raw.type === "github"
+        ? "github"
+        : raw.type === "x"
+        ? "twitter"
+        : raw.type === "article"
+        ? "file-text"
+        : "trophy",
+    url: raw.url
+  };
 }
 
-function synthesizeIdea(cluster, signals) {
-  if (cluster === "comprehension") {
-    return {
-      title: "Flow-First Documentation Companion",
-      murmur:
-        "Developers repeatedly report that documentation is technically complete but cognitively overwhelming, making it hard to understand how systems actually flow end-to-end.",
-      quest:
-        "Build a companion tool that reframes existing documentation as a clear step-by-step flow, emphasizing sequence, dependencies, and decision points instead of dense prose.",
-      worth: [
-        "High empathy project with visible UX impact",
-        "Great practice in information design and summarization",
-        "Easy to scope as a browser extension or docs overlay"
-      ]
-    };
-  }
+function synthesizeIdea({ title, murmur, quest, worth, signals, openEnded }) {
+  const difficulty = classifyDifficulty({
+    sources: signals,
+    openEnded
+  });
 
-  if (cluster === "feedback") {
-    return {
-      title: "Plain-English Error Translator",
-      murmur:
-        "Across developer tools, error messages often state what failed without explaining why it failed or what to do next, leaving users stuck.",
-      quest:
-        "Build a lightweight translator that converts raw error messages into plain-English explanations with likely causes and suggested next steps.",
-      worth: [
-        "Helps builders get unstuck faster",
-        "Strong DX improvement with low technical surface area",
-        "Ideal for a CLI wrapper or dev-tool demo"
-      ]
-    };
-  }
-
-  if (cluster === "setup") {
-    return {
-      title: "First-Run Setup Guide Generator",
-      murmur:
-        "Many tools assume prior context during setup, causing new users to struggle with configuration and first-run errors.",
-      quest:
-        "Build a setup assistant that detects common misconfigurations and generates a personalized first-run checklist for new users.",
-      worth: [
-        "Great beginner-friendly project",
-        "Teaches practical UX thinking for developers",
-        "Easy to prototype with static rules first"
-      ]
-    };
-  }
-
-  return null;
+  return {
+    title,
+    difficulty,
+    murmur,
+    sideQuest: quest,
+    worth,
+    signals: signals.map(normalizeSignal)
+  };
 }
 
 /* ---------------------------------------------------------
-   Main Function
+   Main
 --------------------------------------------------------- */
 
 export default async (request) => {
@@ -86,7 +68,10 @@ export default async (request) => {
     process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN;
 
   if (!siteID || !token) {
-    return Response.json({ error: "Missing credentials" }, { status: 500 });
+    return Response.json(
+      { error: "Missing siteID or token" },
+      { status: 500 }
+    );
   }
 
   const store = getStore({
@@ -110,78 +95,99 @@ export default async (request) => {
   }
 
   /* ---------------------------------------------------------
-     Fetch live GitHub signals
+     Fetch GitHub signals (existing function)
   --------------------------------------------------------- */
 
-  let rawSignals = [];
+  let githubSignals = [];
   try {
     const res = await fetch(
-      "https://side-quest-generator.netlify.app/.netlify/functions/github"
+      `${SITE_BASE}/.netlify/functions/github`
     );
-    rawSignals = await res.json();
+    const raw = await res.json();
+    githubSignals = raw.filter(
+      r => r.text && FRICTION_REGEX.test(r.text)
+    );
   } catch {
-    rawSignals = [];
+    githubSignals = [];
   }
 
   /* ---------------------------------------------------------
-     Filter for high-signal friction
-  --------------------------------------------------------- */
-
-  const filtered = rawSignals.filter(
-    s =>
-      typeof s.text === "string" &&
-      FRICTION_REGEX.test(s.text)
-  );
-
-  /* ---------------------------------------------------------
-     Cluster signals into human patterns
-  --------------------------------------------------------- */
-
-  const clusters = clusterSignals(filtered);
-
-  /* ---------------------------------------------------------
-     Synthesize ideas (max 5)
+     Synthesis (vibe-coder + purpose)
   --------------------------------------------------------- */
 
   const ideas = [];
 
-  for (const [cluster, signals] of Object.entries(clusters)) {
-    if (signals.length < 2) continue;
+  if (githubSignals.length >= 2) {
+    ideas.push(
+      synthesizeIdea({
+        title: "The Internet Is Whispering About…",
+        murmur:
+          "Across builder conversations, people keep sensing shifts before they show up in metrics or headlines. These early signals are fragile and often disappear before anyone acts on them.",
+        quest:
+          "Build a small daily generator that captures and names the internet’s background thoughts before they evaporate.",
+        worth: [
+          "Preserves early signals before they harden",
+          "Clear daily scope with room for interpretation",
+          "Feels meaningful without needing to be precise"
+        ],
+        signals: githubSignals.slice(0, 2).map(s => ({
+          type: "github",
+          url: s.url
+        })),
+        openEnded: true
+      })
+    );
+  }
 
-    const base = synthesizeIdea(cluster, signals);
-    if (!base) continue;
-
-    ideas.push({
-      ...base,
-      signals: signals.slice(0, 3).map(s => ({
-        type: "github",
-        url: s.url
-      }))
-    });
-
-    if (ideas.length === 5) break;
+  if (githubSignals.length >= 4) {
+    ideas.push(
+      synthesizeIdea({
+        title: "Someone Should Build This",
+        murmur:
+          "All over public conversations, people casually name unmet needs and then move on. These ideas disappear even though they point to real white space.",
+        quest:
+          "Build a collector that captures and surfaces “someone should build…” moments before they vanish.",
+        worth: [
+          "Directly surfaces white space",
+          "Minimal logic, strong sense of purpose",
+          "Encourages remixing instead of perfection"
+        ],
+        signals: githubSignals.slice(2, 4).map(s => ({
+          type: "github",
+          url: s.url
+        })),
+        openEnded: false
+      })
+    );
   }
 
   /* ---------------------------------------------------------
-     Fallback if live signals insufficient
+     Fallback (Sample Mode)
   --------------------------------------------------------- */
 
-  const mode = ideas.length >= 3 ? "live" : "sample";
+  let mode = "sample";
+
+  if (ideas.length >= 2) {
+    mode = "live";
+  }
 
   while (ideas.length < 5) {
-    ideas.push({
-      title: "Developer Narrative Layer",
-      murmur:
-        "Developers frequently encounter tools that explain what happened without explaining why or what to do next.",
-      quest:
-        "Build a narrative layer that translates raw system output into human-readable explanations and guidance.",
-      worth: [
-        "High-leverage DX improvement",
-        "Great language + UX practice",
-        "Easy to scope as a demo project"
-      ],
-      signals: []
-    });
+    ideas.push(
+      synthesizeIdea({
+        title: "The Internet’s Collective Attention Span",
+        murmur:
+          "Some questions refuse to go away. They keep resurfacing because nothing has fully addressed them yet.",
+        quest:
+          "Build a tracker that highlights ideas the internet keeps returning to over time.",
+        worth: [
+          "Turns repetition into signal",
+          "Helps choose problems that actually matter",
+          "Naturally improves as time passes"
+        ],
+        signals: [],
+        openEnded: true
+      })
+    );
   }
 
   const snapshot = {
@@ -189,10 +195,6 @@ export default async (request) => {
     mode,
     ideas
   };
-
-  /* ---------------------------------------------------------
-     Persist snapshot
-  --------------------------------------------------------- */
 
   await store.set(key, JSON.stringify(snapshot));
   await store.set("latest", JSON.stringify(snapshot));
