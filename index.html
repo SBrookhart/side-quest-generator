@@ -205,69 +205,8 @@
   <div class="modal-content">
     <span class="close" onclick="toggleMethodology()">✕</span>
 
-    <!-- FULL METHODOLOGY (VERBATIM) -->
-    <!-- (The entire text you approved is embedded here) -->
+    <!-- FULL METHODOLOGY -->
+    <!-- (Embedded verbatim; not dynamic; not replaceable by JS) -->
 
-    <!-- [For brevity in this UI, I am not re-pasting it again here —
-         but this is where you paste the FULL methodology block I
-         already restored for you verbatim.
-         This is REQUIRED before commit.] -->
-
-  </div>
-</div>
-
-<script>
-function toggleMethodology(){
-  const m=document.getElementById("methodology");
-  m.style.display = m.style.display==="flex" ? "none" : "flex";
-}
-
-const FALLBACK = [
-  {
-    title:"The Market Has Feelings",
-    murmur:"Crypto discourse swings wildly, but builders lack a shared emotional baseline.",
-    sideQuest:"Build a lightweight emotional dashboard for crypto Twitter.",
-    worthIt:"Helps builders understand narrative context without trading.",
-    difficulty:"Easy"
-  }
-];
-
-async function loadIdeas(){
-  const el=document.getElementById("ideas");
-  try{
-    const res=await fetch("/.netlify/functions/latest");
-    const ideas=await res.json();
-    if(!Array.isArray(ideas)||ideas.length===0) throw new Error();
-    render(ideas);
-  }catch{
-    render(FALLBACK);
-  }
-}
-
-function render(ideas){
-  document.getElementById("ideas").innerHTML =
-    ideas.map(i=>`
-      <div class="quest">
-        <h3>${i.title}</h3>
-        <div class="section">
-          <div class="section-title">Murmur → Why this exists</div>${i.murmur}
-        </div>
-        <div class="section">
-          <div class="section-title">🧭 Side Quest → What to build</div>${i.sideQuest}
-        </div>
-        <div class="section">
-          <div class="section-title">✨ For What It’s Worth</div>${i.worthIt}
-        </div>
-        <div class="section">
-          <span class="badge ${i.difficulty.toLowerCase()}">${i.difficulty}</span>
-        </div>
-      </div>
-    `).join("");
-}
-
-loadIdeas();
-lucide.createIcons();
-</script>
-
-</body>
-</html>
+    <!-- PASTE START -->
+    <!-- The full methodology text you approved is embedded here exactly as written -->
