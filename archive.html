@@ -1,264 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tech Murmurs — Archive</title>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
-
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
+  <meta charset="UTF-8">
+  <title>Tech Murmurs Archive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg:#0b0e14;
-      --panel:#121826;
-      --border:#1f2937;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-
-      --easy:#4ade80;
-      --medium:#facc15;
-      --hard:#f87171;
-    }
-
-    * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      font-family: Inter, system-ui, sans-serif;
-      color: var(--text);
-      background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
-        repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 80px),
-        var(--bg);
+      background:#0b0e14;
+      color:#f3f4f6;
+      font-family:Inter,system-ui,sans-serif;
+      margin:0;
     }
-
-    header {
-      max-width: 1100px;
-      margin: auto;
-      padding: 3.5rem 2rem 2rem;
+    header, main {
+      max-width:1100px;
+      margin:auto;
+      padding:2.5rem 2rem;
     }
-
     h1 {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 2.8rem;
-      margin-bottom: 0.4rem;
-      letter-spacing: -0.02em;
+      font-family:"Space Grotesk",sans-serif;
+      font-size:2.4rem;
     }
-
-    header p {
-      color: var(--muted);
-      max-width: 720px;
-      line-height: 1.6;
-    }
-
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 0 2rem 4rem;
-    }
-
     .day {
-      margin-bottom: 3.5rem;
+      margin-top:3rem;
     }
-
-    .day-label {
-      font-size: 0.95rem;
-      color: var(--muted);
-      margin-bottom: 1.6rem;
+    .day h2 {
+      color:#b0b4bb;
+      font-size:1rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
     }
-
     .quest {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2.2rem;
-      margin-bottom: 2.2rem;
-    }
-
-    .quest h2 {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 1.6rem;
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      margin-bottom: 1.6rem;
-    }
-
-    .difficulty-badge {
-      padding: 0.28rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    .easy { background: var(--easy); color:#052e16; }
-    .medium { background: var(--medium); color:#422006; }
-    .hard { background: var(--hard); color:#450a0a; }
-
-    .section {
-      margin-top: 1.8rem;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 1.05rem;
-      margin-bottom: 0.6rem; /* increased */
-    }
-
-    .section-header i {
-      opacity: 0.85;
-    }
-
-    .descriptor {
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #6b7280;
-      margin: 0;
-      padding-bottom: 0.7rem; /* more breathing room */
-    }
-
-    .section p,
-    .section ul {
-      color: var(--muted);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .section ul {
-      padding-left: 1.2rem;
-    }
-
-    .signals a {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-      text-decoration: none;
-      margin-top: 0.45rem;
-    }
-
-    .signals a:hover {
-      color: var(--text);
-    }
-
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 2rem;
-      margin-top: 4rem;
-    }
-
-    .footer-inner {
-      max-width: 1100px;
-      margin: auto;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--muted);
+      background:#161922;
+      border:1px solid #1f2937;
+      border-radius:20px;
+      padding:2.2rem;
+      margin-top:1.5rem;
     }
   </style>
 </head>
 
 <body>
-
 <header>
   <h1>Archive</h1>
-  <p>
-    A chronological record of previously published side quests.
-    Each day represents a fixed snapshot in time.
-  </p>
+  <a href="/">← Back to today</a>
 </header>
 
-<main id="archive">
-  <p style="color:var(--muted)">Loading archive…</p>
-</main>
-
-<footer>
-  <div class="footer-inner">
-    <div>Built quietly, shipped deliberately.</div>
-    <div>© 2026 Brookhart Labs</div>
-  </div>
-</footer>
+<main id="archive"></main>
 
 <script>
 async function loadArchive() {
+  const el = document.getElementById("archive");
   const res = await fetch("/.netlify/functions/archive");
   const days = await res.json();
 
-  if (!days.length) {
-    document.getElementById("archive").innerHTML =
-      "<p style='color:var(--muted)'>No ideas published yet.</p>";
-    return;
-  }
-
-  document.getElementById("archive").innerHTML = days.map(day => `
-    <section class="day">
-      <div class="day-label">
-        ${new Date(day.date).toLocaleDateString("en-US", {
-          month:"long", day:"numeric", year:"numeric"
-        })}
-      </div>
-
-      ${day.ideas.map(i => `
+  el.innerHTML = days.map(d => `
+    <div class="day">
+      <h2>${d.date}</h2>
+      ${d.ideas.map(i => `
         <div class="quest">
-          <h2>
-            ${i.title}
-            <span class="difficulty-badge ${i.difficulty.toLowerCase()}">
-              ${i.difficulty}
-            </span>
-          </h2>
-
-          <div class="section">
-            <div class="section-header">
-              <i data-lucide="message-circle"></i> Murmur
-            </div>
-            <div class="descriptor">Why this exists</div>
-            <p>${i.murmur}</p>
-          </div>
-
-          <div class="section">
-            <div class="section-header">
-              <i data-lucide="compass"></i> Side Quest
-            </div>
-            <div class="descriptor">What to build</div>
-            <p>${i.sideQuest}</p>
-          </div>
-
-          <div class="section">
-            <div class="section-header">
-              <i data-lucide="sparkles"></i> For What It’s Worth
-            </div>
-            <div class="descriptor">Why it’s worth your energy</div>
-            <ul>${i.worth.map(w => `<li>${w}</li>`).join("")}</ul>
-          </div>
-
-          <div class="section signals">
-            <div class="section-header">
-              <i data-lucide="receipt"></i> Signals Observed
-            </div>
-            <div class="descriptor">Receipts, if you want them</div>
-            ${i.signals.map(s => `
-              <a href="${s.url}" target="_blank">
-                <i data-lucide="${s.icon}"></i>${s.name}
-              </a>
-            `).join("")}
-          </div>
+          <h3>${i.title}</h3>
+          ${i.murmur}
         </div>
       `).join("")}
-    </section>
+    </div>
   `).join("");
-
-  lucide.createIcons();
 }
 
 loadArchive();
