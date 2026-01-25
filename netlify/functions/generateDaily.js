@@ -1,17 +1,18 @@
 import { getStore } from "@netlify/blobs";
 
 export async function handler() {
-  const store = getStore("tech-murmurs-archive");
+  const store = getStore("tech-murmurs-archive", {
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_AUTH_TOKEN
+  });
 
   const today = new Date().toISOString().slice(0, 10);
   const dayKey = `day:${today}`;
   const indexKey = "archive:index";
 
-  // Load index (source of truth)
   let index = await store.get(indexKey, { type: "json" });
   if (!Array.isArray(index)) index = [];
 
-  // If index already contains today, stop
   if (index.includes(today)) {
     return {
       statusCode: 200,
@@ -22,12 +23,11 @@ export async function handler() {
     };
   }
 
-  // --- Generate ideas (placeholder – your pipeline can live here)
   const ideas = [
     {
       title: "Gas Fee Translator",
       murmur:
-        "Users repeatedly express confusion around transaction fees during network congestion.",
+        "Users repeatedly express confusion around transaction fees during congestion.",
       quest:
         "Build a plain-English explanation layer that interprets gas fees at transaction time.",
       worth: [
@@ -41,12 +41,12 @@ export async function handler() {
     {
       title: "DAO Proposal Digest",
       murmur:
-        "Governance threads are long and participation remains low.",
+        "Governance discussions are long and participation remains low.",
       quest:
         "Summarize proposals into risks, tradeoffs, and outcomes.",
       worth: [
         "Increases governance participation",
-        "Reduces cognitive load for voters"
+        "Reduces cognitive overhead"
       ],
       signals: [
         { type: "github", url: "https://github.com/ethereum/governance" }
@@ -60,10 +60,7 @@ export async function handler() {
     ideas
   };
 
-  // Write day FIRST
   await store.set(dayKey, payload);
-
-  // Update index SECOND
   index.unshift(today);
   await store.set(indexKey, index);
 
