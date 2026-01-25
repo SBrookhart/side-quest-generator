@@ -23,7 +23,7 @@ export async function getRoadmapSignals() {
           type: "github",
           text: rel.body || rel.name,
           url: rel.html_url,
-          timestamp: rel.published_at
+          date: rel.published_at
         });
       }
     } catch {}
