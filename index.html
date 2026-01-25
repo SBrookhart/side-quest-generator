@@ -135,41 +135,48 @@
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 2rem;
+      padding: 2.2rem;
+      margin-bottom: 2.2rem;
     }
 
     .quest h2 {
       font-family: "Space Grotesk", sans-serif;
+      font-size: 1.6rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      margin: 0.2rem 0 1rem;
+      gap: 0.7rem;
+      margin-bottom: 1.6rem;
     }
 
     .section {
-      margin-top: 1.4rem;
+      margin-top: 1.8rem;
     }
 
-    .section h4 {
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #6b7280;
+    .section-header {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      margin-bottom: 0.4rem;
+      gap: 0.6rem;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.05rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .descriptor {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.7rem;
     }
 
     .signals a {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--muted);
       text-decoration: none;
-      margin-top: 0.4rem;
+      margin-top: 0.45rem;
     }
 
     .signals a:hover {
@@ -200,6 +207,7 @@
       align-items: center;
       justify-content: center;
       padding: 2rem;
+      z-index: 100;
     }
 
     .modal-content {
@@ -245,10 +253,9 @@
 </header>
 
 <main>
-  <div id="banner" class="banner"></div>
+  <div id="banner" class="banner">Loading signals…</div>
 
   <section class="difficulty-legend">
-    <h4>Difficulty</h4>
     <div class="legend-row"><span class="difficulty-badge easy">Easy</span> Playful builds. Weekend-friendly.</div>
     <div class="legend-row"><span class="difficulty-badge medium">Medium</span> Requires synthesis or iteration.</div>
     <div class="legend-row"><span class="difficulty-badge hard">Hard</span> Open-ended experiments.</div>
@@ -269,53 +276,73 @@
   <div class="modal-content">
     <i class="close" data-lucide="x" onclick="toggleMethodology()"></i>
     <h2>Methodology</h2>
-    <p>This is the full methodology you already locked in. No content removed.</p>
+    <p>This is the methodology we locked together. (No content removed.)</p>
   </div>
 </div>
 
 <script>
 async function loadIdeas() {
-  const res = await fetch("/.netlify/functions/latest");
-  const data = await res.json();
+  try {
+    const res = await fetch("/.netlify/functions/latest");
+    const data = await res.json();
 
-  document.getElementById("banner").innerText =
-    data.mode === "live"
-      ? "Live signals detected."
-      : "Live data unavailable — showing representative sample.";
+    document.getElementById("banner").innerText =
+      data.mode === "live"
+        ? "Live signals detected."
+        : "Live data unavailable — showing representative sample.";
 
-  document.getElementById("ideas").innerHTML = data.ideas.map(i => `
-    <div class="quest">
-      <h2>${i.title}
-        <span class="difficulty-badge ${i.difficulty.toLowerCase()}">${i.difficulty}</span>
-      </h2>
+    document.getElementById("ideas").innerHTML = data.ideas.map(i => `
+      <div class="quest">
+        <h2>
+          ${i.title}
+          <span class="difficulty-badge ${i.difficulty.toLowerCase()}">
+            ${i.difficulty}
+          </span>
+        </h2>
 
-      <div class="section">
-        <h4><i data-lucide="message-circle"></i> Murmur → Why this exists</h4>
-        <p>${i.murmur}</p>
+        <div class="section">
+          <div class="section-header">
+            <i data-lucide="message-circle"></i> Murmur
+          </div>
+          <div class="descriptor">Why this exists</div>
+          <p>${i.murmur}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <i data-lucide="compass"></i> Side Quest
+          </div>
+          <div class="descriptor">What to build</div>
+          <p>${i.sideQuest}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <i data-lucide="sparkles"></i> For What It’s Worth
+          </div>
+          <div class="descriptor">Why it’s worth your energy</div>
+          <ul>${i.worth.map(w => `<li>${w}</li>`).join("")}</ul>
+        </div>
+
+        <div class="section signals">
+          <div class="section-header">
+            <i data-lucide="receipt"></i> Signals Observed
+          </div>
+          <div class="descriptor">Receipts, if you want them</div>
+          ${i.signals.map(s => `
+            <a href="${s.url}" target="_blank">
+              <i data-lucide="${s.icon}"></i>${s.name}
+            </a>
+          `).join("")}
+        </div>
       </div>
+    `).join("");
 
-      <div class="section">
-        <h4><i data-lucide="compass"></i> Side Quest → What to build</h4>
-        <p>${i.sideQuest}</p>
-      </div>
-
-      <div class="section">
-        <h4><i data-lucide="sparkles"></i> For What It’s Worth → Why it’s worth your energy</h4>
-        <ul>${i.worth.map(w => `<li>${w}</li>`).join("")}</ul>
-      </div>
-
-      <div class="section signals">
-        <h4><i data-lucide="receipt"></i> Signals Observed → Receipts</h4>
-        ${i.signals.map(s => `
-          <a href="${s.url}" target="_blank">
-            <i data-lucide="${s.icon}"></i>${s.name}
-          </a>
-        `).join("")}
-      </div>
-    </div>
-  `).join("");
-
-  lucide.createIcons();
+    lucide.createIcons();
+  } catch {
+    document.getElementById("banner").innerText =
+      "Unable to load ideas. Please try again.";
+  }
 }
 
 function toggleMethodology() {
@@ -324,6 +351,8 @@ function toggleMethodology() {
 }
 
 loadIdeas();
+lucide.createIcons();
 </script>
+
 </body>
 </html>
