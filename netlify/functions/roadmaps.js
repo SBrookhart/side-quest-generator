@@ -1,5 +1,4 @@
 // netlify/functions/roadmaps.js
-
 export async function getRoadmapSignals() {
   const repos = [
     "ethereum/go-ethereum",
@@ -7,36 +6,32 @@ export async function getRoadmapSignals() {
     "cosmos/cosmos-sdk"
   ];
 
-  const results = [];
+  const signals = [];
 
   for (const repo of repos) {
     try {
-      const url = `https://api.github.com/repos/${repo}/releases?per_page=3`;
-      const res = await fetch(url, {
-        headers: { Accept: "application/vnd.github+json" }
-      });
+      const res = await fetch(
+        `https://api.github.com/repos/${repo}/releases?per_page=2`,
+        { headers: { Accept: "application/vnd.github+json" } }
+      );
 
       if (!res.ok) continue;
 
       const data = await res.json();
-
-      data.forEach(rel => {
-        results.push({
+      for (const rel of data) {
+        signals.push({
           type: "github",
-          name: "Protocol Roadmap",
-          text: rel.body || rel.name || "",
-          url: rel.html_url
+          text: rel.body || rel.name,
+          url: rel.html_url,
+          timestamp: rel.published_at
         });
-      });
-    } catch {
-      continue;
-    }
+      }
+    } catch {}
   }
 
-  return results;
+  return signals;
 }
 
 export default async function handler() {
-  const signals = await getRoadmapSignals();
-  return Response.json(signals);
+  return Response.json(await getRoadmapSignals());
 }
