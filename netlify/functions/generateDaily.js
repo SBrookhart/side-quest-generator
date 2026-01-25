@@ -7,9 +7,12 @@ export async function handler() {
   const dayKey = `day:${today}`;
   const indexKey = "archive:index";
 
-  // Check if today already exists
-  const existing = await store.get(dayKey, { type: "json" });
-  if (existing) {
+  // Load index (source of truth)
+  let index = await store.get(indexKey, { type: "json" });
+  if (!Array.isArray(index)) index = [];
+
+  // If index already contains today, stop
+  if (index.includes(today)) {
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -19,15 +22,17 @@ export async function handler() {
     };
   }
 
-  // 🔹 Generate ideas (replace with your live pipeline)
+  // --- Generate ideas (placeholder – your pipeline can live here)
   const ideas = [
     {
       title: "Gas Fee Translator",
-      murmur: "Users repeatedly express confusion around transaction fees during congestion.",
-      quest: "Build a plain-English explanation layer that interprets gas fees at transaction time.",
+      murmur:
+        "Users repeatedly express confusion around transaction fees during network congestion.",
+      quest:
+        "Build a plain-English explanation layer that interprets gas fees at transaction time.",
       worth: [
-        "Improves trust and transparency for non-technical users",
-        "Reduces failed or abandoned transactions"
+        "Improves trust for non-technical users",
+        "Reduces abandoned transactions"
       ],
       signals: [
         { type: "twitter", url: "https://x.com/search?q=gas%20fees" }
@@ -35,11 +40,13 @@ export async function handler() {
     },
     {
       title: "DAO Proposal Digest",
-      murmur: "Governance discussions are long and participation remains low.",
-      quest: "Summarize proposals into risks, tradeoffs, and outcomes.",
+      murmur:
+        "Governance threads are long and participation remains low.",
+      quest:
+        "Summarize proposals into risks, tradeoffs, and outcomes.",
       worth: [
         "Increases governance participation",
-        "Reduces cognitive overhead for delegates"
+        "Reduces cognitive load for voters"
       ],
       signals: [
         { type: "github", url: "https://github.com/ethereum/governance" }
@@ -53,11 +60,10 @@ export async function handler() {
     ideas
   };
 
-  // Write day snapshot
+  // Write day FIRST
   await store.set(dayKey, payload);
 
-  // Update index
-  const index = (await store.get(indexKey, { type: "json" })) || [];
+  // Update index SECOND
   index.unshift(today);
   await store.set(indexKey, index);
 
