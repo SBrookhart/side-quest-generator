@@ -134,9 +134,9 @@ const generateFallbackIdeas = () => {
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" },
-        { type: "twitter", name: "X", url: "https://x.com" }
-      ]
+  { type: "github", name: "GitHub", url: "https://github.com" },
+  { type: "x", name: "X", url: "https://x.com" } // Changed from "twitter"
+]
     },
     {
       title: "Where Did All My Testnet Tokens Go?",
@@ -149,9 +149,9 @@ const generateFallbackIdeas = () => {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" },
-        { type: "rss", name: "Hackathons", url: "https://devpost.com" }
-      ]
+  { type: "github", name: "GitHub", url: "https://github.com" },
+  { type: "x", name: "X", url: "https://x.com" } // Changed from "twitter"
+]
     },
     {
       title: "Why Is This Transaction Going to Cost Me $50?",
@@ -164,9 +164,9 @@ const generateFallbackIdeas = () => {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" },
-        { type: "twitter", name: "X", url: "https://x.com" }
-      ]
+  { type: "github", name: "GitHub", url: "https://github.com" },
+  { type: "x", name: "X", url: "https://x.com" } // Changed from "twitter"
+]
     },
     {
       title: "Did My Transaction Actually Go Through?",
@@ -179,9 +179,9 @@ const generateFallbackIdeas = () => {
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" },
-        { type: "twitter", name: "X", url: "https://x.com" }
-      ]
+  { type: "github", name: "GitHub", url: "https://github.com" },
+  { type: "x", name: "X", url: "https://x.com" } // Changed from "twitter"
+]
     },
     {
       title: "Why Can't I Find Past Governance Votes?",
@@ -194,9 +194,9 @@ const generateFallbackIdeas = () => {
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" },
-        { type: "rss", name: "Hackathons", url: "https://devpost.com" }
-      ]
+  { type: "github", name: "GitHub", url: "https://github.com" },
+  { type: "x", name: "X", url: "https://x.com" } // Changed from "twitter"
+]
     }
   ];
 
