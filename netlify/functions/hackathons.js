@@ -1,75 +1,42 @@
 // netlify/functions/hackathons.js
 
 /**
- * Hackathon signals are intentionally:
- * - prompt-driven
- * - future-oriented
- * - high-level but concrete
- *
- * These are NOT summaries.
- * They represent explicit invitations to build.
+ * 🔑 Named export for orchestration
  */
-
-/**
- * Named export used by generateDaily.js
- */
-export async function fetchHackathonSignals() {
+export async function getHackathonSignals() {
   const today = new Date().toISOString().slice(0, 10);
 
-  // Curated, high-signal hackathon-style prompts.
-  // This avoids fragile scraping and keeps Netlify costs low.
-  const prompts = [
+  return [
     {
+      type: "hackathon",
       text:
-        "Teams repeatedly struggle to prototype on-chain analytics during hackathons because existing tooling is too heavyweight to set up in a weekend.",
+        "Teams repeatedly struggle to prototype on-chain analytics during hackathons because existing tooling is too heavyweight for a weekend build.",
       url: "https://example.com/hackathon/onchain-analytics",
+      date: today
     },
     {
+      type: "hackathon",
       text:
-        "Builders want to experiment with governance mechanics at hackathons, but lack lightweight simulators that can be configured without deep protocol knowledge.",
-      url: "https://example.com/hackathon/governance-sim",
-    },
-    {
-      text:
-        "Hackathon teams frequently rebuild the same authentication and wallet-connection flows instead of focusing on their core idea.",
+        "Hackathon teams rebuild wallet auth flows instead of focusing on their core idea.",
       url: "https://example.com/hackathon/auth-friction",
+      date: today
     },
     {
+      type: "hackathon",
       text:
-        "Many hackathon projects fail to ship demos because deployment pipelines are too complex for short event timelines.",
-      url: "https://example.com/hackathon/deployment-friction",
-    },
-    {
-      text:
-        "Builders want ways to showcase partially working prototypes during hackathons, but current demo tooling assumes production readiness.",
-      url: "https://example.com/hackathon/demo-tools",
-    },
+        "Builders want to experiment with governance mechanics but lack lightweight simulators.",
+      url: "https://example.com/hackathon/governance-sim",
+      date: today
+    }
   ];
-
-  return prompts.map(p => ({
-    type: "hackathon",
-    text: p.text,
-    url: p.url,
-    date: today,
-  }));
 }
 
 /**
- * HTTP handler so /.netlify/functions/hackathons works
- * (used for debugging + verification)
+ * HTTP endpoint
  */
-export default async function handler() {
-  try {
-    const signals = await fetchHackathonSignals();
-    return new Response(JSON.stringify(signals), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    console.error("Hackathons ingestion failed:", err);
-    return new Response(
-      JSON.stringify({ error: "Hackathons ingestion failed" }),
-      { status: 500 }
-    );
-  }
+export async function handler() {
+  const signals = await getHackathonSignals();
+  return new Response(JSON.stringify(signals), {
+    headers: { "Content-Type": "application/json" }
+  });
 }
