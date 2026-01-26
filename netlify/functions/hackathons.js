@@ -1,33 +1,72 @@
 // netlify/functions/hackathons.js
-export async function getHackathonSignals() {
-  const FEED =
-    "https://devpost.com/hackathons.rss";
 
-  try {
-    const res = await fetch(FEED);
-    if (!res.ok) return [];
+const FEEDS = [
+  "https://devpost.com/hackathons.rss"
+];
 
-    const text = await res.text();
-    const items = [...text.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+const NOISE_WORDS = [
+  "prize",
+  "cash",
+  "reward",
+  "sponsored",
+  "winners",
+  "apply now"
+];
 
-    return items.slice(0, 5).map(raw => {
+export default async function getHackathonSignals() {
+  const signals = [];
+
+  for (const feedUrl of FEEDS) {
+    let res;
+    try {
+      res = await fetch(feedUrl);
+    } catch {
+      continue;
+    }
+
+    if (!res.ok) continue;
+
+    const xml = await res.text();
+
+    const items = xml.split("<item>").slice(1);
+
+    for (const item of items) {
       const title =
-        raw[1].match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] || "";
+        item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] || "";
+
+      const description =
+        item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/)?.[1] ||
+        "";
+
       const link =
-        raw[1].match(/<link>(.*?)<\/link>/)?.[1] || "";
+        item.match(/<link>(.*?)<\/link>/)?.[1] || "";
 
-      return {
+      const pubDate =
+        item.match(/<pubDate>(.*?)<\/pubDate>/)?.[1] || "";
+
+      const text = `${title} ${description}`.toLowerCase();
+
+      if (
+        !text ||
+        NOISE_WORDS.some(w => text.includes(w))
+      ) {
+        continue;
+      }
+
+      signals.push({
         type: "rss",
-        text: title,
+        text: description
+          .replace(/<[^>]+>/g, "")
+          .replace(/\s+/g, " ")
+          .slice(0, 280)
+          .trim(),
         url: link,
-        date: new Date().toISOString()
-      };
-    });
-  } catch {
-    return [];
+        date: pubDate
+          ? new Date(pubDate).toISOString().slice(0, 10)
+          : new Date().toISOString().slice(0, 10)
+      });
+    }
   }
-}
 
-export default async function handler() {
-  return Response.json(await getHackathonSignals());
+  return signals;
 }
