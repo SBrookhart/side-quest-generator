@@ -1,7 +1,13 @@
 // netlify/functions/latest.js
+import { getStore } from "@netlify/blobs";
 
-import { handler as generateDailyHandler } from "./generateDaily.js";
+export async function handler() {
+  const store = getStore({ name: "tech-murmurs" });
+  const latest = await store.get("latest");
 
-export const handler = async (event, context) => {
-  return generateDailyHandler(event, context);
-};
+  if (!latest) {
+    return new Response(JSON.stringify({ ideas: [] }), { status: 200 });
+  }
+
+  return new Response(latest, { status: 200 });
+}
