@@ -1,79 +1,237 @@
 import { getStore } from "@netlify/blobs";
 
-const generateTestIdeas = () => {
-  return [
-    {
-      title: "Why Can't I Find Working Faucets?",
-      murmur: "Testnet faucet links break constantly and nobody maintains a current list.",
-      quest: "Create a live directory of testnet faucets with uptime checks and rate limit info.",
-      worth: [
-        "Saves hours of developer time",
-        "Helps newcomers instantly",
-        "Simple to build and maintain"
-      ],
-      difficulty: "Easy",
+const generateUniqueIdeasForDay = async (date, dayIndex) => {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  
+  if (!apiKey) {
+    return generateFallbackIdeasForDay(dayIndex);
+  }
+
+  const prompt = `Generate 5 compelling, specific builder side-quest ideas for ${date}. Make them HUMAN and CONVERSATIONAL.
+
+IMPORTANT: Make these ideas COMPLETELY DIFFERENT from each other and from typical crypto/web3 clichés. Vary the problem areas significantly.
+
+STYLE RULES:
+- Titles are casual questions or observations (like "Why Is This So Expensive?" not "Cost Optimization Tool")
+- Write like talking to a friend over coffee
+- Be specific about real pain points
+- Make each idea feel different in tone and scope
+- Sound authentic, not like marketing copy
+
+For each idea:
+1. title: Conversational question/observation
+2. murmur: What's broken, in casual language (1-2 sentences)
+3. quest: What to build (1-2 sentences, specific)
+4. worth: Array of 3 short benefits (each 3-8 words)
+5. difficulty: Easy, Medium, or Hard
+
+Cover diverse areas: UX problems, missing tools, confusing workflows, data gaps, developer experience, etc.
+
+Return ONLY valid JSON:
+[
+  {
+    "title": "string",
+    "murmur": "string",
+    "quest": "string",
+    "worth": ["string", "string", "string"],
+    "difficulty": "Easy|Medium|Hard"
+  }
+]`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 3000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error('API failed');
+
+    const data = await response.json();
+    const textContent = data.content.find(c => c.type === 'text')?.text || '[]';
+    const jsonMatch = textContent.match(/\[[\s\S]*\]/);
+    const ideas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+
+    return ideas.map(idea => ({
+      ...idea,
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" },
-        { type: "twitter", name: "X", url: "https://x.com" }
+        { type: "github", name: "GitHub Issues", url: "https://github.com/search?q=is:issue+is:open" },
+        { type: "x", name: "Developer X", url: "https://x.com/search?q=web3%20developer%20problem" }
       ]
-    },
+    }));
+
+  } catch (error) {
+    console.error('AI generation failed:', error);
+    return generateFallbackIdeasForDay(dayIndex);
+  }
+};
+
+const generateFallbackIdeasForDay = (dayIndex) => {
+  const day1Ideas = [
     {
-      title: "What Actually Changed in This Contract?",
-      murmur: "Smart contract upgrades happen without clear changelogs, breaking things silently.",
-      quest: "Build a contract diff tool that shows what functions changed between versions in plain English.",
+      title: "What Actually Changed in This Upgrade?",
+      murmur: "Protocol upgrades ship without clear changelogs, leaving developers to discover breaking changes through failures.",
+      quest: "Build a tool that diffs contract upgrades and shows what functions changed, what got removed, and what's new—in plain English.",
       worth: [
         "Prevents surprise failures",
         "Makes upgrades transparent",
-        "Interesting technical problem"
+        "Interesting technical challenge"
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" }
+        { type: "github", name: "Protocol Governance", url: "https://github.com/search?q=contract+upgrade+breaking" },
+        { type: "x", name: "Developer X", url: "https://x.com/search?q=contract%20upgrade%20broke" }
       ]
     },
     {
-      title: "Why Is Gas So Unpredictable?",
-      murmur: "Users approve transactions without knowing if the gas price is fair or terrible.",
-      quest: "Create a gas price context tool that shows historical comparisons and suggests better timing.",
+      title: "Why Don't These NFTs Load Anymore?",
+      murmur: "NFT metadata disappears when IPFS pins expire or servers go down, but nobody notices until holders complain.",
+      quest: "Create a monitoring service that checks NFT metadata availability across IPFS and HTTP, alerting when assets become unreachable.",
       worth: [
-        "Reduces transaction anxiety",
-        "Saves users real money",
-        "Simple data visualization"
+        "Protects project reputation",
+        "Prevents holder complaints",
+        "Simple monitoring + alerts"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "twitter", name: "X", url: "https://x.com" }
+        { type: "github", name: "NFT Infrastructure", url: "https://github.com/search?q=nft+metadata+missing" },
+        { type: "x", name: "NFT Twitter", url: "https://x.com/search?q=nft%20image%20broken" }
+      ]
+    },
+    {
+      title: "Can I Actually Afford This Transaction?",
+      murmur: "Users see gas estimates but don't know if they'll change or if they're getting ripped off compared to others.",
+      quest: "Build a gas price explainer that shows historical trends, percentile rankings, and suggests better times to transact.",
+      worth: [
+        "Reduces transaction anxiety",
+        "Saves users real money",
+        "Clean data visualization"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Wallet Issues", url: "https://github.com/search?q=gas+fee+expensive" },
+        { type: "x", name: "Crypto X", url: "https://x.com/search?q=gas%20fees%20expensive" }
+      ]
+    },
+    {
+      title: "Where Are All the Working Faucets?",
+      murmur: "Testnet faucet links break constantly and nobody maintains a current list of what actually works.",
+      quest: "Create a live directory of testnet faucets with uptime monitoring, rate limit info, and one-click requesting.",
+      worth: [
+        "Saves hours of googling",
+        "Helps new developers instantly",
+        "Super fast to build"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Developer Tools", url: "https://github.com/search?q=testnet+faucet" },
+        { type: "x", name: "Dev X", url: "https://x.com/search?q=testnet%20faucet%20help" }
       ]
     },
     {
       title: "Did This Proposal Actually Pass?",
-      murmur: "DAO voting results scatter across platforms with no single source of truth.",
-      quest: "Build a DAO decision tracker showing proposal status, votes, and execution across platforms.",
+      murmur: "DAO voting results get scattered across Snapshot, forums, and Discord without a single source of truth.",
+      quest: "Build a unified DAO decision tracker that shows proposal status, vote counts, and execution status across platforms.",
       worth: [
         "Makes governance transparent",
         "Reduces voter confusion",
-        "Useful aggregation practice"
+        "Useful data aggregation practice"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" }
-      ]
-    },
-    {
-      title: "Where Did My NFT Metadata Go?",
-      murmur: "IPFS pins expire and HTTP servers die, but nobody notices until NFTs break.",
-      quest: "Create a metadata health monitor that checks availability and sends alerts when links die.",
-      worth: [
-        "Protects project reputation",
-        "Prevents holder complaints",
-        "Easy monitoring setup"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "GitHub", url: "https://github.com" }
+        { type: "github", name: "DAO Governance", url: "https://github.com/search?q=dao+proposal+voting" },
+        { type: "x", name: "DAO Twitter", url: "https://x.com/search?q=dao%20proposal%20status" }
       ]
     }
   ];
+
+  const day2Ideas = [
+    {
+      title: "Why Can't I Replay This Transaction?",
+      murmur: "Developers need to test edge cases but can't easily replay past transactions on a local fork without manual setup.",
+      quest: "Build a tool that takes any transaction hash and creates a one-click local fork with that exact state, ready to replay and modify.",
+      worth: [
+        "Makes debugging way easier",
+        "Perfect for learning contracts",
+        "Great developer experience win"
+      ],
+      difficulty: "Hard",
+      sources: [
+        { type: "github", name: "Testing Tools", url: "https://github.com/search?q=transaction+replay+fork" },
+        { type: "x", name: "Dev X", url: "https://x.com/search?q=replay%20transaction%20debug" }
+      ]
+    },
+    {
+      title: "Where Did My Approval Go?",
+      murmur: "Users approve token spending limits but have no idea which apps can still spend their tokens months later.",
+      quest: "Create an approval dashboard that shows all active token approvals, when they were made, and lets users revoke them in bulk.",
+      worth: [
+        "Prevents unauthorized drains",
+        "Builds user trust",
+        "Clean security UX"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "Security Tools", url: "https://github.com/search?q=token+approval+revoke" },
+        { type: "x", name: "Security X", url: "https://x.com/search?q=token%20approval%20security" }
+      ]
+    },
+    {
+      title: "Why Is This Contract Call Failing?",
+      murmur: "Contract interactions fail with cryptic error messages that don't explain what actually went wrong or how to fix it.",
+      quest: "Build an error decoder that translates revert messages and failed transactions into plain English explanations with suggested fixes.",
+      worth: [
+        "Saves debugging frustration",
+        "Helps newcomers learn faster",
+        "Simple string matching to start"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Developer Experience", url: "https://github.com/search?q=contract+error+cryptic" },
+        { type: "x", name: "Dev Help", url: "https://x.com/search?q=contract%20error%20help" }
+      ]
+    },
+    {
+      title: "Which Wallet Actually Supports This?",
+      murmur: "Users don't know which wallets support which chains, leading to confusion and failed connection attempts.",
+      quest: "Create a wallet compatibility matrix showing which wallets work with which chains, updated automatically from each wallet's docs.",
+      worth: [
+        "Reduces onboarding friction",
+        "Helps users choose wallets",
+        "Easy web scraping project"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Wallet Docs", url: "https://github.com/search?q=wallet+chain+support" },
+        { type: "x", name: "Wallet Help", url: "https://x.com/search?q=which%20wallet%20supports" }
+      ]
+    },
+    {
+      title: "How Much Did This Really Cost?",
+      murmur: "Transaction receipts show gas in Wei and Gwei, but people want to know the actual dollar cost at the time of the transaction.",
+      quest: "Build a transaction cost calculator that shows historical fiat value of gas fees using time-stamped price data.",
+      worth: [
+        "Makes costs understandable",
+        "Good for expense tracking",
+        "Interesting price API work"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "Analytics Tools", url: "https://github.com/search?q=gas+cost+usd" },
+        { type: "x", name: "Cost Tracking", url: "https://x.com/search?q=transaction%20cost%20usd" }
+      ]
+    }
+  ];
+
+  return dayIndex === 0 ? day1Ideas : day2Ideas;
 };
 
 export default async () => {
@@ -96,8 +254,9 @@ export default async () => {
   const days = ["2026-01-23", "2026-01-24"];
   const seeded = [];
 
-  for (const day of days) {
-    const ideas = generateTestIdeas();
+  for (let i = 0; i < days.length; i++) {
+    const day = days[i];
+    const ideas = await generateUniqueIdeasForDay(day, i);
 
     await store.set(
       `daily-${day}`,
@@ -114,6 +273,6 @@ export default async () => {
   return Response.json({ 
     success: true,
     seeded,
-    message: "Archive seeded successfully"
+    message: "Archive seeded with unique ideas per day"
   });
 };
