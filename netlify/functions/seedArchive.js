@@ -213,20 +213,3 @@ export default async () => {
     message: "Old data deleted, fresh data seeded"
   });
 };
-```
-
----
-
-## **Step 2: Deploy**
-
-1. **Replace `seedArchive.js`** with the code above
-2. **Push to GitHub**
-3. **Wait for deploy to complete**
-
----
-
-## **Step 3: Run It**
-
-Visit:
-```
-https://side-quest-generator.netlify.app/.netlify/functions/seedArchive
