@@ -1,60 +1,60 @@
 // netlify/functions/github.js
 
 const GITHUB_SEARCH_QUERY = `
-  (
-    "missing" OR
-    "no way to" OR
-    "hard to" OR
-    "wish there was" OR
-    "cannot" OR
-    "doesn't support" OR
-    "would be useful"
-  )
-  in:title,body
-  is:issue
-  is:open
+(
+  "missing" OR
+  "no way to" OR
+  "hard to" OR
+  "wish there was" OR
+  "cannot" OR
+  "doesn't support" OR
+  "would be useful"
+)
+in:title,body
+is:issue
+is:open
 `;
 
 const MAX_RESULTS = 20;
 
 function cleanText(text = "") {
   return text
-    .replace(/```[\s\S]*?```/g, "") // remove code blocks
-    .replace(/`[^`]*`/g, "")        // remove inline code
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`[^`]*`/g, "")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 280);
+    .slice(0, 300);
 }
 
-export default async function getGitHubSignals() {
+/* ---------------- core logic ---------------- */
+
+async function fetchGitHubSignals() {
   const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
     GITHUB_SEARCH_QUERY
   )}&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
 
   const res = await fetch(url, {
     headers: {
-      Accept: "application/vnd.github+json"
+      Accept: "application/vnd.github+json",
+      "User-Agent": "tech-murmurs",
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN || ""}`
     }
   });
 
   if (!res.ok) {
-    console.error("GitHub search failed:", res.status);
+    console.error("GitHub API error:", res.status);
     return [];
   }
 
   const data = await res.json();
 
-  if (!Array.isArray(data.items)) {
-    return [];
-  }
+  if (!Array.isArray(data.items)) return [];
 
   return data.items
     .map(issue => {
-      const text = cleanText(
-        issue.body || issue.title || ""
-      );
+      const text = cleanText(issue.body || issue.title || "");
 
-      if (text.length < 60) return null;
+      if (text.length < 80) return null;
 
       return {
         type: "github",
@@ -67,3 +67,32 @@ export default async function getGitHubSignals() {
     })
     .filter(Boolean);
 }
+
+/* ---------------- Netlify handler ---------------- */
+
+export async function handler() {
+  try {
+    const signals = await fetchGitHubSignals();
+
+    return Response.json({
+      ok: true,
+      count: signals.length,
+      signals
+    });
+  } catch (err) {
+    console.error("GitHub function crashed:", err);
+
+    return Response.json(
+      {
+        ok: false,
+        error: "GitHub ingestion failed",
+        signals: []
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/* ---------------- internal import ---------------- */
+
+export default fetchGitHubSignals;
