@@ -1,6 +1,7 @@
 {
   "name": "tech-murmurs",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "echo \"No build step required\""
   },
