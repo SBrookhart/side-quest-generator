@@ -19,25 +19,44 @@ async function generateIdeasWithAI(signals) {
     text: s.text?.slice(0, 250) || ""
   }));
 
-  const prompt = `You're analyzing real developer pain points from GitHub issues, hackathons, and builder conversations:
+  const prompt = `You're brainstorming creative side projects for indie builders and vibe coders.
 
+Based on these signals from the wild:
 ${JSON.stringify(signalContext, null, 2)}
 
-Generate 5 compelling, specific side-quest ideas. Make them HUMAN and CONVERSATIONAL.
+Generate 5 playful, buildable ideas. Think: weekend experiments, creative tools, "wouldn't it be cool if..." vibes.
 
-CRITICAL: Return ONLY valid JSON, no markdown, no explanations. Format:
+TONE GUIDELINES:
+- Playful > serious
+- Experimental > enterprise
+- "I wonder..." > "The market needs..."
+- Curious > corporate
+- Solo builder scale, not startup scale
+
+Each idea should be one of these types:
+- Type A (40%): Thoughtful indie hacker / solo builder prompt
+- Type B (20%): Early-stage product opportunity  
+- Type C (40%): Creative experiment / playful tool
+
+TITLES: Make them curious and human
+Good: "What If Vibes Had a Leaderboard?"
+Good: "Can I Turn My Tweets Into a Game?"
+Bad: "Social Media Analytics Dashboard"
+Bad: "Engagement Optimization Tool"
+
+Return ONLY valid JSON:
 
 [
   {
-    "title": "conversational question like 'Why Is This So Confusing?'",
-    "murmur": "what's broken in 1-2 casual sentences",
-    "quest": "what to build in 1-2 sentences",
-    "worth": ["benefit 1 (3-8 words)", "benefit 2 (3-8 words)", "benefit 3 (3-8 words)"],
+    "title": "curious question or playful observation",
+    "murmur": "why this would be interesting (1-2 sentences, casual)",
+    "quest": "what you'd actually build (1-2 sentences, specific but not intimidating)",
+    "worth": ["reason 1 (3-8 words)", "reason 2 (3-8 words)", "reason 3 (3-8 words)"],
     "difficulty": "Easy|Medium|Hard"
   }
 ]
 
-Make titles casual questions, not corporate. Each idea should feel different.`;
+Make them feel like side quests, not jobs.`;
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -48,9 +67,9 @@ Make titles casual questions, not corporate. Each idea should feel different.`;
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        temperature: 0.9,
+        temperature: 1.0,
         messages: [
-          { role: "system", content: "You are a creative tech editor. Return only valid JSON." },
+          { role: "system", content: "You're a creative tech editor for indie builders and vibe coders. Return only valid JSON." },
           { role: "user", content: prompt }
         ]
       })
@@ -63,7 +82,6 @@ Make titles casual questions, not corporate. Each idea should feel different.`;
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '[]';
     
-    // Strip markdown if present
     const jsonMatch = content.match(/\[[\s\S]*\]/);
     const ideas = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
 
@@ -98,27 +116,27 @@ Make titles casual questions, not corporate. Each idea should feel different.`;
 function generateFallbackIdeas() {
   const ideas = [
     {
-      title: "Why Can't I See What This Contract Does?",
-      murmur: "Smart contracts get verified but reading raw code doesn't tell you what it actually does.",
-      quest: "Build a tool that explains verified contracts in plain English—what they do, what events they emit, what you can call.",
+      title: "What If My GitHub Was a Trading Card?",
+      murmur: "Your repos are just sitting there. What if they were collectible cards with stats, rarity, and vibes?",
+      quest: "Turn GitHub profiles into trading card games—repos as cards, commits as XP, let people trade and battle with their open source work.",
       worth: [
-        "No blockchain expertise needed",
-        "Makes contracts accessible",
-        "Great AI + web3 portfolio piece"
+        "Gamifies open source in a fun way",
+        "Portfolio meets Pokemon vibes",
+        "Weekend build with public APIs"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=smart+contract+confusing" }
+        { type: "github", name: "GitHub", url: "https://github.com" }
       ]
     },
     {
-      title: "Where Did All My Testnet Tokens Go?",
-      murmur: "Developers waste time hunting for working faucets that actually have tokens left.",
-      quest: "Create a faucet directory showing which ones work, their rate limits, and let users request from multiple chains at once.",
+      title: "Can I Garden My Habits?",
+      murmur: "Habit trackers are boring spreadsheets. What if your habits grew into a virtual garden instead?",
+      quest: "Build a habit tracker where each habit is a plant—water it daily by doing the habit, watch it grow, let it wither if you forget.",
       worth: [
-        "Saves daily developer frustration",
-        "Simple UI, immediate value",
-        "Ships in a weekend"
+        "Makes habits actually cute",
+        "No pressure, just growth",
+        "Perfect for a cozy side project"
       ],
       difficulty: "Easy",
       sources: [
@@ -126,45 +144,59 @@ function generateFallbackIdeas() {
       ]
     },
     {
-      title: "Why Will This Cost Me $50?",
-      murmur: "Users approve transactions without understanding if the gas fee is normal or insane.",
-      quest: "Build an extension that translates gas into real-world comparisons—coffee, Netflix, or your typical transaction.",
+      title: "What Would My Tweets Look Like as a Zine?",
+      murmur: "Your tweets are ephemeral chaos. What if you could turn a month of tweets into a printable indie zine?",
+      quest: "Create a tool that pulls your tweets and auto-generates a print-ready zine layout—add doodles, pick fonts, export PDF.",
       worth: [
-        "Reduces transaction anxiety",
-        "Makes gas understandable",
-        "Light frontend, big impact"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=gas+fee+expensive" }
-      ]
-    },
-    {
-      title: "Did My Transaction Go Through?",
-      murmur: "Pending transactions create anxiety—you can't tell if it's stuck, failed, or just slow.",
-      quest: "Create a tracker with clear status, estimated wait time, and what to do if it's actually stuck.",
-      worth: [
-        "Turns confusion into clarity",
-        "Useful for every web3 user",
-        "Simple data fetch + good UX"
+        "Turns tweets into physical artifacts",
+        "Great creative coding project",
+        "Weirdly satisfying output"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=pending+transaction" }
+        { type: "github", name: "GitHub", url: "https://github.com" }
       ]
     },
     {
-      title: "Where Are Past DAO Votes?",
-      murmur: "Voting history gets buried across forums and Discord—impossible to see how delegates actually voted.",
-      quest: "Build a vote tracker showing delegate history in one place—who voted how, participation rates, accountability.",
+      title: "Can I Vibe Check My Folder Names?",
+      murmur: "Your file system is a mess of 'untitled-final-REAL-v3' chaos. What if something roasted your naming choices?",
+      quest: "Build a CLI tool that analyzes your messy folder structure and gently roasts your file naming habits with suggestions.",
       worth: [
-        "Makes DAOs transparent",
-        "Holds delegates accountable",
-        "Interesting data viz challenge"
+        "Funny and actually useful",
+        "Ships in an afternoon",
+        "Everyone's file system is chaos"
       ],
-      difficulty: "Hard",
+      difficulty: "Easy",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=dao+governance" }
+        { type: "github", name: "GitHub", url: "https://github.com/search?q=file+organization" }
+      ]
+    },
+    {
+      title: "What If Errors Were Postcards?",
+      murmur: "Console errors are ugly and stressful. What if they were beautifully designed postcards you could collect?",
+      quest: "Make a dev tool that turns error messages into aesthetic postcards—save them, share them, make debugging less painful.",
+      worth: [
+        "Makes debugging feel creative",
+        "Great portfolio piece energy",
+        "People would actually use this"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "GitHub", url: "https://github.com/search?q=error+message" }
+      ]
+    },
+    {
+      title: "Can I See My Year as a Mixtape?",
+      murmur: "Year-in-review wrapped things are everywhere. But what if your data became an actual playable mixtape?",
+      quest: "Build a year-in-review tool that turns your activity (commits, tweets, plays) into a visual mixtape with track listings.",
+      worth: [
+        "Wrapped vibes but weirder",
+        "Fun data visualization challenge",
+        "People love year-end summaries"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "hackathon", name: "Hackathons", url: "https://devpost.com" }
       ]
     }
   ];
