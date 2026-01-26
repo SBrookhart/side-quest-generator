@@ -1,13 +1,41 @@
 // netlify/functions/latest.js
+
 import { getStore } from "@netlify/blobs";
 
-export async function handler() {
-  const store = getStore({ name: "tech-murmurs" });
-  const latest = await store.get("latest");
+export const handler = async () => {
+  try {
+    const store = getStore({
+      name: "tech-murmurs",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_AUTH_TOKEN
+    });
 
-  if (!latest) {
-    return new Response(JSON.stringify({ ideas: [] }), { status: 200 });
+    const latest = await store.get("latest");
+
+    // If nothing has been generated yet, fail gracefully
+    if (!latest) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          mode: "sample",
+          ideas: []
+        })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      body: latest
+    };
+  } catch (err) {
+    console.error("Latest fetch failed:", err);
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: "Failed to load latest ideas",
+        details: err.message
+      })
+    };
   }
-
-  return new Response(latest, { status: 200 });
-}
+};
