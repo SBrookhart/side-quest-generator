@@ -179,26 +179,54 @@ export default async () => {
 
   const days = ["2026-01-23", "2026-01-24"];
   const seeded = [];
+  const deleted = [];
 
+  // FIRST: Delete both days
+  for (const day of days) {
+    try {
+      await store.delete(`daily-${day}`);
+      deleted.push(day);
+    } catch (e) {
+      // Might not exist, that's ok
+    }
+  }
+
+  // THEN: Set fresh data
   for (let i = 0; i < days.length; i++) {
     const day = days[i];
     const ideas = generateIdeasForDay(i);
+    
+    const payload = { 
+      date: day, 
+      mode: "editorial", 
+      ideas
+    };
 
-    await store.set(
-      `daily-${day}`,
-      JSON.stringify({ 
-        date: day, 
-        mode: "editorial", 
-        ideas 
-      })
-    );
-
+    await store.set(`daily-${day}`, JSON.stringify(payload));
     seeded.push(day);
   }
 
   return Response.json({ 
     success: true,
+    deleted,
     seeded,
-    message: "Archive seeded successfully"
+    message: "Old data deleted, fresh data seeded"
   });
 };
+```
+
+---
+
+## **Step 2: Deploy**
+
+1. **Replace `seedArchive.js`** with the code above
+2. **Push to GitHub**
+3. **Wait for deploy to complete**
+
+---
+
+## **Step 3: Run It**
+
+Visit:
+```
+https://side-quest-generator.netlify.app/.netlify/functions/seedArchive
