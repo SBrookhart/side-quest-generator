@@ -6,16 +6,20 @@ export async function getHackathonSignals() {
   return [
     {
       type: "hackathon",
-      text:
-        "Hackathon teams repeatedly rebuild wallet authentication instead of focusing on core product ideas.",
-      url: "https://example.com/hackathon/auth-friction",
+      text: "Teams struggle to prototype on-chain analytics during hackathons because existing tools are too heavy to set up in a weekend.",
+      url: "https://example.com/hackathon/onchain-analytics",
       date: today
     },
     {
       type: "hackathon",
-      text:
-        "Builders struggle to prototype governance mechanics during hackathons due to lack of lightweight simulators.",
-      url: "https://example.com/hackathon/governance-sim",
+      text: "Builders want to experiment with governance mechanics but lack lightweight simulators that don't require protocol expertise.",
+      url: "https://example.com/hackathon/governance",
+      date: today
+    },
+    {
+      type: "hackathon",
+      text: "Hackathon teams repeatedly rebuild wallet and auth flows instead of focusing on their core idea.",
+      url: "https://example.com/hackathon/auth",
       date: today
     }
   ];
@@ -23,7 +27,5 @@ export async function getHackathonSignals() {
 
 export async function handler() {
   const signals = await getHackathonSignals();
-  return new Response(JSON.stringify(signals), {
-    headers: { "Content-Type": "application/json" }
-  });
+  return new Response(JSON.stringify(signals), { status: 200 });
 }
