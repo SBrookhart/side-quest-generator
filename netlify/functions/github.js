@@ -55,9 +55,16 @@ export async function getGitHubSignals() {
     .filter(Boolean);
 }
 
-export async function handler() {
+export const handler = async () => {
   const signals = await getGitHubSignals();
-  return new Response(JSON.stringify(signals), {
-    headers: { "Content-Type": "application/json" }
-  });
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(signals)
+  };
+};
+
 }
