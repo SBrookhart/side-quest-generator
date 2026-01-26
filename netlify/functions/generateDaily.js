@@ -106,12 +106,12 @@ BAD titles (too generic):
     return ideas.map(idea => ({
       ...idea,
       sources: Object.values(sourcesByType).slice(0, 3).map(s => ({
-        type: s.type,
-        name: s.type === "github" ? "GitHub" : 
-              s.type === "twitter" ? "X" :
-              s.type === "rss" ? "Hackathons" : "Source",
-        url: s.url
-      }))
+  type: s.type,
+  name: s.type === "github" ? "GitHub" : 
+        s.type === "twitter" ? "X" :
+        s.type === "rss" ? "Hackathons" : "Source",
+  url: s.url
+}))
     }));
 
   } catch (error) {
