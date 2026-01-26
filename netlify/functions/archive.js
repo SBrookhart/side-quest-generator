@@ -5,10 +5,10 @@ export default async () => {
   const token = process.env.NETLIFY_AUTH_TOKEN;
 
   if (!siteID || !token) {
-    return Response.json(
-      { error: "Missing siteID or token" },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: "Missing siteID or token" }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   const store = getStore({
@@ -21,21 +21,26 @@ export default async () => {
   try {
     listing = await store.list();
   } catch (err) {
-    return Response.json(
-      { error: "Failed to list archive blobs" },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: "Failed to list archive blobs" }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   const blobs = listing.blobs || [];
   
-  // Get today's date in YYYY-MM-DD format
+  // Get today's date in YYYY-MM-DD format (UTC)
   const today = new Date().toISOString().slice(0, 10);
 
   // Only include daily snapshots, excluding today
   const dailyKeys = blobs
     .map(b => b.key)
-    .filter(key => key.startsWith("daily-") && !key.includes(today));
+    .filter(key => {
+      if (!key.startsWith("daily-")) return false;
+      // Extract date from key (format: daily-YYYY-MM-DD)
+      const dateFromKey = key.replace("daily-", "");
+      return dateFromKey !== today;
+    });
 
   const archiveData = {};
 
