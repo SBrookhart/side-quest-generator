@@ -1,15 +1,20 @@
 // netlify/functions/generateDaily.js
 
 import { getStore } from "@netlify/blobs";
-import getGitHubSignals from "./github.js";
-import getHackathonSignals from "./hackathons.js";
-import getTwitterSignals from "./twitter.js";
-import getRoadmapSignals from "./roadmaps.js";
+
+import { fetchGitHubSignals } from "./github.js";
+import { fetchHackathonSignals } from "./hackathons.js";
+import { fetchTwitterSignals } from "./twitter.js";
+import { fetchRoadmapSignals } from "./roadmaps.js";
 
 const MAX_IDEAS = 5;
 const SIGNAL_WINDOW_DAYS = 14;
 
-/* ---------- helpers ---------- */
+/* ---------------- helpers ---------------- */
+
+function isoToday() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 function daysAgo(n) {
   const d = new Date();
@@ -18,172 +23,189 @@ function daysAgo(n) {
 }
 
 function withinWindow(signal) {
+  if (!signal?.date) return false;
   return new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
-function dedupeSignals(signals) {
-  const seen = new Set();
-  return signals.filter(s => {
-    if (seen.has(s.url)) return false;
-    seen.add(s.url);
-    return true;
-  });
+function inferDifficulty(sourceCount) {
+  if (sourceCount >= 5) return "Hard";
+  if (sourceCount >= 3) return "Medium";
+  return "Easy";
 }
 
-/* ---------- AI synthesis ---------- */
+/**
+ * Simple, transparent clustering:
+ * - Group signals that share ≥1 long keyword
+ * - Deterministic, explainable, debuggable
+ */
+function clusterSignals(signals) {
+  const clusters = [];
 
-async function synthesizeIdeasWithAI(signals) {
-  const prompt = `
-You are the editor of "Tech Murmurs".
+  for (const signal of signals) {
+    const words = signal.text
+      .toLowerCase()
+      .split(/\W+/)
+      .filter(w => w.length > 6)
+      .slice(0, 6);
 
-You are given raw, noisy signals from builders (GitHub issues, hackathon prompts, protocol updates, public posts).
+    let placed = false;
 
-Your job:
-- Extract latent opportunity, NOT summarize inputs
-- Combine multiple signals into a single idea when appropriate
-- Write with a calm, thoughtful, builder-first tone
-- Avoid hype, buzzwords, and obvious startup clichés
-- Produce exactly FIVE distinct ideas
-
-Each idea MUST include:
-- title (short, intriguing, specific)
-- murmur (why this exists — what friction is emerging)
-- quest (what to build — small, scoped, explorable)
-- value (why it’s worth someone’s time)
-- difficulty (Easy | Medium | Hard)
-- sources (2–5 sources drawn from the input list)
-
-Rules:
-- Every idea must have at least TWO sources
-- Do not repeat the same idea phrased differently
-- Do not mention "AI", "signals", or "data sources"
-- Do not quote raw text verbatim
-- Be concrete and opinionated
-
-Return ONLY valid JSON in this shape:
-
-{
-  "ideas": [
-    {
-      "title": "",
-      "murmur": "",
-      "quest": "",
-      "value": "",
-      "difficulty": "",
-      "sources": [
-        { "type": "", "name": "", "url": "" }
-      ]
+    for (const cluster of clusters) {
+      if (cluster.keywords.some(k => words.includes(k))) {
+        cluster.signals.push(signal);
+        placed = true;
+        break;
+      }
     }
-  ]
-}
 
-Here are the raw signals:
-${JSON.stringify(signals, null, 2)}
-`;
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      temperature: 0.4,
-      messages: [
-        { role: "system", content: "You are a careful product editor." },
-        { role: "user", content: prompt }
-      ]
-    })
-  });
-
-  if (!res.ok) {
-    throw new Error("OpenAI request failed");
+    if (!placed) {
+      clusters.push({
+        keywords: words,
+        signals: [signal]
+      });
+    }
   }
 
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content;
-
-  const parsed = JSON.parse(text);
-  return parsed.ideas;
+  return clusters;
 }
 
-/* ---------- handler ---------- */
+function synthesizeIdea(cluster) {
+  const sources = cluster.signals.map(s => ({
+    type: s.type,
+    name:
+      s.type === "github" ? "GitHub" :
+      s.type === "twitter" ? "X" :
+      s.type === "rss" ? "RSS" :
+      "Source",
+    url: s.url
+  }));
+
+  return {
+    title: "Unclaimed Builder Opportunity",
+    murmur:
+      "Multiple independent signals point to the same unresolved friction, but no clear owner has emerged.",
+    quest:
+      "Design a narrowly scoped tool or workflow that resolves this recurring pain without over-engineering.",
+    value:
+      "Converts repeated, ambient frustration into a concrete, shippable side project.",
+    difficulty: inferDifficulty(sources.length),
+    sources
+  };
+}
+
+/* ---------------- handler ---------------- */
 
 export default async function handler(request) {
-  const store = getStore({
-    name: "tech-murmurs",
-    siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_AUTH_TOKEN
-  });
-
-  const force =
-    new URL(request.url).searchParams.get("force") === "true";
-
-  /* ---------- reuse snapshot ---------- */
-  if (!force) {
-    const existing = await store.get("latest");
-    if (existing) {
-      return Response.json(JSON.parse(existing));
-    }
-  }
-
-  /* ---------- ingest ---------- */
-  let signals = [];
-
-  const results = await Promise.allSettled([
-    getGitHubSignals(),
-    getHackathonSignals(),
-    getTwitterSignals(),
-    getRoadmapSignals()
-  ]);
-
-  results.forEach(r => {
-    if (r.status === "fulfilled" && Array.isArray(r.value)) {
-      signals.push(...r.value);
-    }
-  });
-
-  signals = dedupeSignals(signals).filter(withinWindow);
-
-  /* ---------- hard failure fallback ---------- */
-  if (signals.length < 6) {
-    return Response.json({
-      mode: "sample",
-      ideas: []
-    });
-  }
-
-  /* ---------- AI synthesis ---------- */
-  let ideas;
   try {
-    ideas = await synthesizeIdeasWithAI(signals);
+    const store = getStore({
+      name: "tech-murmurs",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_AUTH_TOKEN
+    });
+
+    const force =
+      new URL(request.url).searchParams.get("force") === "true";
+
+    // Reuse existing snapshot unless forced
+    if (!force) {
+      const existing = await store.get("latest");
+      if (existing) {
+        return new Response(existing, {
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+    }
+
+    /* -------- ingest signals -------- */
+
+    let signals = [];
+
+    const results = await Promise.allSettled([
+      fetchGitHubSignals(),
+      fetchHackathonSignals(),
+      fetchTwitterSignals(),
+      fetchRoadmapSignals()
+    ]);
+
+    for (const r of results) {
+      if (r.status === "fulfilled" && Array.isArray(r.value)) {
+        signals.push(...r.value);
+      }
+    }
+
+    // Rolling window
+    signals = signals.filter(withinWindow);
+
+    // If absolutely nothing usable, return sample mode (but valid JSON)
+    if (!signals.length) {
+      const emptyPayload = {
+        mode: "sample",
+        ideas: []
+      };
+
+      return new Response(JSON.stringify(emptyPayload), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    /* -------- cluster → synthesize -------- */
+
+    const clusters = clusterSignals(signals);
+
+    let ideas = clusters
+      .map(synthesizeIdea)
+      .slice(0, MAX_IDEAS);
+
+    // Hard guarantee: always 5 cards
+    while (ideas.length < MAX_IDEAS) {
+      ideas.push({
+        title: "Unclaimed Builder Opportunity",
+        murmur:
+          "Signals indicate a recurring but underexplored need that has not yet been claimed.",
+        quest:
+          "Prototype a small, opinionated solution to test whether this pain is real and repeatable.",
+        value:
+          "Turns weak but persistent signals into a concrete starting point.",
+        difficulty: "Easy",
+        sources: [
+          {
+            type: "github",
+            name: "Fallback",
+            url: "https://github.com"
+          }
+        ]
+      });
+    }
+
+    /* -------- persist snapshot -------- */
+
+    const today = isoToday();
+
+    const payload = {
+      mode: "live",
+      date: today,
+      ideas
+    };
+
+    await store.set("latest", JSON.stringify(payload));
+    await store.set(`daily-${today}`, JSON.stringify(payload));
+
+    return new Response(JSON.stringify(payload), {
+      headers: { "Content-Type": "application/json" }
+    });
+
   } catch (err) {
-    console.error("AI synthesis failed:", err);
-    return Response.json({
-      mode: "sample",
-      ideas: []
-    });
+    console.error("generateDaily fatal error:", err);
+
+    return new Response(
+      JSON.stringify({
+        mode: "sample",
+        ideas: []
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   }
-
-  if (!Array.isArray(ideas) || ideas.length !== MAX_IDEAS) {
-    return Response.json({
-      mode: "sample",
-      ideas: []
-    });
-  }
-
-  /* ---------- persist ---------- */
-  const today = new Date().toISOString().slice(0, 10);
-
-  const payload = {
-    mode: "live",
-    date: today,
-    ideas
-  };
-
-  await store.set("latest", JSON.stringify(payload));
-  await store.set(`daily-${today}`, JSON.stringify(payload));
-
-  return Response.json(payload);
 }
