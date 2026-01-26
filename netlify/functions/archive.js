@@ -28,11 +28,14 @@ export default async () => {
   }
 
   const blobs = listing.blobs || [];
+  
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().slice(0, 10);
 
-  // Only include daily snapshots written as `daily-YYYY-MM-DD`
+  // Only include daily snapshots, excluding today
   const dailyKeys = blobs
     .map(b => b.key)
-    .filter(key => key.startsWith("daily-"));
+    .filter(key => key.startsWith("daily-") && !key.includes(today));
 
   const archiveData = {};
 
@@ -42,7 +45,6 @@ export default async () => {
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
 
       if (parsed?.ideas && parsed?.date) {
-        // Store by date as the key
         archiveData[parsed.date] = parsed.ideas;
       }
     } catch {
