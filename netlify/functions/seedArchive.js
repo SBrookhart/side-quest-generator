@@ -2,156 +2,156 @@ import { getStore } from "@netlify/blobs";
 
 const day1Ideas = [
   {
-    title: "What Actually Changed in This Upgrade?",
-    murmur: "Protocol upgrades ship without clear changelogs, leaving developers to discover breaking changes through failures.",
-    quest: "Build a tool that diffs contract upgrades and shows what functions changed, what got removed, and what's new—in plain English.",
+    title: "What If My Code Commits Were Fortune Cookies?",
+    murmur: "Commit messages are boring. What if each one opened like a fortune cookie with a random vibe or life advice?",
+    quest: "Build a CLI tool that wraps your git commits in fortune cookie format—add random wisdom, lucky numbers, and vibes to every commit.",
     worth: [
-      "Prevents surprise failures",
-      "Makes upgrades transparent",
-      "Interesting technical challenge"
-    ],
-    difficulty: "Hard",
-    sources: [
-      { type: "github", name: "Protocol Governance", url: "https://github.com/search?q=contract+upgrade+breaking" },
-      { type: "x", name: "Developer X", url: "https://x.com/search?q=contract%20upgrade%20broke" }
-    ]
-  },
-  {
-    title: "Why Don't These NFTs Load Anymore?",
-    murmur: "NFT metadata disappears when IPFS pins expire or servers go down, but nobody notices until holders complain.",
-    quest: "Create a monitoring service that checks NFT metadata availability across IPFS and HTTP, alerting when assets become unreachable.",
-    worth: [
-      "Protects project reputation",
-      "Prevents holder complaints",
-      "Simple monitoring + alerts"
-    ],
-    difficulty: "Medium",
-    sources: [
-      { type: "github", name: "NFT Infrastructure", url: "https://github.com/search?q=nft+metadata+missing" },
-      { type: "x", name: "NFT Twitter", url: "https://x.com/search?q=nft%20image%20broken" }
-    ]
-  },
-  {
-    title: "Can I Actually Afford This Transaction?",
-    murmur: "Users see gas estimates but don't know if they'll change or if they're getting ripped off compared to others.",
-    quest: "Build a gas price explainer that shows historical trends, percentile rankings, and suggests better times to transact.",
-    worth: [
-      "Reduces transaction anxiety",
-      "Saves users real money",
-      "Clean data visualization"
+      "Makes commits actually fun",
+      "Your terminal deserves whimsy",
+      "Ships in a few hours"
     ],
     difficulty: "Easy",
     sources: [
-      { type: "github", name: "Wallet Issues", url: "https://github.com/search?q=gas+fee+expensive" },
-      { type: "x", name: "Crypto X", url: "https://x.com/search?q=gas%20fees%20expensive" }
+      { type: "github", name: "Developer Tools", url: "https://github.com/search?q=git+commit+fun" },
+      { type: "x", name: "Dev Twitter", url: "https://x.com/search?q=git%20commit%20message" }
     ]
   },
   {
-    title: "Where Are All the Working Faucets?",
-    murmur: "Testnet faucet links break constantly and nobody maintains a current list of what actually works.",
-    quest: "Create a live directory of testnet faucets with uptime monitoring, rate limit info, and one-click requesting.",
+    title: "Can I Turn Documentation Into a Choose-Your-Own-Adventure?",
+    murmur: "Nobody reads docs because they're linear and boring. What if they were interactive stories instead?",
+    quest: "Create a doc generator that turns technical guides into choose-your-own-adventure style journeys with branching paths and achievements.",
     worth: [
-      "Saves hours of googling",
-      "Helps new developers instantly",
-      "Super fast to build"
-    ],
-    difficulty: "Easy",
-    sources: [
-      { type: "github", name: "Developer Tools", url: "https://github.com/search?q=testnet+faucet" },
-      { type: "x", name: "Dev X", url: "https://x.com/search?q=testnet%20faucet%20help" }
-    ]
-  },
-  {
-    title: "Did This Proposal Actually Pass?",
-    murmur: "DAO voting results get scattered across Snapshot, forums, and Discord without a single source of truth.",
-    quest: "Build a unified DAO decision tracker that shows proposal status, vote counts, and execution status across platforms.",
-    worth: [
-      "Makes governance transparent",
-      "Reduces voter confusion",
-      "Useful data aggregation practice"
+      "Makes learning actually engaging",
+      "Docs people want to read",
+      "Fun narrative design challenge"
     ],
     difficulty: "Medium",
     sources: [
-      { type: "github", name: "DAO Governance", url: "https://github.com/search?q=dao+proposal+voting" },
-      { type: "x", name: "DAO Twitter", url: "https://x.com/search?q=dao%20proposal%20status" }
+      { type: "github", name: "Documentation", url: "https://github.com/search?q=documentation+boring" },
+      { type: "x", name: "X", url: "https://x.com/search?q=documentation%20hard" }
+    ]
+  },
+  {
+    title: "What If My Calendar Was a Bento Box?",
+    murmur: "Calendar apps are stressful grids of dread. What if your day was a cute bento box you arrange?",
+    quest: "Build a calendar where events are bento items you arrange aesthetically—meetings are onigiri, deep work is sushi, breaks are pickles.",
+    worth: [
+      "Makes scheduling feel creative",
+      "Actually cute productivity tool",
+      "Great design portfolio piece"
+    ],
+    difficulty: "Easy",
+    sources: [
+      { type: "github", name: "Productivity", url: "https://github.com/search?q=calendar+alternative" },
+      { type: "x", name: "X", url: "https://x.com/search?q=calendar%20stressful" }
+    ]
+  },
+  {
+    title: "Can My Tabs Become a Museum?",
+    murmur: "Browser tabs pile up like digital hoarding. What if closed tabs became museum exhibits you could revisit?",
+    quest: "Create a browser extension that archives closed tabs as a curated museum—add descriptions, tag by mood, search by vibe.",
+    worth: [
+      "Guilt-free tab closing",
+      "Your research becomes art",
+      "Nostalgic tab browsing"
+    ],
+    difficulty: "Medium",
+    sources: [
+      { type: "github", name: "Browser Tools", url: "https://github.com/search?q=browser+tab+management" },
+      { type: "x", name: "X", url: "https://x.com/search?q=too%20many%20tabs" }
+    ]
+  },
+  {
+    title: "What If README Files Had Personality Tests?",
+    murmur: "READMEs describe what code does, but not who it's for. What if they had personality tests to match you with projects?",
+    quest: "Build a tool that adds personality quiz sections to READMEs—answer questions, get matched with repos that fit your vibe.",
+    worth: [
+      "Discovery through personality",
+      "READMEs become interactive",
+      "Silly but genuinely useful"
+    ],
+    difficulty: "Easy",
+    sources: [
+      { type: "github", name: "GitHub", url: "https://github.com/search?q=readme+creative" },
+      { type: "x", name: "X", url: "https://x.com/search?q=finding%20open%20source" }
     ]
   }
 ];
 
 const day2Ideas = [
   {
-    title: "Why Can't I Replay This Transaction?",
-    murmur: "Developers need to test edge cases but can't easily replay past transactions on a local fork without manual setup.",
-    quest: "Build a tool that takes any transaction hash and creates a one-click local fork with that exact state, ready to replay and modify.",
+    title: "Can I Send My Bugs on Vacation?",
+    murmur: "Bug trackers make fixing things feel like homework. What if bugs went on vacation until you're ready to deal with them?",
+    quest: "Create a playful bug tracker where bugs go to a virtual beach resort—they send you postcards, come back tanned, you fix them when ready.",
     worth: [
-      "Makes debugging way easier",
-      "Perfect for learning contracts",
-      "Great developer experience win"
+      "Debugging without the dread",
+      "Whimsical project management",
+      "Would make a great demo"
+    ],
+    difficulty: "Medium",
+    sources: [
+      { type: "github", name: "Dev Tools", url: "https://github.com/search?q=bug+tracker+fun" },
+      { type: "x", name: "X", url: "https://x.com/search?q=bug%20fixing%20stress" }
+    ]
+  },
+  {
+    title: "What If My Spotify Wrapped Was a Tarot Reading?",
+    murmur: "Music taste reveals personality. What if your listening history became mystical tarot-style predictions?",
+    quest: "Build a Spotify analyzer that reads your music like tarot cards—predict your year based on genre shifts, energy levels, lyric themes.",
+    worth: [
+      "Data viz meets mysticism",
+      "Everyone loves music insights",
+      "Viral shareable format"
+    ],
+    difficulty: "Easy",
+    sources: [
+      { type: "hackathon", name: "Hackathons", url: "https://devpost.com/hackathons" },
+      { type: "x", name: "X", url: "https://x.com/search?q=spotify%20wrapped" }
+    ]
+  },
+  {
+    title: "Can I Grow a Forest from My Screen Time?",
+    murmur: "Screen time reports feel like judgment. What if every hour became a tree in your personal forest instead?",
+    quest: "Track screen time but visualize it as forest growth—productive apps grow trees, doom scrolling grows weeds, watch seasons change.",
+    worth: [
+      "Reframes screen time positively",
+      "Beautiful data visualization",
+      "Actually motivating to look at"
+    ],
+    difficulty: "Medium",
+    sources: [
+      { type: "github", name: "Productivity", url: "https://github.com/search?q=screen+time+tracker" },
+      { type: "x", name: "X", url: "https://x.com/search?q=screen%20time%20guilt" }
+    ]
+  },
+  {
+    title: "What If Error Messages Gave Pep Talks?",
+    murmur: "Error messages are mean. What if they were supportive life coaches who believe in you instead?",
+    quest: "Create a dev tool that intercepts error messages and rewrites them as gentle encouragement—'TypeError? More like Try-pe-error! You got this!'",
+    worth: [
+      "Coding feels less lonely",
+      "Mental health through dev tools",
+      "Would genuinely help beginners"
+    ],
+    difficulty: "Easy",
+    sources: [
+      { type: "github", name: "Developer Experience", url: "https://github.com/search?q=error+messages" },
+      { type: "x", name: "X", url: "https://x.com/search?q=error%20message%20frustration" }
+    ]
+  },
+  {
+    title: "Can My GitHub Activity Become a Constellation?",
+    murmur: "Contribution graphs are boring green squares. What if your coding activity mapped onto actual constellations?",
+    quest: "Turn GitHub contributions into an interactive night sky—clusters of stars for busy weeks, nebulas for big projects, comets for streaks.",
+    worth: [
+      "Portfolio that's actually beautiful",
+      "Cosmic coding aesthetic",
+      "Great creative coding project"
     ],
     difficulty: "Hard",
     sources: [
-      { type: "github", name: "Testing Tools", url: "https://github.com/search?q=transaction+replay+fork" },
-      { type: "x", name: "Dev X", url: "https://x.com/search?q=replay%20transaction%20debug" }
-    ]
-  },
-  {
-    title: "Where Did My Approval Go?",
-    murmur: "Users approve token spending limits but have no idea which apps can still spend their tokens months later.",
-    quest: "Create an approval dashboard that shows all active token approvals, when they were made, and lets users revoke them in bulk.",
-    worth: [
-      "Prevents unauthorized drains",
-      "Builds user trust",
-      "Clean security UX"
-    ],
-    difficulty: "Medium",
-    sources: [
-      { type: "github", name: "Security Tools", url: "https://github.com/search?q=token+approval+revoke" },
-      { type: "x", name: "Security X", url: "https://x.com/search?q=token%20approval%20security" }
-    ]
-  },
-  {
-    title: "Why Is This Contract Call Failing?",
-    murmur: "Contract interactions fail with cryptic error messages that don't explain what actually went wrong or how to fix it.",
-    quest: "Build an error decoder that translates revert messages and failed transactions into plain English explanations with suggested fixes.",
-    worth: [
-      "Saves debugging frustration",
-      "Helps newcomers learn faster",
-      "Simple string matching to start"
-    ],
-    difficulty: "Easy",
-    sources: [
-      { type: "github", name: "Developer Experience", url: "https://github.com/search?q=contract+error+cryptic" },
-      { type: "x", name: "Dev Help", url: "https://x.com/search?q=contract%20error%20help" }
-    ]
-  },
-  {
-    title: "Which Wallet Actually Supports This?",
-    murmur: "Users don't know which wallets support which chains, leading to confusion and failed connection attempts.",
-    quest: "Create a wallet compatibility matrix showing which wallets work with which chains, updated automatically from each wallet's docs.",
-    worth: [
-      "Reduces onboarding friction",
-      "Helps users choose wallets",
-      "Easy web scraping project"
-    ],
-    difficulty: "Easy",
-    sources: [
-      { type: "github", name: "Wallet Docs", url: "https://github.com/search?q=wallet+chain+support" },
-      { type: "x", name: "Wallet Help", url: "https://x.com/search?q=which%20wallet%20supports" }
-    ]
-  },
-  {
-    title: "How Much Did This Really Cost?",
-    murmur: "Transaction receipts show gas in Wei and Gwei, but people want to know the actual dollar cost at the time of the transaction.",
-    quest: "Build a transaction cost calculator that shows historical fiat value of gas fees using time-stamped price data.",
-    worth: [
-      "Makes costs understandable",
-      "Good for expense tracking",
-      "Interesting price API work"
-    ],
-    difficulty: "Medium",
-    sources: [
-      { type: "github", name: "Analytics Tools", url: "https://github.com/search?q=gas+cost+usd" },
-      { type: "x", name: "Cost Tracking", url: "https://x.com/search?q=transaction%20cost%20usd" }
+      { type: "github", name: "GitHub", url: "https://github.com/search?q=contribution+graph" },
+      { type: "x", name: "X", url: "https://x.com/search?q=github%20contributions" }
     ]
   }
 ];
@@ -192,7 +192,7 @@ export const handler = async () => {
       body: JSON.stringify({
         status: "ok",
         seeded: days.map(d => d.date),
-        message: "Archive seeded with 5 ideas per day"
+        message: "Archive seeded with playful vibe-coder ideas"
       })
     };
   } catch (err) {
