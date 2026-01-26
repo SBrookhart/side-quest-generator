@@ -26,52 +26,44 @@ function cleanText(text = "") {
     .slice(0, 280);
 }
 
-/* -------------------------------
-   INTERNAL LIBRARY FUNCTION
--------------------------------- */
-export async function fetchGitHubSignals() {
-  try {
-    const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
-      GITHUB_SEARCH_QUERY
-    )}&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
+/**
+ * 🔑 Named export for orchestration
+ */
+export async function getGitHubSignals() {
+  const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
+    GITHUB_SEARCH_QUERY
+  )}&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
 
-    const res = await fetch(url, {
-      headers: { Accept: "application/vnd.github+json" }
-    });
+  const res = await fetch(url, {
+    headers: { Accept: "application/vnd.github+json" }
+  });
 
-    if (!res.ok) {
-      console.error("GitHub search failed:", res.status);
-      return [];
-    }
+  if (!res.ok) return [];
 
-    const data = await res.json();
-    if (!Array.isArray(data.items)) return [];
+  const data = await res.json();
+  if (!Array.isArray(data.items)) return [];
 
-    return data.items
-      .map(issue => {
-        const text = cleanText(issue.body || issue.title || "");
-        if (text.length < 60) return null;
+  return data.items
+    .map(issue => {
+      const text = cleanText(issue.body || issue.title || "");
+      if (text.length < 60) return null;
 
-        return {
-          type: "github",
-          text,
-          url: issue.html_url,
-          date: issue.updated_at
-            ? issue.updated_at.slice(0, 10)
-            : new Date().toISOString().slice(0, 10)
-        };
-      })
-      .filter(Boolean);
-  } catch (err) {
-    console.error("GitHub ingestion error:", err);
-    return [];
-  }
+      return {
+        type: "github",
+        text,
+        url: issue.html_url,
+        date: issue.updated_at?.slice(0, 10)
+      };
+    })
+    .filter(Boolean);
 }
 
-/* -------------------------------
-   NETLIFY HTTP HANDLER
--------------------------------- */
-export default async function handler() {
-  const signals = await fetchGitHubSignals();
-  return Response.json(signals, { status: 200 });
+/**
+ * HTTP endpoint (debug / inspection only)
+ */
+export async function handler() {
+  const signals = await getGitHubSignals();
+  return new Response(JSON.stringify(signals), {
+    headers: { "Content-Type": "application/json" }
+  });
 }
