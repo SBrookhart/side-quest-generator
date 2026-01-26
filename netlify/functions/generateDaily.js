@@ -108,6 +108,7 @@ BAD titles (too generic):
       sources: Object.values(sourcesByType).slice(0, 3).map(s => ({
   type: s.type,
   name: s.type === "github" ? "GitHub" : 
+        s.type === "x" ? "X" :
         s.type === "twitter" ? "X" :
         s.type === "rss" ? "Hackathons" : "Source",
   url: s.url
