@@ -27,44 +27,39 @@ function cleanText(text = "") {
 }
 
 export async function getGitHubSignals() {
-  const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
-    GITHUB_SEARCH_QUERY
-  )}&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
+  try {
+    const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
+      GITHUB_SEARCH_QUERY
+    )}&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
 
-  const res = await fetch(url, {
-    headers: { Accept: "application/vnd.github+json" }
-  });
+    const res = await fetch(url, {
+      headers: { Accept: "application/vnd.github+json" }
+    });
 
-  if (!res.ok) return [];
+    if (!res.ok) return [];
 
-  const data = await res.json();
-  if (!Array.isArray(data.items)) return [];
+    const data = await res.json();
+    if (!Array.isArray(data.items)) return [];
 
-  return data.items
-    .map(issue => {
-      const text = cleanText(issue.body || issue.title || "");
-      if (text.length < 60) return null;
+    return data.items
+      .map(issue => {
+        const text = cleanText(issue.body || issue.title || "");
+        if (text.length < 60) return null;
 
-      return {
-        type: "github",
-        text,
-        url: issue.html_url,
-        date: issue.updated_at?.slice(0, 10)
-      };
-    })
-    .filter(Boolean);
+        return {
+          type: "github",
+          text,
+          url: issue.html_url,
+          date: issue.updated_at?.slice(0, 10)
+        };
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
-export const handler = async () => {
+export async function handler() {
   const signals = await getGitHubSignals();
-
-  return {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(signals)
-  };
-};
-
+  return new Response(JSON.stringify(signals), { status: 200 });
 }
