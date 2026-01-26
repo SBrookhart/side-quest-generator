@@ -52,5 +52,14 @@ export default async () => {
     }
   }
 
-  return Response.json(archiveData, { status: 200 });
+  // Add no-cache headers
+  return new Response(JSON.stringify(archiveData), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  });
 };
