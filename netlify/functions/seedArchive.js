@@ -3,7 +3,11 @@
 import { getStore } from "@netlify/blobs";
 
 export async function handler() {
-  const store = getStore({ name: "tech-murmurs" });
+  const store = getStore({
+    name: "tech-murmurs",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_AUTH_TOKEN
+  });
 
   const days = [
     {
@@ -155,7 +159,10 @@ export async function handler() {
   }
 
   return new Response(
-    JSON.stringify({ status: "ok", seeded: days.map(d => d.date) }),
+    JSON.stringify({
+      status: "ok",
+      seeded: days.map(d => d.date)
+    }),
     { status: 200 }
   );
 }
