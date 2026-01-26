@@ -26,9 +26,6 @@ function cleanText(text = "") {
     .slice(0, 280);
 }
 
-/**
- * 🔑 Named export for orchestration
- */
 export async function getGitHubSignals() {
   const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
     GITHUB_SEARCH_QUERY
@@ -58,9 +55,6 @@ export async function getGitHubSignals() {
     .filter(Boolean);
 }
 
-/**
- * HTTP endpoint (debug / inspection only)
- */
 export async function handler() {
   const signals = await getGitHubSignals();
   return new Response(JSON.stringify(signals), {
