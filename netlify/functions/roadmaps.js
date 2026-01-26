@@ -1,79 +1,99 @@
 // netlify/functions/roadmaps.js
+// Protocol roadmap + release pressure signals
 
 const REPOS = [
-  "ethereum/go-ethereum",
-  "solana-labs/solana",
-  "cosmos/cosmos-sdk",
-  "polygon-edge/polygon-edge"
+  { owner: "ethereum", repo: "go-ethereum" },
+  { owner: "solana-labs", repo: "solana" },
+  { owner: "cosmos", repo: "cosmos-sdk" }
 ];
 
-const KEYWORDS = [
-  "breaking",
-  "deprecated",
-  "migration",
-  "manual",
-  "workaround",
-  "removed",
-  "upgrade required",
-  "security fix",
-  "action required"
-];
+const MAX_RELEASES_PER_REPO = 3;
 
-const MAX_PER_REPO = 3;
+/* ---------- helpers ---------- */
+
+function cleanText(text = "") {
+  return text
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`[^`]*`/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 260);
+}
+
+function extractPressure(body = "") {
+  const lowered = body.toLowerCase();
+
+  if (
+    lowered.includes("breaking") ||
+    lowered.includes("deprecated") ||
+    lowered.includes("migration") ||
+    lowered.includes("upgrade required")
+  ) {
+    return "Developers are being forced to adapt to breaking or incompatible changes.";
+  }
+
+  if (
+    lowered.includes("security") ||
+    lowered.includes("vulnerability") ||
+    lowered.includes("patch")
+  ) {
+    return "Security changes introduce new operational and monitoring burdens.";
+  }
+
+  if (
+    lowered.includes("performance") ||
+    lowered.includes("optimization") ||
+    lowered.includes("throughput")
+  ) {
+    return "Performance changes alter assumptions developers rely on.";
+  }
+
+  return null;
+}
+
+/* ---------- handler ---------- */
 
 export default async function getRoadmapSignals() {
   const signals = [];
 
-  for (const repo of REPOS) {
-    let res;
+  for (const { owner, repo } of REPOS) {
+    const url = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=${MAX_RELEASES_PER_REPO}`;
 
     try {
-      res = await fetch(
-        `https://api.github.com/repos/${repo}/releases`,
-        {
-          headers: {
-            "User-Agent": "tech-murmurs"
-          }
+      const res = await fetch(url, {
+        headers: {
+          Accept: "application/vnd.github+json"
         }
-      );
-    } catch {
-      continue;
-    }
-
-    if (!res.ok) continue;
-
-    let releases;
-    try {
-      releases = await res.json();
-    } catch {
-      continue;
-    }
-
-    if (!Array.isArray(releases)) continue;
-
-    let used = 0;
-
-    for (const r of releases) {
-      if (used >= MAX_PER_REPO) break;
-      if (!r.body) continue;
-
-      const body = r.body.toLowerCase();
-
-      if (!KEYWORDS.some(k => body.includes(k))) continue;
-
-      signals.push({
-        type: "github",
-        text: r.body
-          .replace(/\s+/g, " ")
-          .slice(0, 300)
-          .trim(),
-        url: r.html_url,
-        date: r.published_at
-          ? r.published_at.slice(0, 10)
-          : new Date().toISOString().slice(0, 10)
       });
 
-      used++;
+      if (!res.ok) continue;
+
+      const releases = await res.json();
+      if (!Array.isArray(releases)) continue;
+
+      for (const release of releases) {
+        if (!release.body) continue;
+
+        const pressure = extractPressure(release.body);
+        if (!pressure) continue;
+
+        const text = cleanText(
+          `Recent ${repo} release introduces new constraints: ${pressure}`
+        );
+
+        if (text.length < 80) continue;
+
+        signals.push({
+          type: "github",
+          text,
+          url: release.html_url,
+          date: release.published_at
+            ? release.published_at.slice(0, 10)
+            : new Date().toISOString().slice(0, 10)
+        });
+      }
+    } catch (err) {
+      console.error("Roadmap ingestion failed:", err);
     }
   }
 
