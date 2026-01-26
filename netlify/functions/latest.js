@@ -1,5 +1,3 @@
-// netlify/functions/latest.js
-
 import { getStore } from "@netlify/blobs";
 
 export const handler = async () => {
@@ -12,7 +10,6 @@ export const handler = async () => {
 
     const latest = await store.get("latest");
 
-    // If nothing has been generated yet, fail gracefully
     if (!latest) {
       return {
         statusCode: 200,
@@ -23,13 +20,16 @@ export const handler = async () => {
       };
     }
 
+    // Parse and re-stringify to ensure proper format
+    const parsed = typeof latest === "string" ? JSON.parse(latest) : latest;
+
     return {
       statusCode: 200,
-      body: latest
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(parsed)
     };
   } catch (err) {
     console.error("Latest fetch failed:", err);
-
     return {
       statusCode: 500,
       body: JSON.stringify({
@@ -39,3 +39,23 @@ export const handler = async () => {
     };
   }
 };
+```
+
+---
+
+## **Deploy & Test:**
+
+1. **Replace all 3 files** above
+2. **Push to GitHub**
+3. **Wait for deploy**
+4. **Seed archive:**
+```
+   https://side-quest-generator.netlify.app/.netlify/functions/seedArchive
+```
+5. **Generate today:**
+```
+   https://side-quest-generator.netlify.app/.netlify/functions/generateDaily
+```
+6. **Open in incognito:**
+```
+   https://side-quest-generator.netlify.app/archive.html
