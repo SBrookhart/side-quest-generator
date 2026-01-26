@@ -10,7 +10,15 @@ const { getRoadmapSignals } = require("./roadmaps.js");
 const MAX_IDEAS = 5;
 const SIGNAL_WINDOW_DAYS = 14;
 
-/* ---------------- helpers ---------------- */
+/* ---------------- utilities ---------------- */
+
+function json(body, statusCode = 200) {
+  return {
+    statusCode,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  };
+}
 
 function daysAgo(n) {
   const d = new Date();
@@ -22,48 +30,27 @@ function withinWindow(signal) {
   return new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
-function json(body, statusCode = 200) {
-  return {
-    statusCode,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  };
-}
+/* ---------------- AI prompts ---------------- */
 
-/* ---------------- AI prompt ---------------- */
-
-const SYSTEM_PROMPT = `
-You are the editor of Tech Murmurs.
-
-Tech Murmurs publishes daily side-quests for indie builders and vibe-coders.
-Each idea should feel small, clever, and buildable by one person.
-
-Do NOT summarize inputs.
-Extract latent opportunity.
-Avoid generic startup language.
-Avoid repeating ideas.
-`;
+const SYSTEM_PROMPT =
+  "You are the editor of Tech Murmurs.\n" +
+  "Generate high-quality, creative side quests for indie builders.\n" +
+  "Do NOT summarize sources.\n" +
+  "Extract latent opportunity.\n" +
+  "Each idea must feel distinct, buildable, and clever.";
 
 function buildUserPrompt(signals) {
-  const formatted = signals
-    .map(s => `- (${s.type}) ${s.text}`)
-    .join("\n");
+  let text = "Signals:\n";
+  for (const s of signals) {
+    text += "- (" + s.type + ") " + s.text + "\n";
+  }
 
-  return `
-Below are real signals from developers, protocols, and hackathons.
+  text +=
+    "\nGenerate exactly 5 ideas.\n" +
+    "Format EXACTLY as:\n\n" +
+    "Title:\nMurmur:\nSide Quest:\nWhy It’s Interesting:\nDifficulty:\n";
 
-${formatted}
-
-Generate exactly 5 DISTINCT side quests.
-
-Format exactly:
-
-Title:
-Murmur:
-Side Quest:
-Why It’s Interesting:
-Difficulty:
-`;
+  return text;
 }
 
 /* ---------------- handler ---------------- */
@@ -76,9 +63,9 @@ exports.handler = async function handler(event) {
   });
 
   const force =
-    new URL(event.rawUrl).searchParams.get("force") === "true";
+    event.rawUrl &&
+    event.rawUrl.indexOf("force=true") !== -1;
 
-  // reuse cached snapshot unless forced
   if (!force) {
     const cached = await store.get("latest");
     if (cached) {
@@ -88,37 +75,39 @@ exports.handler = async function handler(event) {
 
   // ingest signals
   let signals = [];
+
   try {
-    const results = await Promise.allSettled([
+    const results = await Promise.all([
       getGitHubSignals(),
       getHackathonSignals(),
       getTwitterSignals(),
       getRoadmapSignals()
     ]);
 
-    results.forEach(r => {
-      if (r.status === "fulfilled" && Array.isArray(r.value)) {
-        signals.push(...r.value);
+    for (const arr of results) {
+      if (Array.isArray(arr)) {
+        signals = signals.concat(arr);
       }
-    });
+    }
   } catch (err) {
-    console.error("Signal ingestion failed:", err);
+    console.error("Ingestion error:", err);
   }
 
   signals = signals.filter(withinWindow);
 
-  if (!signals.length) {
+  if (signals.length === 0) {
     return json({ mode: "sample", ideas: [] });
   }
 
   // call OpenAI
-  let aiText;
+  let aiText = null;
+
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+        Authorization: "Bearer " + process.env.OPENAI_API_KEY
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
@@ -130,8 +119,13 @@ exports.handler = async function handler(event) {
       })
     });
 
-    const jsonRes = await res.json();
-    aiText = jsonRes.choices?.[0]?.message?.content;
+    const data = await res.json();
+    aiText =
+      data &&
+      data.choices &&
+      data.choices[0] &&
+      data.choices[0].message &&
+      data.choices[0].message.content;
   } catch (err) {
     console.error("OpenAI error:", err);
   }
@@ -140,16 +134,26 @@ exports.handler = async function handler(event) {
     return json({ mode: "sample", ideas: [] });
   }
 
-  // parse AI output
+  // parse ideas SAFELY
+  const blocks = aiText.split("\nTitle:");
   const ideas = [];
-  const blocks = aiText.split(/\n(?=Title:)/);
 
-  for (const block of blocks) {
-    const title = block.match(/Title:\s*(.+)/)?.[1];
-    const murmur = block.match(/Murmur:\s*(.+)/)?.[1];
-    const quest = block.match(/Side Quest:\s*(.+)/)?.[1];
-    const value = block.match(/Why It’s Interesting:\s*(.+)/)?.[1];
-    const difficulty = block.match(/Difficulty:\s*(Easy|Medium|Hard)/)?.[1];
+  for (let i = 1; i < blocks.length; i++) {
+    const block = "Title:" + blocks[i];
+
+    function extract(label) {
+      const start = block.indexOf(label + ":");
+      if (start === -1) return null;
+      const end = block.indexOf("\n", start + label.length + 1);
+      if (end === -1) return block.slice(start + label.length + 1).trim();
+      return block.slice(start + label.length + 1, end).trim();
+    }
+
+    const title = extract("Title");
+    const murmur = extract("Murmur");
+    const quest = extract("Side Quest");
+    const value = extract("Why It’s Interesting");
+    const difficulty = extract("Difficulty");
 
     if (title && murmur && quest && value && difficulty) {
       ideas.push({
@@ -172,7 +176,6 @@ exports.handler = async function handler(event) {
   }
 
   if (ideas.length !== MAX_IDEAS) {
-    console.warn("AI output rejected — wrong idea count");
     return json({ mode: "sample", ideas: [] });
   }
 
@@ -180,7 +183,7 @@ exports.handler = async function handler(event) {
   const payload = { mode: "live", date: today, ideas };
 
   await store.set("latest", JSON.stringify(payload));
-  await store.set(`daily-${today}`, JSON.stringify(payload));
+  await store.set("daily-" + today, JSON.stringify(payload));
 
   return json(payload);
 };
