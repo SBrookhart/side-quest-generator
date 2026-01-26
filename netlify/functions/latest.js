@@ -1,21 +1,7 @@
-import { getStore } from "@netlify/blobs";
-import generateDaily from "./generateDaily.js";
+// netlify/functions/latest.js
 
-export default async function handler(req) {
-  const store = getStore({
-    name: "tech-murmurs",
-    siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_AUTH_TOKEN
-  });
+import { handler as generateDailyHandler } from "./generateDaily.js";
 
-  const existing = await store.get("latest");
-
-  // ✅ If latest exists, return it
-  if (existing) {
-    return Response.json(JSON.parse(existing));
-  }
-
-  // 🔁 Otherwise, GENERATE IT
-  const result = await generateDaily(req);
-  return result;
-}
+export const handler = async (event, context) => {
+  return generateDailyHandler(event, context);
+};
