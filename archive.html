@@ -269,7 +269,7 @@
     let data = null;
 
     try {
-      const res = await fetch("/.netlify/functions/archive");
+      const res = await fetch(`/.netlify/functions/archive?t=${Date.now()}`);
       if (res.ok) {
         data = await res.json();
       }
