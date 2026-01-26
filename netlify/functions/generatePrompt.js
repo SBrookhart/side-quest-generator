@@ -2,6 +2,7 @@ export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
@@ -11,7 +12,8 @@ export const handler = async (event) => {
   if (!apiKey) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'API key not configured' })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'OpenAI API key not configured' })
     };
   }
 
@@ -22,17 +24,23 @@ export const handler = async (event) => {
       'Easy': {
         tone: 'beginner-friendly and encouraging',
         detail: 'step-by-step with clear explanations',
-        assumptions: 'Assume minimal experience. Explain concepts as you go.'
+        assumptions: 'Assume minimal experience. Explain concepts as you go.',
+        steps: '5-7 clear steps',
+        code: 'Include 2-3 helpful code examples'
       },
       'Medium': {
         tone: 'balanced and practical',
         detail: 'structured but not hand-holdy',
-        assumptions: 'Assume basic development knowledge but explain architecture choices.'
+        assumptions: 'Assume basic development knowledge but explain architecture choices.',
+        steps: '4-6 structured steps',
+        code: 'Include 1-2 key code patterns'
       },
       'Hard': {
         tone: 'technical and architectural',
         detail: 'focus on system design and best practices',
-        assumptions: 'Assume solid development experience. Focus on tradeoffs and scalability.'
+        assumptions: 'Assume solid development experience. Focus on tradeoffs and scalability.',
+        steps: '3-5 architectural steps',
+        code: 'Include 1 architectural example'
       }
     };
 
@@ -46,12 +54,14 @@ Assumptions: ${guidance.assumptions}
 
 Keep it practical, buildable, and fun. This should feel like a friend helping you ship something cool.`;
 
+    const worthList = Array.isArray(worth) ? worth.join(', ') : worth;
+
     const userPrompt = `Create a detailed build prompt for this project idea:
 
 **Title:** ${title}
 **Why it exists:** ${murmur}
 **What to build:** ${quest}
-**Why it's worth it:** ${worth.join(', ')}
+**Why it's worth it:** ${worthList}
 **Difficulty:** ${difficulty}
 
 Generate a comprehensive prompt that someone can copy/paste into Claude, ChatGPT, or another AI to help them build this. Include:
@@ -64,8 +74,8 @@ Generate a comprehensive prompt that someone can copy/paste into Claude, ChatGPT
    - Backend (if needed)
    - APIs/Tools
    - Include a note that they can swap these for their preferred stack
-5. **Implementation Steps** - ${difficulty === 'Easy' ? '5-7 clear steps' : difficulty === 'Medium' ? '4-6 structured steps' : '3-5 architectural steps'}
-6. **Starter Code Snippets** - ${difficulty === 'Easy' ? 'Include 2-3 helpful code examples' : difficulty === 'Medium' ? 'Include 1-2 key code patterns' : 'Include 1 architectural example'}
+5. **Implementation Steps** - ${guidance.steps}
+6. **Starter Code Snippets** - ${guidance.code}
 7. **Bonus Ideas** - 2-3 ways to extend it
 8. **Tips** - ${difficulty === 'Easy' ? 'Encouraging advice for beginners' : difficulty === 'Medium' ? 'Practical shipping advice' : 'Architectural considerations'}
 
@@ -88,11 +98,17 @@ Format as clean markdown that's ready to copy/paste.`;
     });
 
     if (!response.ok) {
+      const errorData = await response.text();
+      console.error('OpenAI API error:', response.status, errorData);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
     const prompt = data.choices?.[0]?.message?.content || '';
+
+    if (!prompt) {
+      throw new Error('No prompt generated');
+    }
 
     return {
       statusCode: 200,
@@ -104,6 +120,7 @@ Format as clean markdown that's ready to copy/paste.`;
     console.error('Prompt generation failed:', error);
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         error: 'Failed to generate prompt',
         details: error.message 
