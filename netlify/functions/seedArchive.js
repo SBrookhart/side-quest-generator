@@ -1,80 +1,6 @@
 import { getStore } from "@netlify/blobs";
 
-const generateUniqueIdeasForDay = async (date, dayIndex) => {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  
-  if (!apiKey) {
-    return generateFallbackIdeasForDay(dayIndex);
-  }
-
-  const prompt = `Generate 5 compelling, specific builder side-quest ideas for ${date}. Make them HUMAN and CONVERSATIONAL.
-
-IMPORTANT: Make these ideas COMPLETELY DIFFERENT from each other and from typical crypto/web3 clichés. Vary the problem areas significantly.
-
-STYLE RULES:
-- Titles are casual questions or observations (like "Why Is This So Expensive?" not "Cost Optimization Tool")
-- Write like talking to a friend over coffee
-- Be specific about real pain points
-- Make each idea feel different in tone and scope
-- Sound authentic, not like marketing copy
-
-For each idea:
-1. title: Conversational question/observation
-2. murmur: What's broken, in casual language (1-2 sentences)
-3. quest: What to build (1-2 sentences, specific)
-4. worth: Array of 3 short benefits (each 3-8 words)
-5. difficulty: Easy, Medium, or Hard
-
-Cover diverse areas: UX problems, missing tools, confusing workflows, data gaps, developer experience, etc.
-
-Return ONLY valid JSON:
-[
-  {
-    "title": "string",
-    "murmur": "string",
-    "quest": "string",
-    "worth": ["string", "string", "string"],
-    "difficulty": "Easy|Medium|Hard"
-  }
-]`;
-
-  try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01"
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 3000,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-
-    if (!response.ok) throw new Error('API failed');
-
-    const data = await response.json();
-    const textContent = data.content.find(c => c.type === 'text')?.text || '[]';
-    const jsonMatch = textContent.match(/\[[\s\S]*\]/);
-    const ideas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-
-    return ideas.map(idea => ({
-      ...idea,
-      sources: [
-        { type: "github", name: "GitHub Issues", url: "https://github.com/search?q=is:issue+is:open" },
-        { type: "x", name: "Developer X", url: "https://x.com/search?q=web3%20developer%20problem" }
-      ]
-    }));
-
-  } catch (error) {
-    console.error('AI generation failed:', error);
-    return generateFallbackIdeasForDay(dayIndex);
-  }
-};
-
-const generateFallbackIdeasForDay = (dayIndex) => {
+const generateIdeasForDay = (dayIndex) => {
   const day1Ideas = [
     {
       title: "What Actually Changed in This Upgrade?",
@@ -256,7 +182,7 @@ export default async () => {
 
   for (let i = 0; i < days.length; i++) {
     const day = days[i];
-    const ideas = await generateUniqueIdeasForDay(day, i);
+    const ideas = generateIdeasForDay(i);
 
     await store.set(
       `daily-${day}`,
@@ -273,6 +199,6 @@ export default async () => {
   return Response.json({ 
     success: true,
     seeded,
-    message: "Archive seeded with unique ideas per day"
+    message: "Archive seeded successfully"
   });
 };
