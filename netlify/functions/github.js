@@ -1,18 +1,18 @@
 // netlify/functions/github.js
 
 const GITHUB_SEARCH_QUERY = `
-(
-  "missing" OR
-  "no way to" OR
-  "hard to" OR
-  "wish there was" OR
-  "cannot" OR
-  "doesn't support" OR
-  "would be useful"
-)
-in:title,body
-is:issue
-is:open
+  (
+    "missing" OR
+    "no way to" OR
+    "hard to" OR
+    "wish there was" OR
+    "cannot" OR
+    "doesn't support" OR
+    "would be useful"
+  )
+  in:title,body
+  is:issue
+  is:open
 `;
 
 const MAX_RESULTS = 20;
@@ -23,26 +23,25 @@ function cleanText(text = "") {
     .replace(/`[^`]*`/g, "")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 300);
+    .slice(0, 280);
 }
 
-/* ---------------- core logic ---------------- */
-
-async function fetchGitHubSignals() {
+/* ------------------------------
+   PURE DATA FUNCTION (imported)
+-------------------------------- */
+export async function fetchGitHubSignals() {
   const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
     GITHUB_SEARCH_QUERY
   )}&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
 
   const res = await fetch(url, {
     headers: {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "tech-murmurs",
-      Authorization: `Bearer ${process.env.GITHUB_TOKEN || ""}`
+      Accept: "application/vnd.github+json"
     }
   });
 
   if (!res.ok) {
-    console.error("GitHub API error:", res.status);
+    console.error("GitHub search failed:", res.status);
     return [];
   }
 
@@ -54,7 +53,7 @@ async function fetchGitHubSignals() {
     .map(issue => {
       const text = cleanText(issue.body || issue.title || "");
 
-      if (text.length < 80) return null;
+      if (text.length < 60) return null;
 
       return {
         type: "github",
@@ -68,31 +67,22 @@ async function fetchGitHubSignals() {
     .filter(Boolean);
 }
 
-/* ---------------- Netlify handler ---------------- */
-
+/* ------------------------------
+   NETLIFY HTTP HANDLER
+-------------------------------- */
 export async function handler() {
   try {
     const signals = await fetchGitHubSignals();
-
     return Response.json({
       ok: true,
       count: signals.length,
       signals
     });
   } catch (err) {
-    console.error("GitHub function crashed:", err);
-
+    console.error(err);
     return Response.json(
-      {
-        ok: false,
-        error: "GitHub ingestion failed",
-        signals: []
-      },
+      { ok: false, error: "GitHub ingestion failed" },
       { status: 500 }
     );
   }
 }
-
-/* ---------------- internal import ---------------- */
-
-export default fetchGitHubSignals;
