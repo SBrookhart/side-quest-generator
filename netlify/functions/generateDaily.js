@@ -1,20 +1,18 @@
 // netlify/functions/generateDaily.js
 
 import { getStore } from "@netlify/blobs";
+import { getGitHubSignals } from "./github.js";
+import { getHackathonSignals } from "./hackathons.js";
+import { getTwitterSignals } from "./twitter.js";
+import { getRoadmapSignals } from "./roadmaps.js";
 
-import { fetchGitHubSignals } from "./github.js";
-import { fetchHackathonSignals } from "./hackathons.js";
-import { fetchTwitterSignals } from "./twitter.js";
-import { fetchRoadmapSignals } from "./roadmaps.js";
+/* -------------------- config -------------------- */
 
 const MAX_IDEAS = 5;
 const SIGNAL_WINDOW_DAYS = 14;
+const OPENAI_MODEL = "gpt-4o-mini";
 
-/* ---------------- helpers ---------------- */
-
-function isoToday() {
-  return new Date().toISOString().slice(0, 10);
-}
+/* -------------------- helpers -------------------- */
 
 function daysAgo(n) {
   const d = new Date();
@@ -27,16 +25,19 @@ function withinWindow(signal) {
   return new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
-function inferDifficulty(sourceCount) {
-  if (sourceCount >= 5) return "Hard";
-  if (sourceCount >= 3) return "Medium";
-  return "Easy";
+function uniqBy(arr, keyFn) {
+  const seen = new Set();
+  return arr.filter(item => {
+    const key = keyFn(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 /**
- * Simple, transparent clustering:
- * - Group signals that share ≥1 long keyword
- * - Deterministic, explainable, debuggable
+ * Cluster by semantic overlap using simple keyword intersection.
+ * Transparent, predictable, and debuggable by design.
  */
 function clusterSignals(signals) {
   const clusters = [];
@@ -45,13 +46,17 @@ function clusterSignals(signals) {
     const words = signal.text
       .toLowerCase()
       .split(/\W+/)
-      .filter(w => w.length > 6)
+      .filter(w => w.length > 5)
       .slice(0, 6);
 
     let placed = false;
 
     for (const cluster of clusters) {
-      if (cluster.keywords.some(k => words.includes(k))) {
+      const overlap = words.filter(w =>
+        cluster.keywords.includes(w)
+      );
+
+      if (overlap.length >= 2) {
         cluster.signals.push(signal);
         placed = true;
         break;
@@ -69,143 +74,173 @@ function clusterSignals(signals) {
   return clusters;
 }
 
-function synthesizeIdea(cluster) {
-  const sources = cluster.signals.map(s => ({
-    type: s.type,
-    name:
-      s.type === "github" ? "GitHub" :
-      s.type === "twitter" ? "X" :
-      s.type === "rss" ? "RSS" :
-      "Source",
-    url: s.url
-  }));
-
-  return {
-    title: "Unclaimed Builder Opportunity",
-    murmur:
-      "Multiple independent signals point to the same unresolved friction, but no clear owner has emerged.",
-    quest:
-      "Design a narrowly scoped tool or workflow that resolves this recurring pain without over-engineering.",
-    value:
-      "Converts repeated, ambient frustration into a concrete, shippable side project.",
-    difficulty: inferDifficulty(sources.length),
-    sources
-  };
+function inferDifficulty(sourceCount) {
+  if (sourceCount >= 6) return "Hard";
+  if (sourceCount >= 3) return "Medium";
+  return "Easy";
 }
 
-/* ---------------- handler ---------------- */
+/* -------------------- AI synthesis -------------------- */
+
+async function synthesizeIdeasWithAI(clusters) {
+  const prompt = `
+You are Tech Murmurs.
+
+Your job is to synthesize early builder signals into
+FIVE distinct, vibe-coder-friendly side quests.
+
+Rules:
+- Do NOT summarize inputs.
+- Extract the latent opportunity behind them.
+- Each idea must feel buildable by 1–2 people.
+- Match this exact structure for each idea:
+
+Title:
+Murmur (why this exists):
+Side Quest (what to build):
+For What It’s Worth (why it matters):
+
+Tone:
+- Calm, editorial, confident
+- No hype, no buzzwords
+- Curious, unfinished, invitational
+
+Here are the clustered signals:
+${clusters.map((c, i) => `
+Cluster ${i + 1}:
+${c.signals.map(s => `- ${s.text}`).join("\n")}
+`).join("\n")}
+`;
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.6,
+      messages: [
+        { role: "system", content: "You generate concise, thoughtful product ideas." },
+        { role: "user", content: prompt }
+      ]
+    })
+  });
+
+  if (!res.ok) {
+    console.error("OpenAI error:", await res.text());
+    return [];
+  }
+
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content || "";
+
+  const blocks = text.split(/\n{2,}/).filter(b => b.includes("Title:"));
+
+  return blocks.slice(0, MAX_IDEAS).map(block => {
+    const get = label =>
+      block.split(label)[1]?.split("\n")[0]?.trim() || "";
+
+    return {
+      title: get("Title:"),
+      murmur: get("Murmur"),
+      quest: get("Side Quest"),
+      value: get("For What It’s Worth")
+    };
+  });
+}
+
+/* -------------------- handler -------------------- */
 
 export default async function handler(request) {
-  try {
-    const store = getStore({
-      name: "tech-murmurs",
-      siteID: process.env.NETLIFY_SITE_ID,
-      token: process.env.NETLIFY_AUTH_TOKEN
-    });
+  const store = getStore({
+    name: "tech-murmurs",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_AUTH_TOKEN
+  });
 
-    const force =
-      new URL(request.url).searchParams.get("force") === "true";
+  const force =
+    new URL(request.url).searchParams.get("force") === "true";
 
-    // Reuse existing snapshot unless forced
-    if (!force) {
-      const existing = await store.get("latest");
-      if (existing) {
-        return new Response(existing, {
-          headers: { "Content-Type": "application/json" }
-        });
-      }
+  /* ---------- reuse snapshot unless forced ---------- */
+  if (!force) {
+    const existing = await store.get("latest");
+    if (existing) {
+      return Response.json(JSON.parse(existing));
     }
-
-    /* -------- ingest signals -------- */
-
-    let signals = [];
-
-    const results = await Promise.allSettled([
-      fetchGitHubSignals(),
-      fetchHackathonSignals(),
-      fetchTwitterSignals(),
-      fetchRoadmapSignals()
-    ]);
-
-    for (const r of results) {
-      if (r.status === "fulfilled" && Array.isArray(r.value)) {
-        signals.push(...r.value);
-      }
-    }
-
-    // Rolling window
-    signals = signals.filter(withinWindow);
-
-    // If absolutely nothing usable, return sample mode (but valid JSON)
-    if (!signals.length) {
-      const emptyPayload = {
-        mode: "sample",
-        ideas: []
-      };
-
-      return new Response(JSON.stringify(emptyPayload), {
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
-    /* -------- cluster → synthesize -------- */
-
-    const clusters = clusterSignals(signals);
-
-    let ideas = clusters
-      .map(synthesizeIdea)
-      .slice(0, MAX_IDEAS);
-
-    // Hard guarantee: always 5 cards
-    while (ideas.length < MAX_IDEAS) {
-      ideas.push({
-        title: "Unclaimed Builder Opportunity",
-        murmur:
-          "Signals indicate a recurring but underexplored need that has not yet been claimed.",
-        quest:
-          "Prototype a small, opinionated solution to test whether this pain is real and repeatable.",
-        value:
-          "Turns weak but persistent signals into a concrete starting point.",
-        difficulty: "Easy",
-        sources: [
-          {
-            type: "github",
-            name: "Fallback",
-            url: "https://github.com"
-          }
-        ]
-      });
-    }
-
-    /* -------- persist snapshot -------- */
-
-    const today = isoToday();
-
-    const payload = {
-      mode: "live",
-      date: today,
-      ideas
-    };
-
-    await store.set("latest", JSON.stringify(payload));
-    await store.set(`daily-${today}`, JSON.stringify(payload));
-
-    return new Response(JSON.stringify(payload), {
-      headers: { "Content-Type": "application/json" }
-    });
-
-  } catch (err) {
-    console.error("generateDaily fatal error:", err);
-
-    return new Response(
-      JSON.stringify({
-        mode: "sample",
-        ideas: []
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      }
-    );
   }
+
+  /* ---------- ingest signals ---------- */
+  let signals = [];
+
+  const results = await Promise.allSettled([
+    getGitHubSignals(),
+    getHackathonSignals(),
+    getTwitterSignals(),
+    getRoadmapSignals()
+  ]);
+
+  results.forEach(r => {
+    if (r.status === "fulfilled" && Array.isArray(r.value)) {
+      signals.push(...r.value);
+    }
+  });
+
+  signals = uniqBy(signals, s => s.url).filter(withinWindow);
+
+  /* ---------- fail only if EVERYTHING failed ---------- */
+  if (!signals.length) {
+    return Response.json({
+      mode: "sample",
+      ideas: []
+    });
+  }
+
+  /* ---------- cluster + synthesize ---------- */
+  const clusters = clusterSignals(signals).slice(0, MAX_IDEAS);
+  const aiIdeas = await synthesizeIdeasWithAI(clusters);
+
+  /* ---------- attach sources + difficulty ---------- */
+  const ideas = aiIdeas.map((idea, idx) => {
+    const sources = uniqBy(
+      clusters[idx]?.signals || [],
+      s => s.url
+    ).map(s => ({
+      type: s.type,
+      name:
+        s.type === "github"
+          ? "GitHub"
+          : s.type === "twitter"
+          ? "X"
+          : s.type === "hackathon"
+          ? "Hackathon"
+          : "Roadmap",
+      url: s.url
+    }));
+
+    return {
+      ...idea,
+      difficulty: inferDifficulty(sources.length),
+      sources
+    };
+  });
+
+  /* ---------- hard guarantee: always 5 ---------- */
+  while (ideas.length < MAX_IDEAS) {
+    ideas.push(ideas[ideas.length - 1]);
+  }
+
+  /* ---------- persist ---------- */
+  const today = new Date().toISOString().slice(0, 10);
+  const payload = {
+    mode: "live",
+    date: today,
+    ideas
+  };
+
+  await store.set("latest", JSON.stringify(payload));
+  await store.set(`daily-${today}`, JSON.stringify(payload));
+
+  return Response.json(payload);
 }
