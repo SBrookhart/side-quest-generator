@@ -1,215 +1,161 @@
+// netlify/functions/seedArchive.js
+
 import { getStore } from "@netlify/blobs";
 
-const generateIdeasForDay = (dayIndex) => {
-  const day1Ideas = [
+export async function handler() {
+  const store = getStore({ name: "tech-murmurs" });
+
+  const days = [
     {
-      title: "What Actually Changed in This Upgrade?",
-      murmur: "Protocol upgrades ship without clear changelogs, leaving developers to discover breaking changes through failures.",
-      quest: "Build a tool that diffs contract upgrades and shows what functions changed, what got removed, and what's new—in plain English.",
-      worth: [
-        "Prevents surprise failures",
-        "Makes upgrades transparent",
-        "Interesting technical challenge"
-      ],
-      difficulty: "Hard",
-      sources: [
-        { type: "github", name: "Protocol Governance", url: "https://github.com/search?q=contract+upgrade+breaking" },
-        { type: "x", name: "Developer X", url: "https://x.com/search?q=contract%20upgrade%20broke" }
+      date: "2026-01-23",
+      mode: "editorial",
+      ideas: [
+        {
+          title: "The Market Has Feelings",
+          murmur:
+            "Crypto discourse swings wildly between euphoria and despair, but builders lack a way to track sentiment without trading.",
+          quest:
+            "Build a lightweight emotional dashboard that visualizes crypto sentiment without price data.",
+          value:
+            "Turns narrative chaos into intuition instead of speculation.",
+          difficulty: "Easy",
+          sources: [
+            { type: "github", name: "GitHub", url: "https://github.com" }
+          ]
+        },
+        {
+          title: "Crypto Urban Legends",
+          murmur:
+            "Myths and half-truths persist on-chain with no clear origin or attribution.",
+          quest:
+            "Create a living archive of crypto myths, memes, and their provenance.",
+          value:
+            "Preserves cultural memory and reduces misinformation.",
+          difficulty: "Easy",
+          sources: [
+            { type: "github", name: "GitHub", url: "https://github.com" }
+          ]
+        },
+        {
+          title: "If Crypto Twitter Were a Person",
+          murmur:
+            "Collective behavior often feels like a single personality, but it’s hard to articulate.",
+          quest:
+            "Build an AI persona that reflects the mood of crypto discourse.",
+          value:
+            "Makes abstract sentiment playful and interpretable.",
+          difficulty: "Medium",
+          sources: [
+            { type: "x", name: "X", url: "https://x.com" }
+          ]
+        },
+        {
+          title: "On-Chain Weather Channel",
+          murmur:
+            "Network conditions are unintuitive for non-technical builders.",
+          quest:
+            "Visualize on-chain activity like a weather forecast.",
+          value:
+            "Improves comprehension without dashboards.",
+          difficulty: "Medium",
+          sources: [
+            { type: "roadmap", name: "Protocol Updates", url: "https://github.com" }
+          ]
+        },
+        {
+          title: "Build-A-Protocol Simulator",
+          murmur:
+            "Protocol design tradeoffs are invisible to newcomers.",
+          quest:
+            "Create a sandbox for simulating protocol decisions.",
+          value:
+            "Lowers the barrier to systems thinking.",
+          difficulty: "Hard",
+          sources: [
+            { type: "roadmap", name: "Protocol Roadmaps", url: "https://github.com" }
+          ]
+        }
       ]
     },
     {
-      title: "Why Don't These NFTs Load Anymore?",
-      murmur: "NFT metadata disappears when IPFS pins expire or servers go down, but nobody notices until holders complain.",
-      quest: "Create a monitoring service that checks NFT metadata availability across IPFS and HTTP, alerting when assets become unreachable.",
-      worth: [
-        "Protects project reputation",
-        "Prevents holder complaints",
-        "Simple monitoring + alerts"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "NFT Infrastructure", url: "https://github.com/search?q=nft+metadata+missing" },
-        { type: "x", name: "NFT Twitter", url: "https://x.com/search?q=nft%20image%20broken" }
-      ]
-    },
-    {
-      title: "Can I Actually Afford This Transaction?",
-      murmur: "Users see gas estimates but don't know if they'll change or if they're getting ripped off compared to others.",
-      quest: "Build a gas price explainer that shows historical trends, percentile rankings, and suggests better times to transact.",
-      worth: [
-        "Reduces transaction anxiety",
-        "Saves users real money",
-        "Clean data visualization"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "Wallet Issues", url: "https://github.com/search?q=gas+fee+expensive" },
-        { type: "x", name: "Crypto X", url: "https://x.com/search?q=gas%20fees%20expensive" }
-      ]
-    },
-    {
-      title: "Where Are All the Working Faucets?",
-      murmur: "Testnet faucet links break constantly and nobody maintains a current list of what actually works.",
-      quest: "Create a live directory of testnet faucets with uptime monitoring, rate limit info, and one-click requesting.",
-      worth: [
-        "Saves hours of googling",
-        "Helps new developers instantly",
-        "Super fast to build"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "Developer Tools", url: "https://github.com/search?q=testnet+faucet" },
-        { type: "x", name: "Dev X", url: "https://x.com/search?q=testnet%20faucet%20help" }
-      ]
-    },
-    {
-      title: "Did This Proposal Actually Pass?",
-      murmur: "DAO voting results get scattered across Snapshot, forums, and Discord without a single source of truth.",
-      quest: "Build a unified DAO decision tracker that shows proposal status, vote counts, and execution status across platforms.",
-      worth: [
-        "Makes governance transparent",
-        "Reduces voter confusion",
-        "Useful data aggregation practice"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "DAO Governance", url: "https://github.com/search?q=dao+proposal+voting" },
-        { type: "x", name: "DAO Twitter", url: "https://x.com/search?q=dao%20proposal%20status" }
+      date: "2026-01-24",
+      mode: "editorial",
+      ideas: [
+        {
+          title: "Narrative Gravity Map",
+          murmur:
+            "Some ideas pull disproportionate attention without clear reasons.",
+          quest:
+            "Map narrative gravity across crypto discourse.",
+          value:
+            "Shows why some ideas stick.",
+          difficulty: "Medium",
+          sources: [
+            { type: "x", name: "X", url: "https://x.com" }
+          ]
+        },
+        {
+          title: "What Broke Overnight?",
+          murmur:
+            "Failures surface slowly and across scattered channels.",
+          quest:
+            "Detect early signals of overnight breakage.",
+          value:
+            "Gives builders early warning.",
+          difficulty: "Easy",
+          sources: [
+            { type: "github", name: "GitHub", url: "https://github.com" }
+          ]
+        },
+        {
+          title: "DAO Decision Explainer",
+          murmur:
+            "Governance outcomes are hard to parse for outsiders.",
+          quest:
+            "Translate DAO proposals into clear outcomes.",
+          value:
+            "Reduces governance fatigue.",
+          difficulty: "Easy",
+          sources: [
+            { type: "github", name: "GitHub", url: "https://github.com" }
+          ]
+        },
+        {
+          title: "Speculation vs Reality",
+          murmur:
+            "Rumors outpace confirmed information.",
+          quest:
+            "Separate speculation from verified signals.",
+          value:
+            "Improves discourse quality.",
+          difficulty: "Medium",
+          sources: [
+            { type: "x", name: "X", url: "https://x.com" }
+          ]
+        },
+        {
+          title: "Protocol Changelog Digest",
+          murmur:
+            "Important updates are buried in long release notes.",
+          quest:
+            "Summarize breaking protocol changes across ecosystems.",
+          value:
+            "Prevents surprises.",
+          difficulty: "Hard",
+          sources: [
+            { type: "roadmap", name: "Releases", url: "https://github.com" }
+          ]
+        }
       ]
     }
   ];
 
-  const day2Ideas = [
-    {
-      title: "Why Can't I Replay This Transaction?",
-      murmur: "Developers need to test edge cases but can't easily replay past transactions on a local fork without manual setup.",
-      quest: "Build a tool that takes any transaction hash and creates a one-click local fork with that exact state, ready to replay and modify.",
-      worth: [
-        "Makes debugging way easier",
-        "Perfect for learning contracts",
-        "Great developer experience win"
-      ],
-      difficulty: "Hard",
-      sources: [
-        { type: "github", name: "Testing Tools", url: "https://github.com/search?q=transaction+replay+fork" },
-        { type: "x", name: "Dev X", url: "https://x.com/search?q=replay%20transaction%20debug" }
-      ]
-    },
-    {
-      title: "Where Did My Approval Go?",
-      murmur: "Users approve token spending limits but have no idea which apps can still spend their tokens months later.",
-      quest: "Create an approval dashboard that shows all active token approvals, when they were made, and lets users revoke them in bulk.",
-      worth: [
-        "Prevents unauthorized drains",
-        "Builds user trust",
-        "Clean security UX"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "Security Tools", url: "https://github.com/search?q=token+approval+revoke" },
-        { type: "x", name: "Security X", url: "https://x.com/search?q=token%20approval%20security" }
-      ]
-    },
-    {
-      title: "Why Is This Contract Call Failing?",
-      murmur: "Contract interactions fail with cryptic error messages that don't explain what actually went wrong or how to fix it.",
-      quest: "Build an error decoder that translates revert messages and failed transactions into plain English explanations with suggested fixes.",
-      worth: [
-        "Saves debugging frustration",
-        "Helps newcomers learn faster",
-        "Simple string matching to start"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "Developer Experience", url: "https://github.com/search?q=contract+error+cryptic" },
-        { type: "x", name: "Dev Help", url: "https://x.com/search?q=contract%20error%20help" }
-      ]
-    },
-    {
-      title: "Which Wallet Actually Supports This?",
-      murmur: "Users don't know which wallets support which chains, leading to confusion and failed connection attempts.",
-      quest: "Create a wallet compatibility matrix showing which wallets work with which chains, updated automatically from each wallet's docs.",
-      worth: [
-        "Reduces onboarding friction",
-        "Helps users choose wallets",
-        "Easy web scraping project"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "Wallet Docs", url: "https://github.com/search?q=wallet+chain+support" },
-        { type: "x", name: "Wallet Help", url: "https://x.com/search?q=which%20wallet%20supports" }
-      ]
-    },
-    {
-      title: "How Much Did This Really Cost?",
-      murmur: "Transaction receipts show gas in Wei and Gwei, but people want to know the actual dollar cost at the time of the transaction.",
-      quest: "Build a transaction cost calculator that shows historical fiat value of gas fees using time-stamped price data.",
-      worth: [
-        "Makes costs understandable",
-        "Good for expense tracking",
-        "Interesting price API work"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "Analytics Tools", url: "https://github.com/search?q=gas+cost+usd" },
-        { type: "x", name: "Cost Tracking", url: "https://x.com/search?q=transaction%20cost%20usd" }
-      ]
-    }
-  ];
-
-  return dayIndex === 0 ? day1Ideas : day2Ideas;
-};
-
-export default async () => {
-  const siteID = process.env.NETLIFY_SITE_ID;
-  const token = process.env.NETLIFY_AUTH_TOKEN;
-
-  if (!siteID || !token) {
-    return Response.json(
-      { error: "Missing siteID or token" },
-      { status: 500 }
-    );
-  }
-
-  const store = getStore({
-    name: "tech-murmurs",
-    siteID,
-    token
-  });
-
-  const days = ["2026-01-23", "2026-01-24"];
-  const seeded = [];
-  const deleted = [];
-
-  // FIRST: Delete both days
   for (const day of days) {
-    try {
-      await store.delete(`daily-${day}`);
-      deleted.push(day);
-    } catch (e) {
-      // Might not exist, that's ok
-    }
+    await store.set(`daily-${day.date}`, JSON.stringify(day));
   }
 
-  // THEN: Set fresh data
-  for (let i = 0; i < days.length; i++) {
-    const day = days[i];
-    const ideas = generateIdeasForDay(i);
-    
-    const payload = { 
-      date: day, 
-      mode: "editorial", 
-      ideas
-    };
-
-    await store.set(`daily-${day}`, JSON.stringify(payload));
-    seeded.push(day);
-  }
-
-  return Response.json({ 
-    success: true,
-    deleted,
-    seeded,
-    message: "Old data deleted, fresh data seeded"
-  });
-};
+  return new Response(
+    JSON.stringify({ status: "ok", seeded: days.map(d => d.date) }),
+    { status: 200 }
+  );
+}
