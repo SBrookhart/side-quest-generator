@@ -6,7 +6,7 @@ import { getRoadmapSignals } from "./roadmaps.js";
 
 const MAX_IDEAS = 5;
 
-async function generateIdeasWithAI(signals) {
+const generateIdeasWithAI = async (signals) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
@@ -24,7 +24,7 @@ async function generateIdeasWithAI(signals) {
 
 ${JSON.stringify(signalContext, null, 2)}
 
-Generate 5 compelling, specific side-quest ideas. Make them HUMAN and CASUAL, not corporate.
+Generate 5 compelling, specific side-quest ideas. Make them HUMAN and CONVERSATIONAL.
 
 STYLE GUIDELINES:
 - Titles should be conversational questions or observations (like "Why Is Gas So Confusing?" or "Can Someone Explain This Contract?")
@@ -96,7 +96,6 @@ BAD titles (too generic):
       throw new Error("No ideas generated");
     }
 
-    // Add sources
     const sourcesByType = {};
     signals.forEach(s => {
       if (!sourcesByType[s.type]) {
@@ -119,9 +118,9 @@ BAD titles (too generic):
     console.error('AI generation failed:', error);
     return generateFallbackIdeas();
   }
-}
+};
 
-function generateFallbackIdeas() {
+const generateFallbackIdeas = () => {
   const ideas = [
     {
       title: "Why Can't I See What This Contract Actually Does?",
@@ -134,8 +133,8 @@ function generateFallbackIdeas() {
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=smart+contract+confusing" },
-        { type: "twitter", name: "X", url: "https://x.com/search?q=what%20does%20this%20contract%20do" }
+        { type: "github", name: "GitHub", url: "https://github.com" },
+        { type: "twitter", name: "X", url: "https://x.com" }
       ]
     },
     {
@@ -149,7 +148,7 @@ function generateFallbackIdeas() {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=testnet+faucet" },
+        { type: "github", name: "GitHub", url: "https://github.com" },
         { type: "rss", name: "Hackathons", url: "https://devpost.com" }
       ]
     },
@@ -164,8 +163,8 @@ function generateFallbackIdeas() {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=gas+fee+confusing" },
-        { type: "twitter", name: "X", url: "https://x.com/search?q=high%20gas%20fees" }
+        { type: "github", name: "GitHub", url: "https://github.com" },
+        { type: "twitter", name: "X", url: "https://x.com" }
       ]
     },
     {
@@ -179,8 +178,8 @@ function generateFallbackIdeas() {
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=pending+transaction" },
-        { type: "twitter", name: "X", url: "https://x.com/search?q=transaction%20stuck" }
+        { type: "github", name: "GitHub", url: "https://github.com" },
+        { type: "twitter", name: "X", url: "https://x.com" }
       ]
     },
     {
@@ -194,20 +193,30 @@ function generateFallbackIdeas() {
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "GitHub", url: "https://github.com/search?q=dao+governance" },
+        { type: "github", name: "GitHub", url: "https://github.com" },
         { type: "rss", name: "Hackathons", url: "https://devpost.com" }
       ]
     }
   ];
 
   return ideas.sort(() => Math.random() - 0.5).slice(0, MAX_IDEAS);
-}
+};
 
-export default async function handler(req) {
+export default async () => {
+  const siteID = process.env.NETLIFY_SITE_ID;
+  const token = process.env.NETLIFY_AUTH_TOKEN;
+
+  if (!siteID || !token) {
+    return Response.json(
+      { error: "Missing siteID or token" },
+      { status: 500 }
+    );
+  }
+
   const store = getStore({
     name: "tech-murmurs",
-    siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_AUTH_TOKEN
+    siteID,
+    token
   });
 
   let signals = [];
@@ -246,4 +255,20 @@ export default async function handler(req) {
   await store.set(`daily-${today}`, JSON.stringify(payload));
 
   return Response.json(payload);
-}
+};
+```
+
+---
+
+## **Step 3: Deploy and Test**
+
+1. **Replace `generateDaily.js`** with the code above
+2. **Push to GitHub**
+3. **Wait for deploy**
+4. **Regenerate today's ideas:**
+```
+   https://side-quest-generator.netlify.app/.netlify/functions/generateDaily
+```
+5. **Check your homepage:**
+```
+   https://side-quest-generator.netlify.app/
