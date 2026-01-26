@@ -1,6 +1,6 @@
 import { getStore } from "@netlify/blobs";
 
-function generateTestIdeas() {
+const generateTestIdeas = () => {
   return [
     {
       title: "Why Can't I Find Working Faucets?",
@@ -74,56 +74,46 @@ function generateTestIdeas() {
       ]
     }
   ];
-}
+};
 
-export default async function handler() {
-  try {
-    const store = getStore({
-      name: "tech-murmurs",
-      siteID: process.env.NETLIFY_SITE_ID,
-      token: process.env.NETLIFY_AUTH_TOKEN
-    });
+export default async () => {
+  const siteID = process.env.NETLIFY_SITE_ID;
+  const token = process.env.NETLIFY_AUTH_TOKEN;
 
-    const days = ["2026-01-23", "2026-01-24"];
-    const seeded = [];
-
-    for (const day of days) {
-      const ideas = generateTestIdeas();
-
-      await store.set(
-        `daily-${day}`,
-        JSON.stringify({ 
-          date: day, 
-          mode: "editorial", 
-          ideas 
-        })
-      );
-
-      seeded.push(day);
-    }
-
-    return Response.json({ 
-      success: true,
-      seeded,
-      message: "Archive seeded successfully"
-    });
-
-  } catch (error) {
-    return Response.json({ 
-      success: false,
-      error: error.message 
-    }, { status: 500 });
+  if (!siteID || !token) {
+    return Response.json(
+      { error: "Missing siteID or token" },
+      { status: 500 }
+    );
   }
-}
-```
 
----
+  const store = getStore({
+    name: "tech-murmurs",
+    siteID,
+    token
+  });
 
-## **Step 4: Deploy and Test**
+  const days = ["2026-01-23", "2026-01-24"];
+  const seeded = [];
 
-1. **Replace `seedArchive.js`** with the simplified version above
-2. **Push to GitHub**
-3. **Wait for Netlify to build** (watch the deploy in the dashboard)
-4. **Once deployed**, try:
-```
-   https://side-quest-generator.netlify.app/.netlify/functions/seedArchive
+  for (const day of days) {
+    const ideas = generateTestIdeas();
+
+    await store.set(
+      `daily-${day}`,
+      JSON.stringify({ 
+        date: day, 
+        mode: "editorial", 
+        ideas 
+      })
+    );
+
+    seeded.push(day);
+  }
+
+  return Response.json({ 
+    success: true,
+    seeded,
+    message: "Archive seeded successfully"
+  });
+};
