@@ -1,0 +1,37 @@
+import { getStore } from "@netlify/blobs";
+
+export default async () => {
+  const siteID = process.env.NETLIFY_SITE_ID;
+  const token = process.env.NETLIFY_AUTH_TOKEN;
+
+  if (!siteID || !token) {
+    return Response.json(
+      { error: "Missing siteID or token" },
+      { status: 500 }
+    );
+  }
+
+  const store = getStore({
+    name: "tech-murmurs",
+    siteID,
+    token
+  });
+
+  try {
+    // Get the raw data for Jan 24
+    const jan24Raw = await store.get("daily-2026-01-24");
+    const jan24Data = typeof jan24Raw === "string" ? JSON.parse(jan24Raw) : jan24Raw;
+
+    // List all blobs
+    const listing = await store.list();
+
+    return Response.json({ 
+      jan24Data,
+      allBlobs: listing.blobs.map(b => b.key)
+    });
+  } catch (error) {
+    return Response.json({ 
+      error: error.message 
+    }, { status: 500 });
+  }
+};
