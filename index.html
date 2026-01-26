@@ -469,7 +469,6 @@
     const data = await res.json();
     const container = document.getElementById("ideas");
 
-    // 🔧 FIX: support both array + object formats
     const ideas = Array.isArray(data)
       ? data
       : Array.isArray(data?.ideas)
@@ -512,7 +511,9 @@
 
         <div class="section">
           <div class="section-title">✨ For What It's Worth → Why it's worth your energy</div>
-          <div>${q.value}</div>
+          <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
+            ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
+          </ul>
         </div>
 
         <div class="section">
