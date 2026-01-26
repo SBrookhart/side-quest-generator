@@ -1,6 +1,7 @@
 // netlify/functions/generateDaily.js
 
 import { getStore } from "@netlify/blobs";
+
 import { getGitHubSignals } from "./github.js";
 import { getHackathonSignals } from "./hackathons.js";
 import { getTwitterSignals } from "./twitter.js";
@@ -9,7 +10,7 @@ import { getRoadmapSignals } from "./roadmaps.js";
 const MAX_IDEAS = 5;
 const SIGNAL_WINDOW_DAYS = 14;
 
-/* ---------- helpers ---------- */
+/* ---------------- helpers ---------------- */
 
 function daysAgo(n) {
   const d = new Date();
@@ -21,107 +22,94 @@ function withinWindow(signal) {
   return new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
-function inferDifficulty(sourceCount) {
-  if (sourceCount >= 5) return "Hard";
-  if (sourceCount >= 3) return "Medium";
-  return "Easy";
+function safeJson(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" }
+  });
 }
 
-/* ---------- AI synthesis ---------- */
+/* ---------------- AI PROMPT ---------------- */
 
-async function synthesizeIdeasWithAI(signals) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
+const SYSTEM_PROMPT = `
+You are the editor of Tech Murmurs.
 
-  // Keep signals compact + anonymous
-  const signalSummaries = signals.slice(0, 20).map(s => ({
-    type: s.type,
-    text: s.text.slice(0, 200)
-  }));
+Tech Murmurs publishes daily “side quests” for indie builders and vibe-coders:
+small, playful, buildable projects inspired by real but unfinished needs.
 
-  const prompt = `
-You are an editorial product thinker writing daily side-quest ideas for builders.
+Your job is NOT to summarize inputs.
+Your job is to extract latent opportunity.
 
-Your job:
-- Extract latent opportunities from the signals below
-- DO NOT summarize or quote the signals
-- Write original, thoughtful ideas
-- Tone: calm, insightful, curious, builder-friendly
-- Audience: solo builders, vibe coders, small teams
+You think like:
+- an indie hacker
+- a curious prototyper
+- someone who enjoys clever tools and creative experiments
 
-Rules:
-- Produce EXACTLY ${MAX_IDEAS} distinct ideas
-- Each idea must feel meaningfully different
-- Avoid buzzwords, hype, or marketing language
-- No references to GitHub, Twitter, issues, or releases
-
-Return ONLY valid JSON in this exact shape:
-
-{
-  "ideas": [
-    {
-      "title": "...",
-      "murmur": "...",
-      "quest": "...",
-      "value": "...",
-      "difficulty": "Easy | Medium | Hard"
-    }
-  ]
-}
-
-Signals:
-${JSON.stringify(signalSummaries, null, 2)}
+Avoid generic language.
+Avoid startup clichés.
+Avoid "there is an opportunity" phrasing.
+Every idea should feel like something a single builder could ship in a week or two.
 `;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0.7,
-      messages: [{ role: "user", content: prompt }]
-    })
-  });
+function buildUserPrompt(signals) {
+  const formattedSignals = signals.map(s => `- (${s.type}) ${s.text}`).join("\n");
 
-  const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content;
+  return `
+Below is a set of real-world signals collected from GitHub issues,
+hackathons, protocol updates, and public developer discourse.
 
-  if (!content) throw new Error("AI returned empty response");
+Each signal represents friction, repetition, or unfinished work.
 
-  const parsed = JSON.parse(content);
-  return parsed.ideas;
+Signals:
+${formattedSignals}
+
+Your task:
+
+1. Identify exactly 5 DISTINCT opportunity patterns across these signals.
+   - Each pattern must be meaningfully different.
+   - Do NOT repeat the same type of idea twice.
+
+2. For each pattern, write ONE side quest using the format below.
+
+Rules:
+- Be concrete and specific.
+- Do not restate the signals.
+- Do not use generic phrases like “unclaimed opportunity”.
+- Prefer playful, curious, builder-friendly language.
+
+Format (repeat exactly 5 times):
+
+Title:
+Murmur:
+Side Quest:
+Why It’s Interesting:
+Difficulty:
+`;
 }
 
-/* ---------- handler ---------- */
+/* ---------------- handler ---------------- */
 
-export const handler = async (request) => {
-  try {
-    const store = getStore({
-      name: "tech-murmurs",
-      siteID: process.env.NETLIFY_SITE_ID,
-      token: process.env.NETLIFY_AUTH_TOKEN
-    });
+export async function handler(req) {
+  const store = getStore({
+    name: "tech-murmurs",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_AUTH_TOKEN
+  });
 
-    const force =
-      new URL(request.url).searchParams.get("force") === "true";
+  const force = new URL(req.url).searchParams.get("force") === "true";
 
-    if (!force) {
-      const existing = await store.get("latest");
-      if (existing) {
-        return {
-          statusCode: 200,
-          body: existing
-        };
-      }
+  /* ---------- reuse snapshot unless forced ---------- */
+  if (!force) {
+    const cached = await store.get("latest");
+    if (cached) {
+      return safeJson(JSON.parse(cached));
     }
+  }
 
-    /* ---------- ingest signals ---------- */
+  /* ---------- ingest signals ---------- */
+  let signals = [];
 
-    let signals = [];
-
+  try {
     const results = await Promise.allSettled([
       getGitHubSignals(),
       getHackathonSignals(),
@@ -134,29 +122,71 @@ export const handler = async (request) => {
         signals.push(...r.value);
       }
     });
+  } catch (err) {
+    console.error("Signal ingestion error:", err);
+  }
 
-    signals = signals.filter(withinWindow);
+  signals = signals.filter(withinWindow);
 
-    if (!signals.length) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          mode: "sample",
-          ideas: []
-        })
-      };
-    }
+  if (!signals.length) {
+    return safeJson({
+      mode: "sample",
+      ideas: []
+    });
+  }
 
-    /* ---------- AI synthesis ---------- */
+  /* ---------- call OpenAI ---------- */
+  let aiText;
 
-    const aiIdeas = await synthesizeIdeasWithAI(signals);
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        temperature: 0.8,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: buildUserPrompt(signals) }
+        ]
+      })
+    });
 
-    const ideas = aiIdeas.map(idea => ({
-      ...idea,
-      difficulty: idea.difficulty,
-      sources: signals
-        .slice(0, 5)
-        .map(s => ({
+    const json = await res.json();
+    aiText = json.choices?.[0]?.message?.content;
+  } catch (err) {
+    console.error("OpenAI error:", err);
+  }
+
+  if (!aiText) {
+    return safeJson({
+      mode: "sample",
+      ideas: []
+    });
+  }
+
+  /* ---------- parse AI output ---------- */
+  const ideas = [];
+  const blocks = aiText.split(/\n(?=Title:)/);
+
+  for (const block of blocks) {
+    const title = block.match(/Title:\s*(.+)/)?.[1];
+    const murmur = block.match(/Murmur:\s*(.+)/)?.[1];
+    const quest = block.match(/Side Quest:\s*(.+)/)?.[1];
+    const value = block.match(/Why It’s Interesting:\s*(.+)/)?.[1];
+    const difficulty = block.match(/Difficulty:\s*(Easy|Medium|Hard)/)?.[1];
+
+    if (title && murmur && quest && value && difficulty) {
+      ideas.push({
+        title,
+        murmur,
+        quest,
+        value,
+        difficulty,
+        sources: signals.slice(0, 4).map(s => ({
           type: s.type,
           name:
             s.type === "twitter" ? "X" :
@@ -165,33 +195,26 @@ export const handler = async (request) => {
             "Roadmap",
           url: s.url
         }))
-    }));
-
-    const today = new Date().toISOString().slice(0, 10);
-
-    const payload = {
-      mode: "live",
-      date: today,
-      ideas
-    };
-
-    await store.set("latest", JSON.stringify(payload));
-    await store.set(`daily-${today}`, JSON.stringify(payload));
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(payload)
-    };
-
-  } catch (err) {
-    console.error("generateDaily failed:", err);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "Daily generation failed",
-        details: err.message
-      })
-    };
+      );
+    }
   }
-};
+
+  if (ideas.length !== MAX_IDEAS) {
+    console.warn("AI output rejected — wrong idea count");
+    return safeJson({ mode: "sample", ideas: [] });
+  }
+
+  /* ---------- persist ---------- */
+  const today = new Date().toISOString().slice(0, 10);
+
+  const payload = {
+    mode: "live",
+    date: today,
+    ideas
+  };
+
+  await store.set("latest", JSON.stringify(payload));
+  await store.set(`daily-${today}`, JSON.stringify(payload));
+
+  return safeJson(payload);
+}
