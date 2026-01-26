@@ -256,19 +256,3 @@ export default async () => {
 
   return Response.json(payload);
 };
-```
-
----
-
-## **Step 3: Deploy and Test**
-
-1. **Replace `generateDaily.js`** with the code above
-2. **Push to GitHub**
-3. **Wait for deploy**
-4. **Regenerate today's ideas:**
-```
-   https://side-quest-generator.netlify.app/.netlify/functions/generateDaily
-```
-5. **Check your homepage:**
-```
-   https://side-quest-generator.netlify.app/
