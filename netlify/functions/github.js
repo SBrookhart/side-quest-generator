@@ -1,61 +1,69 @@
 // netlify/functions/github.js
 
-const SEARCH_QUERIES = [
-  "missing",
-  "no way to",
-  "hard to",
-  "wish there was",
-  "feature request",
-  "would be useful if"
-];
+const GITHUB_SEARCH_QUERY = `
+  (
+    "missing" OR
+    "no way to" OR
+    "hard to" OR
+    "wish there was" OR
+    "cannot" OR
+    "doesn't support" OR
+    "would be useful"
+  )
+  in:title,body
+  is:issue
+  is:open
+`;
 
 const MAX_RESULTS = 20;
 
+function cleanText(text = "") {
+  return text
+    .replace(/```[\s\S]*?```/g, "") // remove code blocks
+    .replace(/`[^`]*`/g, "")        // remove inline code
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 280);
+}
+
 export default async function getGitHubSignals() {
-  const query = SEARCH_QUERIES.map(q => `"${q}"`).join(" OR ");
-
   const url = `https://api.github.com/search/issues?q=${encodeURIComponent(
-    query
-  )}+is:issue+is:open&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
+    GITHUB_SEARCH_QUERY
+  )}&sort=updated&order=desc&per_page=${MAX_RESULTS}`;
 
-  let res;
-  try {
-    res = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github+json"
-      }
-    });
-  } catch {
+  const res = await fetch(url, {
+    headers: {
+      Accept: "application/vnd.github+json"
+    }
+  });
+
+  if (!res.ok) {
+    console.error("GitHub search failed:", res.status);
     return [];
   }
 
-  if (!res.ok) return [];
-
   const data = await res.json();
-  if (!Array.isArray(data.items)) return [];
+
+  if (!Array.isArray(data.items)) {
+    return [];
+  }
 
   return data.items
-    .filter(item => {
-      // Exclude obvious noise
-      if (!item.body) return false;
-      if (item.pull_request) return false;
+    .map(issue => {
+      const text = cleanText(
+        issue.body || issue.title || ""
+      );
 
-      const text = `${item.title} ${item.body}`.toLowerCase();
-
-      // Must include unmet-need language
-      return SEARCH_QUERIES.some(q => text.includes(q));
-    })
-    .map(item => {
-      const text = item.body
-        .replace(/\r?\n/g, " ")
-        .slice(0, 280)
-        .trim();
+      if (text.length < 60) return null;
 
       return {
         type: "github",
         text,
-        url: item.html_url,
-        date: item.updated_at.slice(0, 10)
+        url: issue.html_url,
+        date: issue.updated_at
+          ? issue.updated_at.slice(0, 10)
+          : new Date().toISOString().slice(0, 10)
       };
-    });
+    })
+    .filter(Boolean);
 }
