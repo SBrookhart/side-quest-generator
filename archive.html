@@ -311,14 +311,19 @@
               </ul>
 
               <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-              <div class="sources">
-                ${(q.sources || []).map(s => `
-                  <a href="${s.url}" target="_blank">
-                    <i data-lucide="${s.type === 'github' ? 'github' : s.type === 'twitter' ? 'twitter' : 'rss'}"></i>
-                    ${s.name}
-                  </a>
-                `).join("")}
-              </div>
+              <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
+                ${(q.sources || []).map(s => {
+                  const iconType = s.type === 'github' ? 'github' : 
+                                  s.type === 'x' ? 'twitter' : 
+                                  s.type === 'twitter' ? 'twitter' : 'rss';
+                  return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
+                    <i data-lucide="${iconType}" style="width: 14px; height: 14px;"></i>
+                    <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
+                      ${s.name}
+                    </a>
+                  </li>`;
+                }).join("")}
+              </ul>
 
               <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
             </div>
