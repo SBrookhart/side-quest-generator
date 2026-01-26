@@ -39,23 +39,3 @@ export const handler = async () => {
     };
   }
 };
-```
-
----
-
-## **Deploy & Test:**
-
-1. **Replace all 3 files** above
-2. **Push to GitHub**
-3. **Wait for deploy**
-4. **Seed archive:**
-```
-   https://side-quest-generator.netlify.app/.netlify/functions/seedArchive
-```
-5. **Generate today:**
-```
-   https://side-quest-generator.netlify.app/.netlify/functions/generateDaily
-```
-6. **Open in incognito:**
-```
-   https://side-quest-generator.netlify.app/archive.html
