@@ -482,11 +482,14 @@
             <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
             <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
               ${(q.sources || []).map(s => {
-                const iconType = s.type === 'github' ? 'github' : 
-                                s.type === 'x' ? 'twitter' : 
-                                s.type === 'twitter' ? 'twitter' : 'rss';
+                const iconHTML = s.type === 'github' 
+                  ? '<i data-lucide="github" style="width: 14px; height: 14px;"></i>'
+                  : s.type === 'x' || s.type === 'twitter'
+                  ? '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'
+                  : '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
+                
                 return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
-                  <i data-lucide="${iconType}" style="width: 14px; height: 14px;"></i>
+                  ${iconHTML}
                   <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
                     ${s.name}
                   </a>
@@ -497,7 +500,7 @@
             <div class="meta">
               <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
               <button class="build-button" onclick="openBuildModal(${idx})">
-                <i data-lucide="sparkles"></i> Let's Build!
+                <i data-lucide="wrench"></i> Let's Build!
               </button>
             </div>
           </div>
@@ -520,19 +523,24 @@
     modalContent.innerHTML = '<div style="text-align: center; padding: 3rem;"><div class="loader"></div><p style="margin-top: 1rem; color: var(--muted);">Generating your build prompt...</p></div>';
     
     try {
+      console.log('Calling generatePrompt with:', ideaData);
+      
       const response = await fetch('/.netlify/functions/generatePrompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ideaData)
       });
       
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', errorText);
-        throw new Error('Failed to generate prompt');
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        throw new Error(errorData.error || `API returned ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('Prompt generated successfully');
       
       // Convert markdown to HTML for better display
       const htmlContent = data.prompt
@@ -570,7 +578,13 @@
       modalContent.innerHTML = `
         <div style="text-align: center; padding: 2rem; color: var(--muted);">
           <p>Oops! Something went wrong generating the prompt.</p>
-          <p style="margin-top: 0.5rem; font-size: 0.85rem;">Check the browser console for details.</p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #f87171;">${error.message}</p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">Please check:</p>
+          <ul style="text-align: left; max-width: 400px; margin: 1rem auto;">
+            <li>OPENAI_API_KEY is set in Netlify environment variables</li>
+            <li>The generatePrompt function deployed successfully</li>
+            <li>Browser console for more details</li>
+          </ul>
           <p style="margin-top: 1rem;">
             <button onclick="closeBuildModal()" style="padding: 0.5rem 1rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer;">
               Close
