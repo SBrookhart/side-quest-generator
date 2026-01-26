@@ -14,42 +14,55 @@ async function generateIdeasWithAI(signals) {
     return generateFallbackIdeas();
   }
 
-  // Prepare context from signals
-  const signalContext = signals.slice(0, 10).map(s => ({
+  const signalContext = signals.slice(0, 15).map(s => ({
     type: s.type,
-    text: s.text?.slice(0, 200) || "",
+    text: s.text?.slice(0, 250) || "",
     url: s.url
   }));
 
-  const prompt = `You are analyzing real signals from the developer ecosystem. Based on these actual signals from GitHub issues, hackathons, and developer discussions:
+  const prompt = `You're analyzing real developer pain points from GitHub issues, hackathons, and builder conversations:
 
 ${JSON.stringify(signalContext, null, 2)}
 
-Generate 5 unique, compelling side quest ideas for builders. Each should:
-- Address a real pain point suggested by the signals above
-- Be specific and actionable (not generic)
-- Vary in scope and difficulty
-- Feel fresh and authentic to current builder needs
+Generate 5 compelling, specific side-quest ideas. Make them HUMAN and CASUAL, not corporate.
 
-For each idea, provide:
-1. title: A specific, catchy name (NOT "Unclaimed Builder Opportunity")
-2. murmur: Why this friction exists (2 sentences, reference real context)
-3. quest: What to build (1-2 sentences, concrete and scoped)
-4. value: Why it's worth building (1-2 sentences)
+STYLE GUIDELINES:
+- Titles should be conversational questions or observations (like "Why Is Gas So Confusing?" or "Can Someone Explain This Contract?")
+- Write like you're talking to a friend, not writing marketing copy
+- Be specific about the actual problem, not generic
+- Make it feel like something you'd actually want to build
+- Each idea should feel different in tone and scope
+
+For each idea:
+1. title: A casual, human question or observation (NOT corporate-sounding)
+2. murmur: What's broken or missing, in plain English (1-2 casual sentences)
+3. quest: What to actually build (1-2 sentences, concrete)
+4. worth: Array of 3 short reasons why it's worth building (each 3-8 words)
 5. difficulty: Easy, Medium, or Hard
 
-Make them diverse across: tooling, UX, infrastructure, data, workflows, etc.
+Make them DIVERSE: UX fixes, data problems, workflow gaps, missing tools, confusing experiences.
 
-Return ONLY valid JSON in this exact format:
+Return ONLY valid JSON:
 [
   {
     "title": "string",
     "murmur": "string",
     "quest": "string",
-    "value": "string",
+    "worth": ["string", "string", "string"],
     "difficulty": "Easy|Medium|Hard"
   }
-]`;
+]
+
+Examples of good titles:
+- "Why Does This Transaction Cost So Much?"
+- "Where Did My NFT Metadata Go?"
+- "Can I Test This Without Losing Real Money?"
+- "Why Can't I See What Changed?"
+
+BAD titles (too generic):
+- "Blockchain Analytics Tool"
+- "Smart Contract Optimizer"
+- "DeFi Dashboard Solution"`;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -61,7 +74,7 @@ Return ONLY valid JSON in this exact format:
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 2500,
+        max_tokens: 3000,
         messages: [{
           role: "user",
           content: prompt
@@ -76,7 +89,6 @@ Return ONLY valid JSON in this exact format:
     const data = await response.json();
     const textContent = data.content.find(c => c.type === 'text')?.text || '[]';
     
-    // Extract JSON from response
     const jsonMatch = textContent.match(/\[[\s\S]*\]/);
     const ideas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
 
@@ -84,7 +96,7 @@ Return ONLY valid JSON in this exact format:
       throw new Error("No ideas generated");
     }
 
-    // Map signals to sources for attribution
+    // Add sources
     const sourcesByType = {};
     signals.forEach(s => {
       if (!sourcesByType[s.type]) {
@@ -92,14 +104,13 @@ Return ONLY valid JSON in this exact format:
       }
     });
 
-    // Add sources to each idea
     return ideas.map(idea => ({
       ...idea,
       sources: Object.values(sourcesByType).slice(0, 3).map(s => ({
         type: s.type,
-        name: s.type === "github" ? "GitHub Issues" : 
-              s.type === "twitter" ? "Developer Twitter" :
-              s.type === "rss" ? "Hackathon Feed" : "Source",
+        name: s.type === "github" ? "GitHub" : 
+              s.type === "twitter" ? "X" :
+              s.type === "rss" ? "Hackathons" : "Source",
         url: s.url
       }))
     }));
@@ -111,57 +122,86 @@ Return ONLY valid JSON in this exact format:
 }
 
 function generateFallbackIdeas() {
-  // Diverse fallback ideas
-  const fallbacks = [
+  const ideas = [
     {
-      title: "Transaction Anxiety Reducer",
-      murmur: "Users panic at the moment of signing because gas fees and outcomes feel unpredictable. Wallets show numbers without context or reassurance.",
-      quest: "Build a browser extension that provides contextual transaction previews—gas fee comparisons, risk scores, and what will actually change on-chain.",
-      value: "Reduces fear and abandoned transactions. Builds confidence through clarity.",
+      title: "Why Can't I See What This Contract Actually Does?",
+      murmur: "Smart contracts get verified on explorers, but reading raw Solidity doesn't tell you what the contract actually does in practice.",
+      quest: "Build a tool that takes a verified contract address and generates a plain-English explanation of its functions, events, and what it's designed to do.",
+      worth: [
+        "No blockchain expertise needed to use it",
+        "Makes contract exploration accessible",
+        "Great portfolio piece for AI + web3"
+      ],
       difficulty: "Medium",
-      sources: [{ type: "github", name: "Wallet UX Issues", url: "https://github.com" }]
+      sources: [
+        { type: "github", name: "GitHub", url: "https://github.com/search?q=smart+contract+confusing" },
+        { type: "twitter", name: "X", url: "https://x.com/search?q=what%20does%20this%20contract%20do" }
+      ]
     },
     {
-      title: "Cross-Chain Event Aggregator",
-      murmur: "Developers manually check multiple block explorers to track events across chains. There's no unified timeline for multi-chain applications.",
-      quest: "Create a developer dashboard that aggregates events from multiple chains into a single timeline, with filtering, search, and webhook support.",
-      value: "Saves hours of manual block explorer checking. Makes multi-chain debugging bearable.",
-      difficulty: "Hard",
-      sources: [{ type: "github", name: "Dev Tools", url: "https://github.com" }]
+      title: "Where Did All My Testnet Tokens Go?",
+      murmur: "Developers constantly run out of testnet tokens and waste time hunting for working faucets across different chains.",
+      quest: "Create a unified testnet faucet finder that shows which faucets are live, their rate limits, and lets you request tokens from multiple chains in one place.",
+      worth: [
+        "Solves a daily developer annoyance",
+        "Simple UI, immediate value",
+        "Easy to build and ship fast"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "GitHub", url: "https://github.com/search?q=testnet+faucet" },
+        { type: "rss", name: "Hackathons", url: "https://devpost.com" }
+      ]
     },
     {
-      title: "Smart Contract Changelog Generator",
-      murmur: "Protocol upgrades happen without clear communication of what changed. Users and developers discover breaking changes through failures.",
-      quest: "Build a tool that diffs smart contract bytecode and generates human-readable changelogs highlighting new functions, removed features, and parameter changes.",
-      value: "Prevents surprise failures. Creates transparency in upgrade processes.",
-      difficulty: "Hard",
-      sources: [{ type: "github", name: "Protocol Governance", url: "https://github.com" }]
+      title: "Why Is This Transaction Going to Cost Me $50?",
+      murmur: "Users approve transactions without understanding gas fees because wallets show numbers without context or comparison.",
+      quest: "Build a browser extension that translates gas fees into relatable comparisons—cup of coffee, streaming subscription, or your average transaction cost.",
+      worth: [
+        "Reduces transaction anxiety instantly",
+        "Makes gas fees actually understandable",
+        "Light frontend work, big UX impact"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "GitHub", url: "https://github.com/search?q=gas+fee+confusing" },
+        { type: "twitter", name: "X", url: "https://x.com/search?q=high%20gas%20fees" }
+      ]
     },
     {
-      title: "Testnet Fund Recycler",
-      murmur: "Testnet tokens sit idle in abandoned wallets while new developers struggle to get enough for testing. Faucets rate-limit aggressively.",
-      quest: "Create a service that detects inactive testnet wallets and automatically recycles their tokens back to a community faucet with higher limits.",
-      value: "Improves testnet token availability. Reduces friction for new developers.",
+      title: "Did My Transaction Actually Go Through?",
+      murmur: "Pending transactions create anxiety because you can't tell if something's stuck, failed, or just slow.",
+      quest: "Create a transaction tracker that shows clear status updates, estimated wait times, and what to do if something's actually stuck.",
+      worth: [
+        "Turns confusion into clarity",
+        "Useful for every web3 user",
+        "Simple data fetching + good UX"
+      ],
       difficulty: "Medium",
-      sources: [{ type: "github", name: "Developer Experience", url: "https://github.com" }]
+      sources: [
+        { type: "github", name: "GitHub", url: "https://github.com/search?q=pending+transaction" },
+        { type: "twitter", name: "X", url: "https://x.com/search?q=transaction%20stuck" }
+      ]
     },
     {
-      title: "DAO Proposal Impact Simulator",
-      murmur: "Voters approve proposals without understanding their actual impact on treasury, permissions, or protocol behavior.",
-      quest: "Build a simulation tool that runs DAO proposals against a fork of current state and shows predicted outcomes—fund flows, permission changes, risk analysis.",
-      value: "Enables informed voting. Prevents catastrophic governance mistakes.",
+      title: "Why Can't I Find Past Governance Votes?",
+      murmur: "DAO voting history gets buried in forums and Discord threads, making it impossible to see how delegates actually voted on proposals.",
+      quest: "Build a governance vote tracker that shows delegate voting history in one place—who voted, how they voted, participation rates.",
+      worth: [
+        "Makes DAOs more transparent",
+        "Helps voters hold delegates accountable",
+        "Interesting data visualization challenge"
+      ],
       difficulty: "Hard",
-      sources: [{ type: "rss", name: "Governance Discussion", url: "https://github.com" }]
+      sources: [
+        { type: "github", name: "GitHub", url: "https://github.com/search?q=dao+governance" },
+        { type: "rss", name: "Hackathons", url: "https://devpost.com" }
+      ]
     }
   ];
 
-  // Randomize and return 5
-  return fallbacks
-    .sort(() => Math.random() - 0.5)
-    .slice(0, MAX_IDEAS);
+  return ideas.sort(() => Math.random() - 0.5).slice(0, MAX_IDEAS);
 }
-
-/* ---------- handler ---------- */
 
 export default async function handler(req) {
   const store = getStore({
@@ -172,7 +212,6 @@ export default async function handler(req) {
 
   let signals = [];
 
-  // Gather signals from all sources
   try {
     const results = await Promise.allSettled([
       getGitHubSignals(),
@@ -190,10 +229,8 @@ export default async function handler(req) {
 
   console.log(`Collected ${signals.length} signals`);
 
-  // Generate ideas using AI based on signals
   const ideas = await generateIdeasWithAI(signals);
 
-  // Ensure we have exactly MAX_IDEAS
   while (ideas.length < MAX_IDEAS) {
     ideas.push(generateFallbackIdeas()[0]);
   }
@@ -205,7 +242,6 @@ export default async function handler(req) {
     ideas: ideas.slice(0, MAX_IDEAS)
   };
 
-  // Save to blob storage
   await store.set("latest", JSON.stringify(payload));
   await store.set(`daily-${today}`, JSON.stringify(payload));
 
