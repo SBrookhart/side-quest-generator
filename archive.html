@@ -42,31 +42,36 @@
     header {
       max-width: 1100px;
       margin: auto;
-      padding: 4rem 2rem 2.5rem;
+      padding: 4rem 2rem 2rem;
     }
 
     h1 {
       font-family: "Space Grotesk", sans-serif;
-      font-size: 3rem;
-      margin-bottom: 0.4rem;
+      font-size: 3.2rem;
+      margin-bottom: 0.3rem;
       letter-spacing: -0.02em;
     }
 
     .motto {
       font-family: "Space Grotesk", sans-serif;
-      font-size: 0.9rem;
-      letter-spacing: 0.14em;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 1.5rem;
     }
 
+    header p {
+      max-width: 820px;
+      line-height: 1.7;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
     .nav {
       display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-top: 1.5rem;
+      gap: 0.8rem;
+      margin-top: 1.8rem;
     }
 
     .nav a {
@@ -76,53 +81,11 @@
       border-radius: 10px;
       padding: 0.45rem 0.85rem;
       font-size: 0.85rem;
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
       text-decoration: none;
     }
-
-    .nav a:hover {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .legend {
-      display: flex;
-      gap: 1rem;
-      font-size: 0.75rem;
-      color: var(--muted);
-      align-items: center;
-      flex-wrap: wrap;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
-      margin-top: 1rem;
-    }
-
-    .legend-label {
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #6b7280;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .legend-pill {
-      padding: 0.2rem 0.6rem;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.65rem;
-      color: #020617;
-    }
-
-    .legend-pill.easy { background: var(--easy); }
-    .legend-pill.medium { background: var(--medium); }
-    .legend-pill.hard { background: var(--hard); }
 
     main {
       max-width: 1100px;
@@ -131,17 +94,19 @@
     }
 
     .day {
-      margin-top: 3.5rem;
+      margin-bottom: 3rem;
     }
 
     .day h2 {
       font-family: "Space Grotesk", sans-serif;
-      font-size: 1.4rem;
-      margin-bottom: 2rem;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
     }
 
     .quest {
-      background: rgba(255,255,255,0.035);
+      background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 2rem;
@@ -150,18 +115,28 @@
 
     .quest h3 {
       font-family: "Space Grotesk", sans-serif;
-      margin: 0.4rem 0 1rem;
+      margin: 0.3rem 0 1rem;
+      font-size: 1.4rem;
     }
 
     .subhead {
       font-size: 0.75rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 1.4rem;
+      color: #6b7280;
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      margin-top: 1.1rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-top: 1.4rem;
+      flex-wrap: wrap;
     }
 
     .difficulty {
@@ -170,38 +145,103 @@
       padding: 0.25rem 0.7rem;
       border-radius: 999px;
       color: #020617;
-      margin-top: 1.5rem;
-      display: inline-block;
     }
 
     .easy { background: var(--easy); }
     .medium { background: var(--medium); }
     .hard { background: var(--hard); }
 
-    .sources {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-top: 0.5rem;
-    }
-
-    .sources a {
-      color: var(--muted);
-      text-decoration: none;
+    .build-button {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      font-size: 0.75rem;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      font-weight: 500;
+      margin-left: auto;
     }
 
-    .sources a:hover {
-      color: var(--accent);
+    .build-button:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .copy-button {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    .copy-button:hover {
+      background: rgba(255,255,255,0.05);
+      transform: translateY(-1px);
+    }
+
+    .prompt-content {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      line-height: 1.7;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .prompt-content h2,
+    .prompt-content h3,
+    .prompt-content h4 {
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text);
+    }
+
+    .prompt-content ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .prompt-content code {
+      font-family: 'Courier New', monospace;
+    }
+
+    .loader {
+      border: 3px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     footer {
       border-top: 1px solid var(--border);
       padding: 2rem;
-      margin-top: 4rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
     }
 
     .footer-inner {
@@ -209,15 +249,122 @@
       margin: auto;
       display: flex;
       justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 1rem;
     }
 
-    @media (max-width: 768px) {
-      .legend {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal-content {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-content h2 {
+      font-family: "Space Grotesk", sans-serif;
+      margin-top: 0;
+    }
+
+    .close-x {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .close-x:hover {
+      color: var(--text);
+    }
+
+    .legend-section {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .legend-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #6b7280;
+      margin-right: 0.25rem;
+    }
+
+    .legend-pill {
+      position: relative;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-weight: 600;
+      color: #020617;
+      cursor: default;
+    }
+
+    .legend-pill.easy { background: var(--easy); }
+    .legend-pill.medium { background: var(--medium); }
+    .legend-pill.hard { background: var(--hard); }
+
+    .legend-pill::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: -2.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 20;
+    }
+
+    .legend-pill:hover::after {
+      opacity: 1;
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 2.2rem; }
+      .motto { font-size: 0.8rem; }
+      .modal-content { padding: 2rem 1.5rem; }
+      .legend-section { 
+        flex-direction: column; 
+        align-items: flex-start; 
       }
     }
   </style>
@@ -226,32 +373,31 @@
 <body>
 
 <header>
-  <h1>Archive</h1>
-  <div class="motto">Previous Daily Drops</div>
+  <h1>Tech Murmurs</h1>
+  <div class="motto">Archive</div>
+
+  <p>
+    A historical record of side-quest ideas synthesized from builder signals. 
+    Each day represents a snapshot of unfinished ideas, creative experiments, 
+    and playful tools waiting for someone to care enough to ship them.
+  </p>
 
   <div class="nav">
-    <a href="index.html"><i data-lucide="arrow-left"></i> Back to Today</a>
+    <a href="index.html"><i data-lucide="home"></i> Home</a>
   </div>
 
-  <div class="legend">
-    <span class="legend-label">Legend</span>
-    <span class="legend-item">
-      <span class="legend-pill easy">Easy</span>
-      <span>Quick build, minimal setup</span>
-    </span>
-    <span class="legend-item">
-      <span class="legend-pill medium">Medium</span>
-      <span>Some glue code, light APIs</span>
-    </span>
-    <span class="legend-item">
-      <span class="legend-pill hard">Hard</span>
-      <span>Deep rabbit hole, research-heavy</span>
-    </span>
+  <div class="legend-section">
+    <div class="legend">
+      <span class="legend-label">Legend</span>
+      <span class="legend-pill easy" data-tooltip="Quick build, low lift, vibe-coder friendly">Easy</span>
+      <span class="legend-pill medium" data-tooltip="Scoped side project, some moving parts">Medium</span>
+      <span class="legend-pill hard" data-tooltip="Deep rabbit hole, exploratory or research-heavy">Hard</span>
+    </div>
   </div>
 </header>
 
-<main id="archive">
-  <p style="color:#9ca3af">Loading archive…</p>
+<main>
+  <div id="archive"></div>
 </main>
 
 <footer>
@@ -261,7 +407,18 @@
   </div>
 </footer>
 
+<!-- BUILD PROMPT MODAL -->
+<div class="modal" id="buildModal" style="display: none;">
+  <div class="modal-content">
+    <div class="close-x" onclick="closeBuildModal()">✕</div>
+    <h2 style="margin-top: 0;">🚀 Let's Build This!</h2>
+    <div id="modalPromptContent"></div>
+  </div>
+</div>
+
 <script>
+  let allIdeas = [];
+
   async function loadArchive() {
     const container = document.getElementById("archive");
     container.innerHTML = "";
@@ -269,7 +426,12 @@
     let data = null;
 
     try {
-      const res = await fetch(`/.netlify/functions/archive?t=${Date.now()}`);
+      const res = await fetch(`/.netlify/functions/archive?v=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
       if (res.ok) {
         data = await res.json();
       }
@@ -281,13 +443,16 @@
       return;
     }
 
+    let globalIndex = 0;
+    allIdeas = [];
+
     Object.entries(data)
       .sort((a, b) => b[0].localeCompare(a[0]))
       .forEach(([date, ideas]) => {
         const day = document.createElement("div");
         day.className = "day";
 
-        const label = new Date(date).toLocaleDateString("en-US", {
+        const label = new Date(date + 'T00:00:00').toLocaleDateString("en-US", {
           month: "long",
           day: "numeric",
           year: "numeric"
@@ -295,44 +460,167 @@
 
         day.innerHTML =
           `<h2>${label}</h2>` +
-          ideas.map(q => `
-            <div class="quest">
-              <h3>${q.title}</h3>
+          ideas.map((q, localIdx) => {
+            const idx = globalIndex++;
+            allIdeas.push(q);
+            
+            return `
+          <div class="quest">
+            <h3>${q.title}</h3>
 
-              <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-              <div>${q.murmur}</div>
+            <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
+            <div>${q.murmur}</div>
 
-              <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-              <div>${q.quest}</div>
+            <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
+            <div>${q.quest}</div>
 
-              <div class="subhead"><i data-lucide="sparkles"></i> For What It's Worth → Why it's worth your energy</div>
-              <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
-                ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
-              </ul>
+            <div class="subhead"><i data-lucide="sparkles"></i> For What It's Worth → Why it's worth your energy</div>
+            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
+              ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
+            </ul>
 
-              <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-              <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
-                ${(q.sources || []).map(s => {
-                  const iconType = s.type === 'github' ? 'github' : 
-                                  s.type === 'x' ? 'twitter' : 
-                                  s.type === 'twitter' ? 'twitter' : 'rss';
-                  return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
-                    <i data-lucide="${iconType}" style="width: 14px; height: 14px;"></i>
-                    <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
-                      ${s.name}
-                    </a>
-                  </li>`;
-                }).join("")}
-              </ul>
+            <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
+            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
+              ${(q.sources || []).map(s => {
+                const iconType = s.type === 'github' ? 'github' : 
+                                s.type === 'x' ? 'twitter' : 
+                                s.type === 'twitter' ? 'twitter' : 'rss';
+                return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
+                  <i data-lucide="${iconType}" style="width: 14px; height: 14px;"></i>
+                  <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
+                    ${s.name}
+                  </a>
+                </li>`;
+              }).join("")}
+            </ul>
 
+            <div class="meta">
               <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+              <button class="build-button" onclick="openBuildModal(${idx})">
+                <i data-lucide="sparkles"></i> Let's Build!
+              </button>
             </div>
-          `).join("");
+          </div>
+        `;
+          }).join("");
 
         container.appendChild(day);
       });
 
     lucide.createIcons();
+  }
+
+  async function openBuildModal(ideaIndex) {
+    const ideaData = allIdeas[ideaIndex];
+    
+    const modal = document.getElementById('buildModal');
+    const modalContent = document.getElementById('modalPromptContent');
+    
+    modal.style.display = 'flex';
+    modalContent.innerHTML = '<div style="text-align: center; padding: 3rem;"><div class="loader"></div><p style="margin-top: 1rem; color: var(--muted);">Generating your build prompt...</p></div>';
+    
+    try {
+      const response = await fetch('/.netlify/functions/generatePrompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ideaData)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error('Failed to generate prompt');
+      }
+      
+      const data = await response.json();
+      
+      // Convert markdown to HTML for better display
+      const htmlContent = data.prompt
+        .replace(/^# (.*$)/gim, '<h2 style="margin-top: 2rem; margin-bottom: 1rem;">$1</h2>')
+        .replace(/^## (.*$)/gim, '<h3 style="margin-top: 1.5rem; margin-bottom: 0.8rem;">$1</h3>')
+        .replace(/^### (.*$)/gim, '<h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">$1</h4>')
+        .replace(/^\* (.*$)/gim, '<li style="margin-bottom: 0.5rem;">$1</li>')
+        .replace(/^- (.*$)/gim, '<li style="margin-bottom: 0.5rem;">$1</li>')
+        .replace(/^(\d+)\. (.*$)/gim, '<li style="margin-bottom: 0.5rem;">$2</li>')
+        .replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9em;">$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\n/g, '</p><p style="margin-bottom: 1rem;">')
+        .replace(/^(?!<[h|l|p])/gim, '<p style="margin-bottom: 1rem;">');
+      
+      modalContent.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+          <button onclick="copyPrompt()" class="copy-button">
+            <i data-lucide="copy"></i> Copy to Clipboard
+          </button>
+        </div>
+        <div class="prompt-content">
+          ${htmlContent}
+        </div>
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+          <button onclick="copyPrompt()" class="copy-button">
+            <i data-lucide="copy"></i> Copy to Clipboard
+          </button>
+        </div>
+      `;
+      
+      lucide.createIcons();
+      
+    } catch (error) {
+      console.error('Error generating prompt:', error);
+      modalContent.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: var(--muted);">
+          <p>Oops! Something went wrong generating the prompt.</p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">Check the browser console for details.</p>
+          <p style="margin-top: 1rem;">
+            <button onclick="closeBuildModal()" style="padding: 0.5rem 1rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer;">
+              Close
+            </button>
+          </p>
+        </div>
+      `;
+    }
+  }
+
+  function closeBuildModal() {
+    document.getElementById('buildModal').style.display = 'none';
+  }
+
+  async function copyPrompt() {
+    const promptContent = document.querySelector('.prompt-content');
+    const textContent = promptContent.innerText;
+    
+    try {
+      await navigator.clipboard.writeText(textContent);
+      
+      // Show feedback
+      const copyButtons = document.querySelectorAll('.copy-button');
+      copyButtons.forEach(btn => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check"></i> Copied!';
+        btn.style.background = 'rgba(74, 222, 128, 0.2)';
+        btn.style.borderColor = 'rgba(74, 222, 128, 0.5)';
+        
+        lucide.createIcons();
+        
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.style.background = '';
+          btn.style.borderColor = '';
+          lucide.createIcons();
+        }, 2000);
+      });
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      alert('Failed to copy to clipboard. Please select and copy manually.');
+    }
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById('buildModal');
+    if (event.target === modal) {
+      closeBuildModal();
+    }
   }
 
   loadArchive();
