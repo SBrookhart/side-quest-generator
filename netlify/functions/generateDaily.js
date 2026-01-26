@@ -1,11 +1,11 @@
 // netlify/functions/generateDaily.js
 
-import { getStore } from "@netlify/blobs";
+const { getStore } = require("@netlify/blobs");
 
-import { getGitHubSignals } from "./github.js";
-import { getHackathonSignals } from "./hackathons.js";
-import { getTwitterSignals } from "./twitter.js";
-import { getRoadmapSignals } from "./roadmaps.js";
+const { getGitHubSignals } = require("./github.js");
+const { getHackathonSignals } = require("./hackathons.js");
+const { getTwitterSignals } = require("./twitter.js");
+const { getRoadmapSignals } = require("./roadmaps.js");
 
 const MAX_IDEAS = 5;
 const SIGNAL_WINDOW_DAYS = 14;
@@ -22,62 +22,41 @@ function withinWindow(signal) {
   return new Date(signal.date) >= daysAgo(SIGNAL_WINDOW_DAYS);
 }
 
-function safeJson(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
+function json(body, statusCode = 200) {
+  return {
+    statusCode,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  };
 }
 
-/* ---------------- AI PROMPT ---------------- */
+/* ---------------- AI prompt ---------------- */
 
 const SYSTEM_PROMPT = `
 You are the editor of Tech Murmurs.
 
-Tech Murmurs publishes daily “side quests” for indie builders and vibe-coders:
-small, playful, buildable projects inspired by real but unfinished needs.
+Tech Murmurs publishes daily side-quests for indie builders and vibe-coders.
+Each idea should feel small, clever, and buildable by one person.
 
-Your job is NOT to summarize inputs.
-Your job is to extract latent opportunity.
-
-You think like:
-- an indie hacker
-- a curious prototyper
-- someone who enjoys clever tools and creative experiments
-
-Avoid generic language.
-Avoid startup clichés.
-Avoid "there is an opportunity" phrasing.
-Every idea should feel like something a single builder could ship in a week or two.
+Do NOT summarize inputs.
+Extract latent opportunity.
+Avoid generic startup language.
+Avoid repeating ideas.
 `;
 
 function buildUserPrompt(signals) {
-  const formattedSignals = signals.map(s => `- (${s.type}) ${s.text}`).join("\n");
+  const formatted = signals
+    .map(s => `- (${s.type}) ${s.text}`)
+    .join("\n");
 
   return `
-Below is a set of real-world signals collected from GitHub issues,
-hackathons, protocol updates, and public developer discourse.
+Below are real signals from developers, protocols, and hackathons.
 
-Each signal represents friction, repetition, or unfinished work.
+${formatted}
 
-Signals:
-${formattedSignals}
+Generate exactly 5 DISTINCT side quests.
 
-Your task:
-
-1. Identify exactly 5 DISTINCT opportunity patterns across these signals.
-   - Each pattern must be meaningfully different.
-   - Do NOT repeat the same type of idea twice.
-
-2. For each pattern, write ONE side quest using the format below.
-
-Rules:
-- Be concrete and specific.
-- Do not restate the signals.
-- Do not use generic phrases like “unclaimed opportunity”.
-- Prefer playful, curious, builder-friendly language.
-
-Format (repeat exactly 5 times):
+Format exactly:
 
 Title:
 Murmur:
@@ -89,26 +68,26 @@ Difficulty:
 
 /* ---------------- handler ---------------- */
 
-export async function handler(req) {
+exports.handler = async function handler(event) {
   const store = getStore({
     name: "tech-murmurs",
     siteID: process.env.NETLIFY_SITE_ID,
     token: process.env.NETLIFY_AUTH_TOKEN
   });
 
-  const force = new URL(req.url).searchParams.get("force") === "true";
+  const force =
+    new URL(event.rawUrl).searchParams.get("force") === "true";
 
-  /* ---------- reuse snapshot unless forced ---------- */
+  // reuse cached snapshot unless forced
   if (!force) {
     const cached = await store.get("latest");
     if (cached) {
-      return safeJson(JSON.parse(cached));
+      return json(JSON.parse(cached));
     }
   }
 
-  /* ---------- ingest signals ---------- */
+  // ingest signals
   let signals = [];
-
   try {
     const results = await Promise.allSettled([
       getGitHubSignals(),
@@ -123,21 +102,17 @@ export async function handler(req) {
       }
     });
   } catch (err) {
-    console.error("Signal ingestion error:", err);
+    console.error("Signal ingestion failed:", err);
   }
 
   signals = signals.filter(withinWindow);
 
   if (!signals.length) {
-    return safeJson({
-      mode: "sample",
-      ideas: []
-    });
+    return json({ mode: "sample", ideas: [] });
   }
 
-  /* ---------- call OpenAI ---------- */
+  // call OpenAI
   let aiText;
-
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -155,20 +130,17 @@ export async function handler(req) {
       })
     });
 
-    const json = await res.json();
-    aiText = json.choices?.[0]?.message?.content;
+    const jsonRes = await res.json();
+    aiText = jsonRes.choices?.[0]?.message?.content;
   } catch (err) {
     console.error("OpenAI error:", err);
   }
 
   if (!aiText) {
-    return safeJson({
-      mode: "sample",
-      ideas: []
-    });
+    return json({ mode: "sample", ideas: [] });
   }
 
-  /* ---------- parse AI output ---------- */
+  // parse AI output
   const ideas = [];
   const blocks = aiText.split(/\n(?=Title:)/);
 
@@ -201,20 +173,14 @@ export async function handler(req) {
 
   if (ideas.length !== MAX_IDEAS) {
     console.warn("AI output rejected — wrong idea count");
-    return safeJson({ mode: "sample", ideas: [] });
+    return json({ mode: "sample", ideas: [] });
   }
 
-  /* ---------- persist ---------- */
   const today = new Date().toISOString().slice(0, 10);
-
-  const payload = {
-    mode: "live",
-    date: today,
-    ideas
-  };
+  const payload = { mode: "live", date: today, ideas };
 
   await store.set("latest", JSON.stringify(payload));
   await store.set(`daily-${today}`, JSON.stringify(payload));
 
-  return safeJson(payload);
-}
+  return json(payload);
+};
