@@ -24,14 +24,15 @@ export const handler = async (event) => {
     };
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
   
-  if (!apiKey) {
-    console.error('OPENAI_API_KEY not configured');
+  if (!geminiKey && !openaiKey) {
+    console.error('No API keys configured');
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to environment variables.' })
+      body: JSON.stringify({ error: 'No API keys configured. Please add GEMINI_API_KEY or OPENAI_API_KEY to environment variables.' })
     };
   }
 
@@ -107,39 +108,107 @@ Generate a comprehensive prompt that someone can copy/paste into Claude, ChatGPT
 
 Format as clean markdown that's ready to copy/paste.`;
 
-    console.log('Calling OpenAI API...');
+    let prompt = '';
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: 0.7,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ]
-      })
-    });
+    // Try Gemini first (free tier)
+    if (geminiKey) {
+      try {
+        console.log('Trying Gemini API...');
+        const geminiResponse = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `${systemPrompt}\n\n${userPrompt}`
+                }]
+              }],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2048
+              }
+            })
+          }
+        );
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API error:', response.status, errorData);
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          error: `OpenAI API error: ${response.status}`,
-          details: errorData 
+        if (geminiResponse.ok) {
+          const geminiData = await geminiResponse.json();
+          prompt = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          console.log('Gemini API succeeded');
+        } else {
+          throw new Error(`Gemini API error: ${geminiResponse.status}`);
+        }
+      } catch (geminiError) {
+        console.error('Gemini failed, trying OpenAI fallback:', geminiError);
+        
+        // Fallback to OpenAI if available
+        if (openaiKey) {
+          const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${openaiKey}`
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              temperature: 0.7,
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+              ]
+            })
+          });
+
+          if (!openaiResponse.ok) {
+            const errorData = await openaiResponse.text();
+            console.error('OpenAI API error:', openaiResponse.status, errorData);
+            throw new Error(`Both APIs failed. OpenAI: ${openaiResponse.status}`);
+          }
+
+          const openaiData = await openaiResponse.json();
+          prompt = openaiData.choices?.[0]?.message?.content || '';
+          console.log('OpenAI fallback succeeded');
+        } else {
+          throw geminiError;
+        }
+      }
+    } else if (openaiKey) {
+      // Only OpenAI available
+      console.log('Using OpenAI API...');
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          temperature: 0.7,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ]
         })
-      };
-    }
+      });
 
-    const data = await response.json();
-    const prompt = data.choices?.[0]?.message?.content || '';
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('OpenAI API error:', response.status, errorData);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ 
+            error: `OpenAI API error: ${response.status}`,
+            details: errorData 
+          })
+        };
+      }
+
+      const data = await response.json();
+      prompt = data.choices?.[0]?.message?.content || '';
+    }
 
     if (!prompt) {
       return {
