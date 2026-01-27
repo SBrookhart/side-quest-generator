@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -169,6 +168,54 @@ function getFallbackIdeas() {
         "Makes commit history actually fun to look at",
         "Could reveal interesting patterns about your coding sessions",
         "Great conversation starter for team retrospectives"
+      ],
+      difficulty: "Easy",
+      sources: []
+    },
+    {
+      title: "Can I Turn My Browser Tabs Into a Garden?",
+      murmur: "Tab hoarding is real, and closing tabs feels like throwing away ideas. What if instead of managing tabs, you could grow them into something beautiful?",
+      quest: "Build a browser extension that visualizes open tabs as plants in a garden. The longer a tab stays open, the more it grows. Close tabs to 'harvest' them into a reading list.",
+      worth: [
+        "Gamifies tab management in a delightful way",
+        "Encourages mindful browsing without guilt",
+        "Could evolve into a productivity/focus tool"
+      ],
+      difficulty: "Medium",
+      sources: []
+    },
+    {
+      title: "What If Code Reviews Were Voice Memos?",
+      murmur: "Text-based code reviews can feel cold and slow. Sometimes you just want to talk through your thoughts while looking at the code.",
+      quest: "Build a tool that lets developers record voice memos while reviewing code, with timestamps that link directly to specific lines. Reviewees can listen and respond async.",
+      worth: [
+        "More human and nuanced than text comments",
+        "Faster for complex explanations",
+        "Could reduce back-and-forth in PRs"
+      ],
+      difficulty: "Hard",
+      sources: []
+    },
+    {
+      title: "Can My README Predict Its Own Stars?",
+      murmur: "Some READMEs are magnetic, others get ignored. What patterns actually drive engagement?",
+      quest: "Train a simple ML model on thousands of GitHub READMEs to predict star count based on structure, writing style, and content. Build a tool that scores your README and suggests improvements.",
+      worth: [
+        "Practical application of ML on real data",
+        "Helps builders write better project descriptions",
+        "Could surface surprising patterns in developer marketing"
+      ],
+      difficulty: "Medium",
+      sources: []
+    },
+    {
+      title: "What If My Portfolio Was a Choose-Your-Own-Adventure?",
+      murmur: "Traditional portfolios are boring linear scrolls. What if visitors could explore your work like a game?",
+      quest: "Build an interactive portfolio where each project is a 'room' visitors can enter. Choices lead to different paths, hidden easter eggs, and a unique narrative experience.",
+      worth: [
+        "Memorable and shareable",
+        "Shows creativity and technical skills simultaneously",
+        "Could become a template others want to use"
       ],
       difficulty: "Easy",
       sources: []
