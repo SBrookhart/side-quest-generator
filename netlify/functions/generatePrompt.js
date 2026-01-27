@@ -42,131 +42,145 @@ export const handler = async (event) => {
 
     const difficultyGuidance = {
       'Easy': {
-        steps: '5-7 clear, beginner-friendly steps with explanations',
-        code: '2-3 complete code examples with comments'
+        steps: '5-7 clear, beginner-friendly steps',
+        code: '2-3 complete code examples'
       },
       'Medium': {
         steps: '4-6 structured steps',
-        code: '1-2 key code patterns or examples'
+        code: '1-2 key code patterns'
       },
       'Hard': {
         steps: '3-5 architectural steps',
-        code: '1 architectural code example showing system design'
+        code: '1 architectural example'
       }
     };
 
     const guidance = difficultyGuidance[difficulty] || difficultyGuidance['Medium'];
     const worthList = Array.isArray(worth) ? worth.join(', ') : (worth || 'Building something cool');
 
-    const promptText = `You are generating a detailed build prompt that someone will copy/paste into an AI assistant to help them build their own project.
+    const promptText = `Generate a detailed build prompt in markdown. Output ONLY markdown - no preamble, no postamble.
 
-Output ONLY markdown. Do NOT include any conversational introduction, preamble, or commentary. Start directly with "## The Concept" and end with the Tips section.
+Use FIRST PERSON language (I, my, me) throughout.
 
-IMPORTANT: Use first-person language throughout. This is a personal project the builder wants to create. Say "I'm building" not "you're building". Say "my project" not "your project".
+Project: ${title}
+Context: ${murmur}
+Goal: ${quest}
+Value: ${worthList}
+Level: ${difficulty}
 
-Project Details:
-- Title: ${title}
-- Why it exists: ${murmur}
-- What to build: ${quest}
-- Why it's worth it: ${worthList}
-- Difficulty: ${difficulty}
-
-Generate a comprehensive, detailed build prompt with these sections:
+Structure:
 
 ## The Concept
-Write 2-3 sentences in FIRST PERSON explaining what I'm building and why it's cool. Use "I", "my", "me" - NOT "you" or "your".
+2-3 sentences in first person about what I'm building
 
 ## What I'm Building
-List 3-5 core features as bullet points. Be specific about functionality.
+3-5 core features as bullets
 
 ## User Flow
-Describe 3-4 steps showing exactly how someone would use this, from start to finish.
+3-4 steps of how someone uses this
 
 ## Tech Stack Suggestions
-Provide 2-3 concrete technology options for:
-- Frontend (if applicable)
-- Backend (if applicable)  
-- APIs/Tools/Libraries
-Include a note that I can swap these for my preferred stack.
+2-3 options for frontend/backend/tools (note I can swap these)
 
 ## Implementation Steps
-Provide ${guidance.steps} to build this project from scratch to working MVP.
+${guidance.steps}
 
 ## Starter Code Snippets
-Include ${guidance.code}. Make them practical and copy-paste ready.
+${guidance.code}
 
 ## Bonus Ideas
-List 2-3 ways to extend or enhance the project once the core is working.
+2-3 extension ideas
 
 ## Tips
-Provide ${difficulty === 'Easy' ? 'encouraging advice for beginners, including common pitfalls to avoid' : difficulty === 'Medium' ? 'practical advice on shipping and deployment' : 'architectural considerations and scaling advice'}.
+${difficulty === 'Easy' ? 'Beginner-friendly advice' : difficulty === 'Medium' ? 'Shipping advice' : 'Architecture tips'}
 
-Remember: 
-1. Output ONLY the markdown sections above. No introduction or commentary.
-2. Use FIRST PERSON language (I, my, me) throughout - especially in The Concept section.
-3. Start directly with ## The Concept.`;
+Output ONLY markdown starting with ## The Concept`;
 
     console.log('Calling Gemini API...');
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: promptText }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 3000
-        }
-      })
-    });
+    // Add timeout to the fetch
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 40000); // 40 second server timeout
 
-    console.log('Response status:', response.status);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: promptText }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 4096,  // Increased from 3000
+            candidateCount: 1
+          }
+        }),
+        signal: controller.signal
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini error:', errorText);
+      clearTimeout(timeoutId);
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Gemini error:', errorText);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ 
+            error: `Gemini API error: ${response.status}`,
+            details: errorText
+          })
+        };
+      }
+
+      const data = await response.json();
+      let generatedPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      if (!generatedPrompt) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ 
+            error: 'No prompt in response',
+            details: JSON.stringify(data)
+          })
+        };
+      }
+
+      // Clean up markdown fences
+      generatedPrompt = generatedPrompt
+        .replace(/^```markdown\n/i, '')
+        .replace(/^```\n/i, '')
+        .replace(/\n```$/i, '')
+        .trim();
+
+      console.log('Prompt generated successfully, length:', generatedPrompt.length);
+
       return {
-        statusCode: 500,
+        statusCode: 200,
         headers,
-        body: JSON.stringify({ 
-          error: `Gemini API error: ${response.status}`,
-          details: errorText
-        })
+        body: JSON.stringify({ prompt: generatedPrompt })
       };
+
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('Request timeout');
+        return {
+          statusCode: 504,
+          headers,
+          body: JSON.stringify({ 
+            error: 'Request timeout',
+            details: 'The AI took too long to respond. Please try again.'
+          })
+        };
+      }
+      throw fetchError;
     }
-
-    const data = await response.json();
-    let generatedPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    if (!generatedPrompt) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          error: 'No prompt in response',
-          details: JSON.stringify(data)
-        })
-      };
-    }
-
-    // Clean up markdown code fences if present
-    generatedPrompt = generatedPrompt
-      .replace(/^```markdown\n/i, '')
-      .replace(/^```\n/i, '')
-      .replace(/\n```$/i, '')
-      .trim();
-
-    console.log('Prompt generated successfully');
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ prompt: generatedPrompt })
-    };
 
   } catch (error) {
     console.error('Function error:', error);
