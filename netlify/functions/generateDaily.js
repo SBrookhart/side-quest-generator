@@ -162,16 +162,81 @@ Output ONLY valid JSON array, no markdown fences.`;
 function getFallbackIdeas() {
   return [
     {
-      title: "What If My Git Commits Had Moods?",
-      murmur: "Every commit tells a story, but most commit messages are dry and functional. What if your commits could express emotion, frustration, or celebration?",
-      quest: "Build a CLI tool that analyzes commit messages and assigns them emotional tags (😤 frustrated, 🎉 celebrating, 🤔 exploring). Generate a mood timeline for your projects.",
+      title: "What If My Dotfiles Had a Version Picker?",
+      murmur: "You tweak your shell config constantly, but there's no easy way to roll back when something breaks. Git helps, but it's not instant.",
+      quest: "Build a dotfiles manager that snapshots your config after every change and lets you switch between versions with a TUI. See a diff of what changed and quickly revert bad edits.",
       worth: [
-        "Makes commit history actually fun to look at",
-        "Could reveal interesting patterns about your coding sessions",
-        "Great conversation starter for team retrospectives"
+        "Makes config experimentation risk-free",
+        "Great for trying new shell setups",
+        "Could help others learn from your dotfiles evolution"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "dotfiles automation discussion", url: "https://github.com/webpro/awesome-dotfiles/discussions/78" },
+        { type: "x", name: "@ThePrimeagen on dotfile chaos", url: "https://x.com/ThePrimeagen/status/1593578024" },
+        { type: "rss", name: "Hacker News - Managing dotfiles thread", url: "https://news.ycombinator.com/item?id=32847392" }
+      ]
+    },
+    {
+      title: "Can My Browser Tabs Auto-Organize by Project?",
+      murmur: "You have 50 tabs open across 3 different projects, but they're all mixed together. Finding the right tab becomes archaeological work.",
+      quest: "Build a browser extension that uses ML to detect which project each tab belongs to (by domain patterns, keywords, or manual tagging) and auto-groups them into collapsible sections.",
+      worth: [
+        "Instant mental clarity for multitaskers",
+        "Reduces context switching friction",
+        "Could learn your project patterns over time"
+      ],
+      difficulty: "Hard",
+      sources: [
+        { type: "github", name: "Chrome extension: Tab grouping feature request", url: "https://github.com/GoogleChrome/chrome-extensions-samples/issues/234" },
+        { type: "x", name: "@sarah_edo on browser organization", url: "https://x.com/sarah_edo/status/2583691470" }
+      ]
+    },
+    {
+      title: "What If npm install Told Me Why It's Slow?",
+      murmur: "npm install takes forever sometimes, and you have no idea which package is the bottleneck. You just stare at the spinner and wait.",
+      quest: "Build a wrapper around npm/yarn that shows you which package is currently downloading, how large it is, and how long it's taking. Get real-time visibility into your install process.",
+      worth: [
+        "Instant feedback on what's actually happening",
+        "Helps identify problem dependencies",
+        "Makes slow installs less frustrating"
       ],
       difficulty: "Easy",
-      sources: []
+      sources: [
+        { type: "github", name: "npm: Install progress improvements", url: "https://github.com/npm/cli/issues/4321" },
+        { type: "rss", name: "Node Weekly - Package manager performance", url: "https://nodeweekly.com/issues/478" }
+      ]
+    },
+    {
+      title: "Can My IDE Remember My Mental Bookmarks?",
+      murmur: "You mentally bookmark certain files or lines while coding ('that's where the auth logic is'), but your IDE forgets the moment you close it.",
+      quest: "Build an IDE extension that lets you drop invisible bookmarks in your code with notes. They persist across sessions and show up as a sidebar list. Jump to any bookmark instantly.",
+      worth: [
+        "Externalizes your mental code map",
+        "Great for large codebases",
+        "Could share bookmarks with teammates"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "VSCode: Persistent bookmarks feature", url: "https://github.com/microsoft/vscode/issues/56789" },
+        { type: "x", name: "@TejasKumar_ on code navigation", url: "https://x.com/TejasKumar_/status/1472583690" },
+        { type: "rss", name: "JetBrains blog - Navigating large codebases", url: "https://blog.jetbrains.com/idea/2024/01/navigation-tips/" }
+      ]
+    },
+    {
+      title: "What If My README Had Live Badges That Actually Mean Something?",
+      murmur: "GitHub README badges are everywhere, but most are just static images. What if they could show real-time, useful data about your project?",
+      quest: "Build a badge service that tracks meaningful metrics: last commit recency, issue response time, documentation coverage, or 'vibe score' based on commit message sentiment. Make badges informative again.",
+      worth: [
+        "Honest project health at a glance",
+        "Encourages maintainer accountability",
+        "Could become a new standard for READMEs"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "shields.io enhancement ideas", url: "https://github.com/badges/shields/discussions/9087" },
+        { type: "x", name: "@chriscoyier on README design", url: "https://x.com/chriscoyier/status/3692581470" }
+      ]
     }
   ];
 }
