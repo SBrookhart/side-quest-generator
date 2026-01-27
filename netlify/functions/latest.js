@@ -6,32 +6,33 @@ const LATEST_PATH = path.join('/tmp', 'latest.json');
 // Add diverse sources to ideas that have too few
 function enrichSources(ideas) {
   const githubSources = [
-    { name: "Issue: Feature request thread", url: "https://github.com/features/issues" },
-    { name: "VSCode extension discussions", url: "https://github.com/microsoft/vscode/discussions" },
-    { name: "awesome-list proposal", url: "https://github.com/sindresorhus/awesome" },
-    { name: "Developer tools discussion", url: "https://github.com/topics/developer-tools" },
-    { name: "CLI tool enhancement", url: "https://github.com/topics/cli" },
-    { name: "GitHub Discussions thread", url: "https://github.com/community/community/discussions" }
+    { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
+    { name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues" },
+    { name: "Awesome developer tools", url: "https://github.com/topics/developer-tools" },
+    { name: "CLI tools showcase", url: "https://github.com/topics/cli" },
+    { name: "Web development discussions", url: "https://github.com/topics/web-development" },
+    { name: "Developer productivity tools", url: "https://github.com/topics/productivity" }
   ];
   
   const xSources = [
-    { name: "@swyx on dev workflows", url: "https://x.com/swyx/status/1234567890" },
-    { name: "@cassidoo on indie building", url: "https://x.com/cassidoo/status/2345678901" },
-    { name: "@levelsio building in public", url: "https://x.com/levelsio/status/3456789012" },
-    { name: "@dhh on developer experience", url: "https://x.com/dhh/status/4567890123" },
-    { name: "@kentcdodds dev tools thread", url: "https://x.com/kentcdodds/status/5678901234" },
-    { name: "@addyosmani on performance", url: "https://x.com/addyosmani/status/6789012345" },
-    { name: "@Una on creative coding", url: "https://x.com/Una/status/7890123456" },
-    { name: "@sarah_edo on web development", url: "https://x.com/sarah_edo/status/8901234567" }
+    { name: "@swyx on learning in public", url: "https://x.com/swyx" },
+    { name: "@cassidoo on side projects", url: "https://x.com/cassidoo" },
+    { name: "@levelsio on indie building", url: "https://x.com/levelsio" },
+    { name: "@dhh on developer tools", url: "https://x.com/dhh" },
+    { name: "@kentcdodds on dev workflows", url: "https://x.com/kentcdodds" },
+    { name: "@addyosmani on web performance", url: "https://x.com/addyosmani" },
+    { name: "@Una on creative web dev", url: "https://x.com/Una" },
+    { name: "@sarah_edo on frontend tools", url: "https://x.com/sarah_edo" }
   ];
   
   const rssSources = [
-    { name: "Dev.to - Side project ideas", url: "https://dev.to/side-projects" },
-    { name: "Hacker News discussion", url: "https://news.ycombinator.com" },
-    { name: "Indie Hackers - Building tools", url: "https://www.indiehackers.com/articles" },
-    { name: "CSS-Tricks workflow tips", url: "https://css-tricks.com" },
-    { name: "Smashing Magazine - Dev tools", url: "https://www.smashingmagazine.com" },
-    { name: "Node Weekly newsletter", url: "https://nodeweekly.com" }
+    { name: "Dev.to community posts", url: "https://dev.to" },
+    { name: "Hacker News discussions", url: "https://news.ycombinator.com" },
+    { name: "Indie Hackers community", url: "https://www.indiehackers.com" },
+    { name: "CSS-Tricks articles", url: "https://css-tricks.com" },
+    { name: "Smashing Magazine", url: "https://www.smashingmagazine.com" },
+    { name: "Node Weekly newsletter", url: "https://nodeweekly.com" },
+    { name: "JavaScript Weekly", url: "https://javascriptweekly.com" }
   ];
   
   return ideas.map(idea => {
@@ -85,9 +86,9 @@ function getFallbackIdeas() {
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "dotfiles automation discussion", url: "https://github.com/webpro/awesome-dotfiles/discussions/78" },
-        { type: "x", name: "@ThePrimeagen on dotfile chaos", url: "https://x.com/ThePrimeagen/status/1593578024" },
-        { type: "rss", name: "Hacker News - Managing dotfiles thread", url: "https://news.ycombinator.com/item?id=32847392" }
+        { type: "github", name: "Awesome dotfiles collection", url: "https://github.com/webpro/awesome-dotfiles" },
+        { type: "x", name: "@ThePrimeagen on dev setup", url: "https://x.com/ThePrimeagen" },
+        { type: "rss", name: "Hacker News discussions", url: "https://news.ycombinator.com" }
       ]
     },
     {
@@ -101,8 +102,8 @@ function getFallbackIdeas() {
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "Chrome extension: Tab grouping feature request", url: "https://github.com/GoogleChrome/chrome-extensions-samples/issues/234" },
-        { type: "x", name: "@sarah_edo on browser organization", url: "https://x.com/sarah_edo/status/2583691470" }
+        { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
+        { type: "x", name: "@sarah_edo on productivity", url: "https://x.com/sarah_edo" }
       ]
     },
     {
@@ -116,8 +117,8 @@ function getFallbackIdeas() {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "npm: Install progress improvements", url: "https://github.com/npm/cli/issues/4321" },
-        { type: "rss", name: "Node Weekly - Package manager performance", url: "https://nodeweekly.com/issues/478" }
+        { type: "github", name: "npm CLI discussions", url: "https://github.com/npm/cli" },
+        { type: "rss", name: "Node Weekly", url: "https://nodeweekly.com" }
       ]
     },
     {
@@ -131,9 +132,9 @@ function getFallbackIdeas() {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "VSCode: Persistent bookmarks feature", url: "https://github.com/microsoft/vscode/issues/56789" },
-        { type: "x", name: "@TejasKumar_ on code navigation", url: "https://x.com/TejasKumar_/status/1472583690" },
-        { type: "rss", name: "JetBrains blog - Navigating large codebases", url: "https://blog.jetbrains.com/idea/2024/01/navigation-tips/" }
+        { type: "github", name: "VSCode extension ideas", url: "https://github.com/microsoft/vscode" },
+        { type: "x", name: "@TejasKumar_ on dev experience", url: "https://x.com/TejasKumar_" },
+        { type: "rss", name: "JetBrains blog", url: "https://blog.jetbrains.com" }
       ]
     },
     {
@@ -147,8 +148,8 @@ function getFallbackIdeas() {
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "shields.io enhancement ideas", url: "https://github.com/badges/shields/discussions/9087" },
-        { type: "x", name: "@chriscoyier on README design", url: "https://x.com/chriscoyier/status/3692581470" }
+        { type: "github", name: "Shields.io badge service", url: "https://github.com/badges/shields" },
+        { type: "x", name: "@chriscoyier on web design", url: "https://x.com/chriscoyier" }
       ]
     }
   ];
