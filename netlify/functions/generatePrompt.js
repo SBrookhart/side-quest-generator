@@ -1,5 +1,4 @@
 export const handler = async (event) => {
-  // Add CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -7,13 +6,8 @@ export const handler = async (event) => {
     'Content-Type': 'application/json'
   };
 
-  // Handle OPTIONS preflight
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return { statusCode: 200, headers, body: '' };
   }
 
   if (event.httpMethod !== 'POST') {
@@ -25,14 +19,15 @@ export const handler = async (event) => {
   }
 
   const geminiKey = process.env.GEMINI_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
   
-  if (!geminiKey && !openaiKey) {
-    console.error('No API keys configured');
+  if (!geminiKey) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'No API keys configured. Please add GEMINI_API_KEY or OPENAI_API_KEY to environment variables.' })
+      body: JSON.stringify({ 
+        error: 'GEMINI_API_KEY not configured',
+        details: 'Please add your Gemini API key to Netlify environment variables'
+      })
     };
   }
 
@@ -52,21 +47,18 @@ export const handler = async (event) => {
       'Easy': {
         tone: 'beginner-friendly and encouraging',
         detail: 'step-by-step with clear explanations',
-        assumptions: 'Assume minimal experience. Explain concepts as you go.',
         steps: '5-7 clear steps',
         code: 'Include 2-3 helpful code examples'
       },
       'Medium': {
         tone: 'balanced and practical',
         detail: 'structured but not hand-holdy',
-        assumptions: 'Assume basic development knowledge but explain architecture choices.',
         steps: '4-6 structured steps',
         code: 'Include 1-2 key code patterns'
       },
       'Hard': {
         tone: 'technical and architectural',
         detail: 'focus on system design and best practices',
-        assumptions: 'Assume solid development experience. Focus on tradeoffs and scalability.',
         steps: '3-5 architectural steps',
         code: 'Include 1 architectural example'
       }
@@ -79,7 +71,6 @@ export const handler = async (event) => {
 
 Tone: ${guidance.tone}
 Detail level: ${guidance.detail}
-Assumptions: ${guidance.assumptions}
 
 Keep it practical, buildable, and fun. This should feel like a friend helping you ship something cool.`;
 
@@ -108,113 +99,55 @@ Generate a comprehensive prompt that someone can copy/paste into Claude, ChatGPT
 
 Format as clean markdown that's ready to copy/paste.`;
 
-    let prompt = '';
+    const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
 
-    // Try Gemini first (free tier)
-    if (geminiKey) {
-      try {
-        console.log('Trying Gemini API...');
-        const geminiResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `${systemPrompt}\n\n${userPrompt}`
-                }]
-              }],
-              generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 2048
-              }
-            })
-          }
-        );
-
-        if (geminiResponse.ok) {
-          const geminiData = await geminiResponse.json();
-          prompt = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          console.log('Gemini API succeeded');
-        } else {
-          throw new Error(`Gemini API error: ${geminiResponse.status}`);
-        }
-      } catch (geminiError) {
-        console.error('Gemini failed, trying OpenAI fallback:', geminiError);
-        
-        // Fallback to OpenAI if available
-        if (openaiKey) {
-          const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${openaiKey}`
-            },
-            body: JSON.stringify({
-              model: "gpt-4o-mini",
-              temperature: 0.7,
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-              ]
-            })
-          });
-
-          if (!openaiResponse.ok) {
-            const errorData = await openaiResponse.text();
-            console.error('OpenAI API error:', openaiResponse.status, errorData);
-            throw new Error(`Both APIs failed. OpenAI: ${openaiResponse.status}`);
-          }
-
-          const openaiData = await openaiResponse.json();
-          prompt = openaiData.choices?.[0]?.message?.content || '';
-          console.log('OpenAI fallback succeeded');
-        } else {
-          throw geminiError;
-        }
-      }
-    } else if (openaiKey) {
-      // Only OpenAI available
-      console.log('Using OpenAI API...');
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${openaiKey}`
-        },
+    // Try gemini-pro first (most compatible free model)
+    console.log('Trying Gemini API with gemini-pro...');
+    
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
-          temperature: 0.7,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ]
+          contents: [{
+            parts: [{ text: fullPrompt }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048
+          }
         })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('OpenAI API error:', response.status, errorData);
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({ 
-            error: `OpenAI API error: ${response.status}`,
-            details: errorData 
-          })
-        };
       }
+    );
 
-      const data = await response.json();
-      prompt = data.choices?.[0]?.message?.content || '';
-    }
+    console.log('Gemini response status:', geminiResponse.status);
 
-    if (!prompt) {
+    if (!geminiResponse.ok) {
+      const errorText = await geminiResponse.text();
+      console.error('Gemini API error:', errorText);
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'No prompt generated by AI' })
+        body: JSON.stringify({ 
+          error: `Gemini API error: ${geminiResponse.status}`,
+          details: errorText.substring(0, 500) // Limit error message length
+        })
+      };
+    }
+
+    const geminiData = await geminiResponse.json();
+    const generatedPrompt = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    if (!generatedPrompt) {
+      console.error('No prompt in response');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          error: 'No prompt generated',
+          details: 'Gemini returned empty response'
+        })
       };
     }
 
@@ -223,17 +156,17 @@ Format as clean markdown that's ready to copy/paste.`;
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt: generatedPrompt })
     };
 
   } catch (error) {
-    console.error('Prompt generation failed:', error);
+    console.error('Function error:', error);
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
         error: 'Failed to generate prompt',
-        details: error.message 
+        details: error.message
       })
     };
   }
