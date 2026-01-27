@@ -61,7 +61,7 @@ export const handler = async (event) => {
     const guidance = difficultyGuidance[difficulty] || difficultyGuidance['Medium'];
     const worthList = Array.isArray(worth) ? worth.join(', ') : (worth || 'Building something cool');
 
-    const promptText = `Generate a detailed build prompt in markdown. Output ONLY markdown - no preamble, no postamble, no conversational intro.
+    const promptText = `Generate a detailed build prompt in markdown. Output ONLY markdown - no preamble, no postamble.
 
 Use FIRST PERSON language (I, my, me) throughout.
 
@@ -71,39 +71,37 @@ Goal: ${quest}
 Value: ${worthList}
 Level: ${difficulty}
 
-Create a complete guide with these exact sections:
+Structure (complete all sections):
 
 ## The Concept
-Write 2-3 sentences in first person about what I'm building.
+2-3 sentences in first person about what I'm building.
 
 ## What I'm Building
-List 3-5 core features as bullet points.
+3-5 core features as bullets.
 
 ## User Flow
-Describe 3-4 steps of how someone uses this.
+3-4 steps of how someone uses this.
 
 ## Tech Stack Suggestions
-List 2-3 specific technology options I can use (note these are swappable).
+2-3 specific options (swappable).
 
 ## Implementation Steps
-Write ${guidance.steps} in ${guidance.tone} tone.
+${guidance.steps} in ${guidance.tone} tone.
 
 ## Starter Code Snippets
-Include ${guidance.code}.
+${guidance.code}.
 
 ## Bonus Ideas
-List 2-3 ways to extend this project.
+2-3 extension ideas.
 
 ## Tips
-Write ${guidance.tone} advice specific to ${difficulty} level projects.
+${guidance.tone} advice for ${difficulty} level.
 
-CRITICAL: Output the COMPLETE guide. Do not truncate or summarize. Include all sections with full detail.
-
-Start directly with "## The Concept" - NO introduction text.`;
+Output the COMPLETE guide with ALL sections. Start with "## The Concept"`;
 
     console.log('Calling Gemini API...');
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
 
     // Add timeout to the fetch
     const controller = new AbortController();
@@ -119,9 +117,8 @@ Start directly with "## The Concept" - NO introduction text.`;
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 8192,  // Increased significantly to prevent cutoffs
-            candidateCount: 1,
-            stopSequences: []  // No stop sequences that could truncate
+            maxOutputTokens: 8192,  // High limit to prevent cutoffs
+            candidateCount: 1
           }
         }),
         signal: controller.signal
@@ -133,6 +130,24 @@ Start directly with "## The Concept" - NO introduction text.`;
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Gemini error:', errorText);
+        
+        // Parse error to check for rate limits
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error?.code === 429) {
+            return {
+              statusCode: 429,
+              headers,
+              body: JSON.stringify({ 
+                error: 'Rate limit exceeded',
+                details: 'The AI service is temporarily at capacity. Please wait a minute and try again.'
+              })
+            };
+          }
+        } catch (e) {
+          // If parsing fails, continue with original error
+        }
+        
         return {
           statusCode: 500,
           headers,
