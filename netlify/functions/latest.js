@@ -7,36 +7,34 @@ const LATEST_PATH = path.join('/tmp', 'latest.json');
 function enrichSources(ideas) {
   const githubSources = [
     { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
-    { name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues" },
+    { name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions" },
     { name: "Awesome developer tools", url: "https://github.com/topics/developer-tools" },
     { name: "CLI tools showcase", url: "https://github.com/topics/cli" },
     { name: "Web development discussions", url: "https://github.com/topics/web-development" },
-    { name: "Developer productivity tools", url: "https://github.com/topics/productivity" }
+    { name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
+    { name: "Awesome lists collection", url: "https://github.com/sindresorhus/awesome" }
   ];
   
   const xSources = [
-    { name: "@swyx on learning in public", url: "https://x.com/swyx/status/1679876543210987654" },
-    { name: "@cassidoo's side project thread", url: "https://x.com/cassidoo/status/1689012345678901234" },
-    { name: "@levelsio on indie hacking", url: "https://x.com/levelsio/status/1698765432109876543" },
-    { name: "@dhh on developer experience", url: "https://x.com/dhh/status/1708901234567890123" },
-    { name: "@kentcdodds on dev workflows", url: "https://x.com/kentcdodds/status/1718765432109876543" },
-    { name: "@addyosmani on web performance", url: "https://x.com/addyosmani/status/1728901234567890123" },
-    { name: "@Una on creative coding", url: "https://x.com/Una/status/1738765432109876543" },
-    { name: "@sarah_edo on frontend tools", url: "https://x.com/sarah_edo/status/1748901234567890123" },
-    { name: "@ThePrimeagen on dev setup", url: "https://x.com/ThePrimeagen/status/1758765432109876543" },
-    { name: "@TejasKumar_ on code navigation", url: "https://x.com/TejasKumar_/status/1768901234567890123" },
-    { name: "@chriscoyier on web design", url: "https://x.com/chriscoyier/status/1778765432109876543" },
-    { name: "@argyleink on debugging", url: "https://x.com/argyleink/status/1788901234567890123" }
+    { name: "X discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+    { name: "X thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
+    { name: "X conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" },
+    { name: "X discussion on dev tools", url: "https://x.com/search?q=developer%20tools%20productivity&f=live" },
+    { name: "X thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
+    { name: "X conversation on CLI tools", url: "https://x.com/search?q=CLI%20tool%20ideas&f=live" },
+    { name: "X discussion on code quality", url: "https://x.com/search?q=code%20quality%20tools&f=live" },
+    { name: "X thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" }
   ];
   
   const rssSources = [
-    { name: "Dev.to community posts", url: "https://dev.to" },
-    { name: "Hacker News discussions", url: "https://news.ycombinator.com" },
-    { name: "Indie Hackers community", url: "https://www.indiehackers.com" },
-    { name: "CSS-Tricks articles", url: "https://css-tricks.com" },
-    { name: "Smashing Magazine", url: "https://www.smashingmagazine.com" },
-    { name: "Node Weekly newsletter", url: "https://nodeweekly.com" },
-    { name: "JavaScript Weekly", url: "https://javascriptweekly.com" }
+    { name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" },
+    { name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" },
+    { name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" },
+    { name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" },
+    { name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" },
+    { name: "JavaScript Weekly archives", url: "https://javascriptweekly.com/issues" },
+    { name: "Node Weekly archives", url: "https://nodeweekly.com/issues" },
+    { name: "Web.dev articles", url: "https://web.dev/articles" }
   ];
   
   return ideas.map(idea => {
@@ -91,8 +89,8 @@ function getFallbackIdeas() {
       difficulty: "Medium",
       sources: [
         { type: "github", name: "Awesome dotfiles collection", url: "https://github.com/webpro/awesome-dotfiles" },
-        { type: "x", name: "@ThePrimeagen on dev setup", url: "https://x.com/ThePrimeagen/status/1758765432109876543" },
-        { type: "rss", name: "Hacker News discussions", url: "https://news.ycombinator.com" }
+        { type: "x", name: "X thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
+        { type: "rss", name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" }
       ]
     },
     {
@@ -107,7 +105,7 @@ function getFallbackIdeas() {
       difficulty: "Hard",
       sources: [
         { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
-        { type: "x", name: "@sarah_edo on productivity", url: "https://x.com/sarah_edo/status/1748901234567890123" }
+        { type: "x", name: "X discussion on dev tools", url: "https://x.com/search?q=developer%20tools%20productivity&f=live" }
       ]
     },
     {
@@ -121,8 +119,8 @@ function getFallbackIdeas() {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "npm CLI discussions", url: "https://github.com/npm/cli" },
-        { type: "rss", name: "Node Weekly", url: "https://nodeweekly.com" }
+        { type: "github", name: "npm CLI discussions", url: "https://github.com/npm/cli/discussions" },
+        { type: "rss", name: "Node Weekly archives", url: "https://nodeweekly.com/issues" }
       ]
     },
     {
@@ -136,9 +134,9 @@ function getFallbackIdeas() {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "VSCode extension ideas", url: "https://github.com/microsoft/vscode" },
-        { type: "x", name: "@TejasKumar_ on code navigation", url: "https://x.com/TejasKumar_/status/1768901234567890123" },
-        { type: "rss", name: "JetBrains blog", url: "https://blog.jetbrains.com" }
+        { type: "github", name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions" },
+        { type: "x", name: "X conversation on CLI tools", url: "https://x.com/search?q=CLI%20tool%20ideas&f=live" },
+        { type: "rss", name: "Web.dev articles", url: "https://web.dev/articles" }
       ]
     },
     {
@@ -153,7 +151,7 @@ function getFallbackIdeas() {
       difficulty: "Medium",
       sources: [
         { type: "github", name: "Shields.io badge service", url: "https://github.com/badges/shields" },
-        { type: "x", name: "@chriscoyier on web design", url: "https://x.com/chriscoyier/status/1778765432109876543" }
+        { type: "x", name: "X thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" }
       ]
     }
   ];
