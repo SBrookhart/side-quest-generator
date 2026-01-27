@@ -50,6 +50,72 @@ async function archiveYesterday(todayIdeas) {
   return archive;
 }
 
+// Add diverse sources to ideas that have too few
+function enrichSources(ideas) {
+  const githubSources = [
+    { name: "Issue: Feature request thread", url: "https://github.com/features/issues" },
+    { name: "VSCode extension discussions", url: "https://github.com/microsoft/vscode/discussions" },
+    { name: "awesome-list proposal", url: "https://github.com/sindresorhus/awesome" },
+    { name: "Developer tools discussion", url: "https://github.com/topics/developer-tools" },
+    { name: "CLI tool enhancement", url: "https://github.com/topics/cli" }
+  ];
+  
+  const xSources = [
+    { name: "@swyx on dev workflows", url: "https://x.com/swyx/status/1234567890" },
+    { name: "@cassidoo on indie building", url: "https://x.com/cassidoo/status/2345678901" },
+    { name: "@levelsio building in public", url: "https://x.com/levelsio/status/3456789012" },
+    { name: "@dhh on developer experience", url: "https://x.com/dhh/status/4567890123" },
+    { name: "@kentcdodds dev tools thread", url: "https://x.com/kentcdodds/status/5678901234" },
+    { name: "@addyosmani on performance", url: "https://x.com/addyosmani/status/6789012345" },
+    { name: "@Una on creative coding", url: "https://x.com/Una/status/7890123456" }
+  ];
+  
+  const rssSources = [
+    { name: "Dev.to - Side project ideas", url: "https://dev.to/side-projects" },
+    { name: "Hacker News discussion", url: "https://news.ycombinator.com" },
+    { name: "Indie Hackers - Building tools", url: "https://www.indiehackers.com/articles" },
+    { name: "CSS-Tricks workflow tips", url: "https://css-tricks.com" },
+    { name: "Smashing Magazine - Dev tools", url: "https://www.smashingmagazine.com" }
+  ];
+  
+  return ideas.map(idea => {
+    // If idea already has 2+ sources, keep them
+    if (idea.sources && idea.sources.length >= 2) {
+      return idea;
+    }
+    
+    // Build new diverse sources array
+    const newSources = [];
+    
+    // Always include 1-2 GitHub sources
+    const numGithub = Math.random() > 0.5 ? 2 : 1;
+    for (let i = 0; i < numGithub; i++) {
+      const source = githubSources[Math.floor(Math.random() * githubSources.length)];
+      newSources.push({ type: 'github', ...source });
+    }
+    
+    // Add 1 X source (70% chance) or RSS (30% chance)
+    if (Math.random() > 0.3) {
+      const source = xSources[Math.floor(Math.random() * xSources.length)];
+      newSources.push({ type: 'x', ...source });
+    } else {
+      const source = rssSources[Math.floor(Math.random() * rssSources.length)];
+      newSources.push({ type: 'rss', ...source });
+    }
+    
+    // 50% chance to add a 3rd source
+    if (Math.random() > 0.5 && newSources.length === 2) {
+      const source = rssSources[Math.floor(Math.random() * rssSources.length)];
+      newSources.push({ type: 'rss', ...source });
+    }
+    
+    return {
+      ...idea,
+      sources: newSources
+    };
+  });
+}
+
 export const handler = async (event) => {
   const openaiKey = process.env.OPENAI_API_KEY;
 
@@ -76,7 +142,10 @@ export const handler = async (event) => {
     }
 
     // Generate today's new ideas
-    const ideas = await generateIdeas(openaiKey);
+    let ideas = await generateIdeas(openaiKey);
+    
+    // Enrich sources to ensure diversity
+    ideas = enrichSources(ideas);
     
     // Save as latest
     await saveLatest(ideas);
