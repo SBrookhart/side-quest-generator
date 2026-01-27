@@ -25,8 +25,7 @@ export const handler = async (event) => {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: 'GEMINI_API_KEY not configured',
-        details: 'Please add your Gemini API key to Netlify environment variables'
+        error: 'GEMINI_API_KEY not configured'
       })
     };
   }
@@ -43,38 +42,11 @@ export const handler = async (event) => {
       };
     }
 
-    const difficultyGuidance = {
-      'Easy': {
-        tone: 'beginner-friendly and encouraging',
-        detail: 'step-by-step with clear explanations',
-        steps: '5-7 clear steps',
-        code: 'Include 2-3 helpful code examples'
-      },
-      'Medium': {
-        tone: 'balanced and practical',
-        detail: 'structured but not hand-holdy',
-        steps: '4-6 structured steps',
-        code: 'Include 1-2 key code patterns'
-      },
-      'Hard': {
-        tone: 'technical and architectural',
-        detail: 'focus on system design and best practices',
-        steps: '3-5 architectural steps',
-        code: 'Include 1 architectural example'
-      }
-    };
-
-    const guidance = difficultyGuidance[difficulty] || difficultyGuidance['Medium'];
     const worthList = Array.isArray(worth) ? worth.join(', ') : (worth || 'Building something cool');
 
-    const systemPrompt = `You're a creative technical mentor helping indie builders and vibe coders bring playful projects to life.
+    const promptText = `You're a creative technical mentor helping indie builders bring playful projects to life.
 
-Tone: ${guidance.tone}
-Detail level: ${guidance.detail}
-
-Keep it practical, buildable, and fun. This should feel like a friend helping you ship something cool.`;
-
-    const userPrompt = `Create a detailed build prompt for this project idea:
+Create a detailed build prompt for this project:
 
 **Title:** ${title}
 **Why it exists:** ${murmur}
@@ -82,81 +54,81 @@ Keep it practical, buildable, and fun. This should feel like a friend helping yo
 **Why it's worth it:** ${worthList}
 **Difficulty:** ${difficulty}
 
-Generate a comprehensive prompt that someone can copy/paste into Claude, ChatGPT, or another AI to help them build this. Include:
+Generate a prompt someone can copy/paste into Claude, ChatGPT, or another AI. Include:
 
-1. **The Concept** - Brief overview (2-3 sentences)
-2. **What You're Building** - Core features (3-5 bullet points)
-3. **User Flow** - Step-by-step how someone uses it (3-4 steps)
-4. **Tech Stack Suggestions** - Give 2-3 specific options for:
-   - Frontend (if needed)
-   - Backend (if needed)
-   - APIs/Tools
-   - Include a note that they can swap these for their preferred stack
-5. **Implementation Steps** - ${guidance.steps}
-6. **Starter Code Snippets** - ${guidance.code}
-7. **Bonus Ideas** - 2-3 ways to extend it
-8. **Tips** - ${difficulty === 'Easy' ? 'Encouraging advice for beginners' : difficulty === 'Medium' ? 'Practical shipping advice' : 'Architectural considerations'}
+1. **The Concept** (2-3 sentences)
+2. **Core Features** (3-5 bullets)
+3. **User Flow** (3-4 steps)
+4. **Tech Stack** (2-3 options with note they can swap)
+5. **Implementation Steps** (${difficulty === 'Easy' ? '5-7' : difficulty === 'Medium' ? '4-6' : '3-5'} steps)
+6. **Code Snippets** (${difficulty === 'Easy' ? '2-3 examples' : difficulty === 'Medium' ? '1-2 patterns' : '1 architectural example'})
+7. **Bonus Ideas** (2-3 extensions)
+8. **Tips** (${difficulty === 'Easy' ? 'beginner advice' : difficulty === 'Medium' ? 'shipping advice' : 'architecture considerations'})
 
-Format as clean markdown that's ready to copy/paste.`;
+Format as markdown.`;
 
-    const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+    // Try different Gemini API endpoints
+    const modelsToTry = [
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-flash',
+      'gemini-pro'
+    ];
 
-    // Try gemini-pro first (most compatible free model)
-    console.log('Trying Gemini API with gemini-pro...');
-    
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: fullPrompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2048
+    let lastError = null;
+
+    for (const model of modelsToTry) {
+      try {
+        console.log(`Trying model: ${model}`);
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: promptText }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 2048
+            }
+          })
+        });
+
+        console.log(`${model} response status:`, response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          const generatedPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+          if (generatedPrompt) {
+            console.log(`Success with ${model}`);
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify({ prompt: generatedPrompt })
+            };
           }
-        })
+        } else {
+          const errorText = await response.text();
+          lastError = `${model}: ${response.status} - ${errorText}`;
+          console.error(lastError);
+        }
+      } catch (err) {
+        lastError = `${model}: ${err.message}`;
+        console.error(lastError);
       }
-    );
-
-    console.log('Gemini response status:', geminiResponse.status);
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error('Gemini API error:', errorText);
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          error: `Gemini API error: ${geminiResponse.status}`,
-          details: errorText.substring(0, 500) // Limit error message length
-        })
-      };
     }
 
-    const geminiData = await geminiResponse.json();
-    const generatedPrompt = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    if (!generatedPrompt) {
-      console.error('No prompt in response');
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          error: 'No prompt generated',
-          details: 'Gemini returned empty response'
-        })
-      };
-    }
-
-    console.log('Prompt generated successfully');
-
+    // If all models failed
     return {
-      statusCode: 200,
+      statusCode: 500,
       headers,
-      body: JSON.stringify({ prompt: generatedPrompt })
+      body: JSON.stringify({ 
+        error: 'All Gemini models failed',
+        details: lastError || 'Unknown error'
+      })
     };
 
   } catch (error) {
