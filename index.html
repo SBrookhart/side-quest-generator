@@ -25,10 +25,6 @@
       --easy:#4ade80;
       --medium:#facc15;
       --hard:#f87171;
-
-      --github:#9ca3af;
-      --twitter:#38bdf8;
-      --rss:#f97316;
     }
 
     * { box-sizing: border-box; }
@@ -643,55 +639,62 @@
       return;
     }
     
-    container.innerHTML = ideas.map((q, idx) => `
-      <div class="quest">
-        <h2>${q.title}</h2>
+    container.innerHTML = ideas.map((q, idx) => {
+      const sourcesHTML = (q.sources || []).map(s => {
+        let iconHTML = '';
+        if (s.type === 'github') {
+          iconHTML = '<i data-lucide="github" style="width: 14px; height: 14px;"></i>';
+        } else if (s.type === 'x' || s.type === 'twitter') {
+          iconHTML = '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
+        } else {
+          iconHTML = '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
+        }
+        
+        return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
+          ${iconHTML}
+          <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
+            ${s.name}
+          </a>
+        </li>`;
+      }).join("");
 
-        <div class="section">
-          <div class="section-title">💬 Murmur → Why this exists</div>
-          <div>${q.murmur}</div>
-        </div>
+      return `
+        <div class="quest">
+          <h2>${q.title}</h2>
 
-        <div class="section">
-          <div class="section-title">🧭 Side Quest → What to build</div>
-          <div>${q.quest}</div>
-        </div>
+          <div class="section">
+            <div class="section-title">💬 Murmur → Why this exists</div>
+            <div>${q.murmur}</div>
+          </div>
 
-        <div class="section">
-          <div class="section-title">✨ For What It's Worth → Why it's worth your energy</div>
-          <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
-            ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
-          </ul>
-        </div>
+          <div class="section">
+            <div class="section-title">🧭 Side Quest → What to build</div>
+            <div>${q.quest}</div>
+          </div>
 
-        <div class="section">
-          <div class="section-title">🧾 Signals Observed → Receipts, if you want them</div>
-          <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
-            ${(q.sources || []).map(s => {
-              const iconHTML = s.type === 'github' 
-                ? '<i data-lucide="github" style="width: 14px; height: 14px;"></i>'
-                : (s.type === 'x' || s.type === 'twitter')
-                ? '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'
-                : '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
-              
-              return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
-                ${iconHTML}
-                <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
-                  ${s.name}
-                </a>
-              </li>`;
-            }).join("")}
-          </ul>
-        </div>
+          <div class="section">
+            <div class="section-title">✨ For What It's Worth → Why it's worth your energy</div>
+            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
+              ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
+            </ul>
+          </div>
 
-        <div class="meta">
-          <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
-          <button class="build-button" onclick="openBuildModal(${idx})" data-idea='${JSON.stringify(q).replace(/'/g, "&apos;")}'>
-            <i data-lucide="wrench"></i> Let's Build!
-          </button>
+          <div class="section">
+            <div class="section-title">🧾 Signals Observed → Receipts, if you want them</div>
+            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
+              ${sourcesHTML}
+            </ul>
+          </div>
+
+          <div class="meta">
+            <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+            <button class="build-button" onclick="openBuildModal(${idx})" data-idea='${JSON.stringify(q).replace(/'/g, "&apos;")}'>
+              <i data-lucide="wrench"></i> Let's Build!
+            </button>
+          </div>
         </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
 
     lucide.createIcons();
   }
