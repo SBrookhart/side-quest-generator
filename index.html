@@ -440,7 +440,7 @@
   <div class="motto">Independent Builder Intelligence</div>
 
   <p>
-    Side-quest ideas that blend thoughtful indie hacker prompts, early-stage product opportunities, 
+    Tech Murmurs surfaces side-quest ideas that blend thoughtful indie hacker prompts, early-stage product opportunities, 
     and playful creative experiments. Each idea is generated from live signals in the builder ecosystem — GitHub issues, 
     hackathon themes, protocol updates, and developer conversations — then synthesized by AI into buildable, vibe-coder-friendly 
     projects you can actually ship.
@@ -581,7 +581,7 @@
 
     <h3>Let's Build! Feature</h3>
 
-    <p>Each idea card includes a "Let's Build!" button that generates a detailed, AI-powered build prompt on demand. When clicked, the system sends the idea to OpenAI with difficulty-adjusted instructions:</p>
+    <p>Each idea card includes a "Let's Build!" button that generates a detailed, AI-powered build prompt on demand. When clicked, the system sends the idea to Google's Gemini AI with difficulty-adjusted instructions:</p>
 
     <ul>
       <li><strong>Easy ideas</strong> — Beginner-friendly, step-by-step prompts with code examples and encouragement</li>
@@ -758,12 +758,33 @@
       console.log('Response status:', response.status);
       
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          const text = await response.text();
+          console.error('Non-JSON error response:', text);
+          throw new Error(`API returned ${response.status}: ${text.substring(0, 200)}`);
+        }
         console.error('API Error Response:', errorData);
         throw new Error(errorData.error || `API returned ${response.status}`);
       }
       
-      const data = await response.json();
+      let data;
+      try {
+        const responseText = await response.text();
+        console.log('Raw response (first 200 chars):', responseText.substring(0, 200));
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse JSON:', e);
+        throw new Error('Invalid JSON response from API');
+      }
+      
+      if (!data.prompt) {
+        console.error('No prompt in response:', data);
+        throw new Error('API returned empty prompt');
+      }
+      
       console.log('Prompt generated successfully');
       
       // Convert markdown to HTML for better display
@@ -803,12 +824,6 @@
         <div style="text-align: center; padding: 2rem; color: var(--muted);">
           <p>Oops! Something went wrong generating the prompt.</p>
           <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #f87171;">${error.message}</p>
-          <p style="margin-top: 0.5rem; font-size: 0.85rem;">Please check:</p>
-          <ul style="text-align: left; max-width: 400px; margin: 1rem auto;">
-            <li>OPENAI_API_KEY is set in Netlify environment variables</li>
-            <li>The generatePrompt function deployed successfully</li>
-            <li>Browser console for more details</li>
-          </ul>
           <p style="margin-top: 1rem;">
             <button onclick="closeBuildModal()" style="padding: 0.5rem 1rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer;">
               Close
