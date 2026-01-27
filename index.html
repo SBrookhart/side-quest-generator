@@ -744,7 +744,7 @@
     const modalContent = document.getElementById('modalPromptContent');
     
     modal.style.display = 'flex';
-    modalContent.innerHTML = '<div style="text-align: center; padding: 3rem;"><div class="loader"></div><p style="margin-top: 1rem; color: var(--muted);">Generating your build prompt...</p></div>';
+    modalContent.innerHTML = '<div style="text-align: center; padding: 3rem;"><div class="loader"></div><p style="margin-top: 1rem; color: var(--muted);">Generating your project\'s AI prompt<br><span style="font-size: 0.85rem;">(may take 10-15 seconds to think)</span></p></div>';
     
     try {
       console.log('Calling generatePrompt with:', ideaData);
