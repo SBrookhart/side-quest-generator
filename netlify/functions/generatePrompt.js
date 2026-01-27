@@ -40,46 +40,68 @@ export const handler = async (event) => {
       };
     }
 
+    const difficultyGuidance = {
+      'Easy': {
+        steps: '5-7 clear, beginner-friendly steps with explanations',
+        code: '2-3 complete code examples with comments'
+      },
+      'Medium': {
+        steps: '4-6 structured steps',
+        code: '1-2 key code patterns or examples'
+      },
+      'Hard': {
+        steps: '3-5 architectural steps',
+        code: '1 architectural code example showing system design'
+      }
+    };
+
+    const guidance = difficultyGuidance[difficulty] || difficultyGuidance['Medium'];
     const worthList = Array.isArray(worth) ? worth.join(', ') : (worth || 'Building something cool');
 
-    // Simplified prompt that generates ONLY markdown, no preamble
-    const promptText = `Generate a detailed build prompt in markdown format. Output ONLY the markdown - no introduction, no preamble, no postamble. Start directly with the markdown content.
+    const promptText = `You are generating a detailed build prompt that someone will copy/paste into an AI assistant to help them build a project.
 
-Project: ${title}
-Why it exists: ${murmur}
-What to build: ${quest}
-Why it's worth it: ${worthList}
-Difficulty: ${difficulty}
+Output ONLY markdown. Do NOT include any conversational introduction, preamble, or commentary. Start directly with "## The Concept" and end with the Tips section.
 
-Create a markdown prompt with these sections:
+Project Details:
+- Title: ${title}
+- Why it exists: ${murmur}
+- What to build: ${quest}
+- Why it's worth it: ${worthList}
+- Difficulty: ${difficulty}
+
+Generate a comprehensive, detailed build prompt with these sections:
 
 ## The Concept
-Brief overview (2-3 sentences)
+Write 2-3 sentences explaining what this project is and why it's cool.
 
 ## What You're Building
-Core features (3-5 bullet points)
+List 3-5 core features as bullet points. Be specific about functionality.
 
 ## User Flow
-Step-by-step how someone uses it (3-4 steps)
+Describe 3-4 steps showing exactly how someone would use this, from start to finish.
 
 ## Tech Stack Suggestions
-Give 2-3 specific options for frontend, backend, and APIs/tools. Note they can swap for their preferred stack.
+Provide 2-3 concrete technology options for:
+- Frontend (if applicable)
+- Backend (if applicable)  
+- APIs/Tools/Libraries
+Include a note that these can be swapped for their preferred stack.
 
 ## Implementation Steps
-${difficulty === 'Easy' ? '5-7' : difficulty === 'Medium' ? '4-6' : '3-5'} clear steps to build this
+Provide ${guidance.steps} to build this project from scratch to working MVP.
 
 ## Starter Code Snippets
-${difficulty === 'Easy' ? '2-3 helpful code examples' : difficulty === 'Medium' ? '1-2 key code patterns' : '1 architectural example'}
+Include ${guidance.code}. Make them practical and copy-paste ready.
 
 ## Bonus Ideas
-2-3 ways to extend the project
+List 2-3 ways to extend or enhance the project once the core is working.
 
 ## Tips
-${difficulty === 'Easy' ? 'Encouraging advice for beginners' : difficulty === 'Medium' ? 'Practical shipping advice' : 'Architectural considerations'}
+Provide ${difficulty === 'Easy' ? 'encouraging advice for beginners, including common pitfalls to avoid' : difficulty === 'Medium' ? 'practical advice on shipping and deployment' : 'architectural considerations and scaling advice'}.
 
-Output ONLY markdown. No conversational text before or after.`;
+Remember: Output ONLY the markdown sections above. No introduction like "Let's build this!" or "Here's your prompt". Just the markdown content starting with ## The Concept.`;
 
-    console.log('Calling Gemini API with gemini-2.5-flash...');
+    console.log('Calling Gemini API...');
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
 
@@ -92,7 +114,7 @@ Output ONLY markdown. No conversational text before or after.`;
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 1500  // Reduced from 2048 for faster generation
+          maxOutputTokens: 3000  // Increased for full detailed content
         }
       })
     });
@@ -126,14 +148,14 @@ Output ONLY markdown. No conversational text before or after.`;
       };
     }
 
-    // Clean up any markdown code fences if Gemini added them
+    // Clean up markdown code fences if present
     generatedPrompt = generatedPrompt
       .replace(/^```markdown\n/i, '')
       .replace(/^```\n/i, '')
       .replace(/\n```$/i, '')
       .trim();
 
-    console.log('Success! Prompt generated.');
+    console.log('Prompt generated successfully');
 
     return {
       statusCode: 200,
