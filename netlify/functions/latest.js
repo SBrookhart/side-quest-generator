@@ -78,80 +78,80 @@ function enrichSources(ideas) {
 function getFallbackIdeas() {
   return [
     {
-      title: "What If My Dotfiles Had a Version Picker?",
-      murmur: "You tweak your shell config constantly, but there's no easy way to roll back when something breaks. Git helps, but it's not instant.",
-      quest: "Build a dotfiles manager that snapshots your config after every change and lets you switch between versions with a TUI. See a diff of what changed and quickly revert bad edits.",
+      title: "What If My Code Commits Were a Tamagotchi?",
+      murmur: "You commit code every day, but it's just numbers and graphs. What if your commit streak was a little creature you had to keep alive?",
+      quest: "Build a GitHub widget that turns your commit history into a virtual pet. The more you commit, the happier it gets. Skip a day and it gets sad. Let it evolve based on your coding patterns.",
       worth: [
-        "Makes config experimentation risk-free",
-        "Great for trying new shell setups",
-        "Could help others learn from your dotfiles evolution"
+        "Makes daily commits actually adorable",
+        "Guilt trips you in the cutest way",
+        "Perfect conversation starter for your README"
       ],
-      difficulty: "Medium",
+      difficulty: "Easy",
       sources: [
-        { type: "github", name: "Awesome dotfiles collection", url: "https://github.com/webpro/awesome-dotfiles" },
-        { type: "x", name: "X thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
-        { type: "rss", name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" }
+        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
+        { type: "x", name: "X thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
+        { type: "rss", name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" }
       ]
     },
     {
-      title: "Can My Browser Tabs Auto-Organize by Project?",
-      murmur: "You have 50 tabs open across 3 different projects, but they're all mixed together. Finding the right tab becomes archaeological work.",
-      quest: "Build a browser extension that uses ML to detect which project each tab belongs to (by domain patterns, keywords, or manual tagging) and auto-groups them into collapsible sections.",
+      title: "Can My Spotify Wrapped Be for My Code?",
+      murmur: "Spotify makes listening to music feel like an achievement. Why doesn't coding? You deserve a year-end recap of your most-used functions, weirdest variable names, and coding music.",
+      quest: "Build a tool that analyzes your GitHub repos and generates a beautiful Spotify Wrapped-style video: most productive hour, favorite programming language, most refactored file, and a playlist recommendation based on your commit messages.",
       worth: [
-        "Instant mental clarity for multitaskers",
-        "Reduces context switching friction",
-        "Could learn your project patterns over time"
+        "Makes you feel accomplished about your year",
+        "Extremely shareable on social media",
+        "Everyone will want one"
       ],
-      difficulty: "Hard",
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
+        { type: "x", name: "X conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
+      ]
+    },
+    {
+      title: "What If My To-Do List Was a Plant?",
+      murmur: "To-do apps are stressful and guilt-inducing. What if instead of checking boxes, you were watering a plant that grows with each completed task?",
+      quest: "Build a to-do app where each task is a seed. Complete it and the plant grows. Skip tasks and it wilts. Watch your productivity garden flourish over time. Export your garden as a printable poster.",
+      worth: [
+        "Makes productivity feel nurturing, not punishing",
+        "Your task list becomes something beautiful",
+        "Way more motivating than checkboxes"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "x", name: "X discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+        { type: "rss", name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" }
+      ]
+    },
+    {
+      title: "Can My Browser History Tell a Story?",
+      murmur: "Your browser history is a treasure trove of who you are—late-night rabbit holes, research spirals, inspiration hunts. What if it could narrate your intellectual journey?",
+      quest: "Build a browser extension that turns your browsing history into a generated narrative. 'On Tuesday, you fell down a rabbit hole about mushroom foraging, then pivoted to sourdough bread at 2am.' Share your weekly story or keep it private.",
+      worth: [
+        "Makes your internet wandering feel meaningful",
+        "Great for reflection and self-awareness",
+        "Weirdly intimate and shareable"
+      ],
+      difficulty: "Medium",
       sources: [
         { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
-        { type: "x", name: "X discussion on dev tools", url: "https://x.com/search?q=developer%20tools%20productivity&f=live" }
+        { type: "x", name: "X thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" },
+        { type: "rss", name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" }
       ]
     },
     {
-      title: "What If npm install Told Me Why It's Slow?",
-      murmur: "npm install takes forever sometimes, and you have no idea which package is the bottleneck. You just stare at the spinner and wait.",
-      quest: "Build a wrapper around npm/yarn that shows you which package is currently downloading, how large it is, and how long it's taking. Get real-time visibility into your install process.",
+      title: "What If Error Messages Were Compliments?",
+      murmur: "Debugging is already hard. Error messages don't need to be cold and technical. What if they hyped you up instead?",
+      quest: "Build a dev tool that intercepts error messages and rewrites them with encouragement. 'Syntax error on line 12' becomes 'Hey, almost there! Just a tiny typo on line 12—you got this!' Customize the vibe: supportive, sarcastic, or chaotic.",
       worth: [
-        "Instant feedback on what's actually happening",
-        "Helps identify problem dependencies",
-        "Makes slow installs less frustrating"
+        "Makes debugging way less demoralizing",
+        "Actually helps beginners stay motivated",
+        "Could become the most wholesome dev tool ever"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "npm CLI discussions", url: "https://github.com/npm/cli/discussions" },
-        { type: "rss", name: "Node Weekly archives", url: "https://nodeweekly.com/issues" }
-      ]
-    },
-    {
-      title: "Can My IDE Remember My Mental Bookmarks?",
-      murmur: "You mentally bookmark certain files or lines while coding ('that's where the auth logic is'), but your IDE forgets the moment you close it.",
-      quest: "Build an IDE extension that lets you drop invisible bookmarks in your code with notes. They persist across sessions and show up as a sidebar list. Jump to any bookmark instantly.",
-      worth: [
-        "Externalizes your mental code map",
-        "Great for large codebases",
-        "Could share bookmarks with teammates"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions" },
-        { type: "x", name: "X conversation on CLI tools", url: "https://x.com/search?q=CLI%20tool%20ideas&f=live" },
-        { type: "rss", name: "Web.dev articles", url: "https://web.dev/articles" }
-      ]
-    },
-    {
-      title: "What If My README Had Live Badges That Actually Mean Something?",
-      murmur: "GitHub README badges are everywhere, but most are just static images. What if they could show real-time, useful data about your project?",
-      quest: "Build a badge service that tracks meaningful metrics: last commit recency, issue response time, documentation coverage, or 'vibe score' based on commit message sentiment. Make badges informative again.",
-      worth: [
-        "Honest project health at a glance",
-        "Encourages maintainer accountability",
-        "Could become a new standard for READMEs"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "Shields.io badge service", url: "https://github.com/badges/shields" },
-        { type: "x", name: "X thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" }
+        { type: "github", name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
+        { type: "rss", name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" }
       ]
     }
   ];
