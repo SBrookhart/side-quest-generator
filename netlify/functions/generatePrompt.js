@@ -60,7 +60,7 @@ Format as clean markdown that's ready to copy/paste.`;
     console.log('Calling Gemini API with gemini-pro...');
 
     // Use gemini-pro (stable, widely available model)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`;
+const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
