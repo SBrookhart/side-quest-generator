@@ -443,72 +443,95 @@
       return;
     }
 
+    // Get today's date in YYYY-MM-DD format (local timezone)
+    const today = new Date();
+    const todayString = today.getFullYear() + '-' + 
+                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(today.getDate()).padStart(2, '0');
+    
+    console.log('Today\'s date:', todayString);
+
     let globalIndex = 0;
     allIdeas = [];
 
-    Object.entries(data)
-      .sort((a, b) => b[0].localeCompare(a[0]))
-      .forEach(([date, ideas]) => {
-        const day = document.createElement("div");
-        day.className = "day";
+    // Filter out today's date and sort in reverse chronological order
+    const filteredEntries = Object.entries(data)
+      .filter(([date, ideas]) => {
+        const isToday = date === todayString;
+        if (isToday) {
+          console.log('Filtering out today\'s date:', date);
+        }
+        return !isToday;
+      })
+      .sort((a, b) => b[0].localeCompare(a[0]));
 
-        const label = new Date(date + 'T00:00:00').toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric"
-        });
+    if (filteredEntries.length === 0) {
+      container.innerHTML =
+        "<p style='color:#9ca3af'>No archived ideas yet. Check back tomorrow!</p>";
+      return;
+    }
 
-        day.innerHTML =
-          `<h2>${label}</h2>` +
-          ideas.map((q, localIdx) => {
-            const idx = globalIndex++;
-            allIdeas.push(q);
-            
-            return `
-          <div class="quest">
-            <h3>${q.title}</h3>
+    filteredEntries.forEach(([date, ideas]) => {
+      const day = document.createElement("div");
+      day.className = "day";
 
-            <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-            <div>${q.murmur}</div>
-
-            <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-            <div>${q.quest}</div>
-
-            <div class="subhead"><i data-lucide="sparkles"></i> For What It's Worth → Why it's worth your energy</div>
-            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
-              ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
-            </ul>
-
-            <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
-              ${(q.sources || []).map(s => {
-                const iconHTML = s.type === 'github' 
-                  ? '<i data-lucide="github" style="width: 14px; height: 14px;"></i>'
-                  : s.type === 'x' || s.type === 'twitter'
-                  ? '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'
-                  : '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
-                
-                return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
-                  ${iconHTML}
-                  <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
-                    ${s.name}
-                  </a>
-                </li>`;
-              }).join("")}
-            </ul>
-
-            <div class="meta">
-              <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
-              <button class="build-button" onclick="openBuildModal(${idx})">
-                <i data-lucide="wrench"></i> Let's Build!
-              </button>
-            </div>
-          </div>
-        `;
-          }).join("");
-
-        container.appendChild(day);
+      const label = new Date(date + 'T00:00:00').toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
       });
+
+      day.innerHTML =
+        `<h2>${label}</h2>` +
+        ideas.map((q, localIdx) => {
+          const idx = globalIndex++;
+          allIdeas.push(q);
+          
+          return `
+        <div class="quest">
+          <h3>${q.title}</h3>
+
+          <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
+          <div>${q.murmur}</div>
+
+          <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
+          <div>${q.quest}</div>
+
+          <div class="subhead"><i data-lucide="sparkles"></i> For What It's Worth → Why it's worth your energy</div>
+          <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
+            ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
+          </ul>
+
+          <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
+          <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
+            ${(q.sources || []).map(s => {
+              const iconHTML = s.type === 'github' 
+                ? '<i data-lucide="github" style="width: 14px; height: 14px;"></i>'
+                : s.type === 'x' || s.type === 'twitter'
+                ? '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'
+                : '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
+              
+              return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
+                ${iconHTML}
+                <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
+                  ${s.name}
+                </a>
+              </li>`;
+            }).join("")}
+          </ul>
+
+          <div class="meta">
+            <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+            <button class="build-button" onclick="openBuildModal(${idx})">
+              <i data-lucide="wrench"></i> Let's Build!
+            </button>
+          </div>
+        </div>
+      `;
+        }).join("");
+
+      container.appendChild(day);
+    });
 
     lucide.createIcons();
   }
@@ -534,12 +557,33 @@
       console.log('Response status:', response.status);
       
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          const text = await response.text();
+          console.error('Non-JSON error response:', text);
+          throw new Error(`API returned ${response.status}: ${text.substring(0, 200)}`);
+        }
         console.error('API Error Response:', errorData);
         throw new Error(errorData.error || `API returned ${response.status}`);
       }
       
-      const data = await response.json();
+      let data;
+      try {
+        const responseText = await response.text();
+        console.log('Raw response (first 200 chars):', responseText.substring(0, 200));
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse JSON:', e);
+        throw new Error('Invalid JSON response from API');
+      }
+      
+      if (!data.prompt) {
+        console.error('No prompt in response:', data);
+        throw new Error('API returned empty prompt');
+      }
+      
       console.log('Prompt generated successfully');
       
       // Convert markdown to HTML for better display
@@ -579,12 +623,6 @@
         <div style="text-align: center; padding: 2rem; color: var(--muted);">
           <p>Oops! Something went wrong generating the prompt.</p>
           <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #f87171;">${error.message}</p>
-          <p style="margin-top: 0.5rem; font-size: 0.85rem;">Please check:</p>
-          <ul style="text-align: left; max-width: 400px; margin: 1rem auto;">
-            <li>OPENAI_API_KEY is set in Netlify environment variables</li>
-            <li>The generatePrompt function deployed successfully</li>
-            <li>Browser console for more details</li>
-          </ul>
           <p style="margin-top: 1rem;">
             <button onclick="closeBuildModal()" style="padding: 0.5rem 1rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer;">
               Close
