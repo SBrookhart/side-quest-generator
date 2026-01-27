@@ -216,7 +216,11 @@
       font-size: 1.4rem;
     }
 
-    .subhead {
+    .section {
+      margin-bottom: 1.1rem;
+    }
+
+    .section-title {
       font-size: 0.75rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -224,7 +228,6 @@
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      margin-top: 1.1rem;
       margin-bottom: 0.35rem;
     }
 
@@ -635,34 +638,42 @@
         <div class="quest">
           <h3>${q.title}</h3>
 
-          <div class="subhead"><i data-lucide="message-circle"></i> Murmur → Why this exists</div>
-          <div>${q.murmur}</div>
+          <div class="section">
+            <div class="section-title">💬 Murmur → Why this exists</div>
+            <div>${q.murmur}</div>
+          </div>
 
-          <div class="subhead"><i data-lucide="compass"></i> Side Quest → What to build</div>
-          <div>${q.quest}</div>
+          <div class="section">
+            <div class="section-title">🧭 Side Quest → What to build</div>
+            <div>${q.quest}</div>
+          </div>
 
-          <div class="subhead"><i data-lucide="sparkles"></i> For What It's Worth → Why it's worth your energy</div>
-          <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
-            ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
-          </ul>
+          <div class="section">
+            <div class="section-title">✨ For What It's Worth → Why it's worth your energy</div>
+            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">
+              ${(q.worth || []).map(w => `<li style="margin-bottom: 0.3rem;">${w}</li>`).join("")}
+            </ul>
+          </div>
 
-          <div class="subhead"><i data-lucide="receipt"></i> Signals Observed → Receipts, if you want them</div>
-          <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
-            ${(q.sources || []).map(s => {
-              const iconHTML = s.type === 'github' 
-                ? '<i data-lucide="github" style="width: 14px; height: 14px;"></i>'
-                : s.type === 'x' || s.type === 'twitter'
-                ? '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'
-                : '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
-              
-              return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
-                ${iconHTML}
-                <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
-                  ${s.name}
-                </a>
-              </li>`;
-            }).join("")}
-          </ul>
+          <div class="section">
+            <div class="section-title">🧾 Signals Observed → Receipts, if you want them</div>
+            <ul style="margin: 0.5rem 0 0 1.2rem; padding: 0; list-style: none;">
+              ${(q.sources || []).map(s => {
+                const iconHTML = s.type === 'github' 
+                  ? '<i data-lucide="github" style="width: 14px; height: 14px;"></i>'
+                  : (s.type === 'x' || s.type === 'twitter')
+                  ? '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'
+                  : '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
+                
+                return `<li style="margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
+                  ${iconHTML}
+                  <a href="${s.url}" target="_blank" style="color: var(--muted); text-decoration: none;">
+                    ${s.name}
+                  </a>
+                </li>`;
+              }).join("")}
+            </ul>
+          </div>
 
           <div class="meta">
             <span class="difficulty ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
@@ -781,12 +792,17 @@
     try {
       console.log('Calling generatePrompt with:', ideaData);
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+      
       const response = await fetch('/.netlify/functions/generatePrompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ideaData)
+        body: JSON.stringify(ideaData),
+        signal: controller.signal
       });
       
+      clearTimeout(timeoutId);
       console.log('Response status:', response.status);
       
       if (!response.ok) {
@@ -852,10 +868,16 @@
       
     } catch (error) {
       console.error('Error generating prompt:', error);
+      
+      let errorMessage = error.message;
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out after 45 seconds. Please try again.';
+      }
+      
       modalContent.innerHTML = `
         <div style="text-align: center; padding: 2rem; color: var(--muted);">
           <p>Oops! Something went wrong generating the prompt.</p>
-          <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #f87171;">${error.message}</p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #f87171;">${errorMessage}</p>
           <p style="margin-top: 1rem;">
             <button onclick="closeBuildModal()" style="padding: 0.5rem 1rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer;">
               Close
