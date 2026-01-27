@@ -57,56 +57,41 @@ Generate a comprehensive prompt that someone can copy/paste into Claude, ChatGPT
 
 Format as clean markdown that's ready to copy/paste.`;
 
-    console.log('Calling Gemini API...');
-    console.log('API Key length:', geminiKey.length);
-    console.log('API Key first 10 chars:', geminiKey.substring(0, 10));
+    console.log('Calling Gemini API with v1beta...');
 
-    // Use the exact format from Google's current documentation
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-    
-    console.log('Request URL:', url.replace(geminiKey, 'KEY_HIDDEN'));
-
-    const requestBody = {
-      contents: [{
-        parts: [{
-          text: promptText
-        }]
-      }]
-    };
-
-    console.log('Request body:', JSON.stringify(requestBody).substring(0, 200));
+    // CHANGED: Use v1beta instead of v1
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: promptText
+          }]
+        }]
+      })
     });
 
     console.log('Response status:', response.status);
-    console.log('Response headers:', JSON.stringify([...response.headers.entries()]));
-
-    const responseText = await response.text();
-    console.log('Response body:', responseText.substring(0, 500));
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini error:', errorText);
       return {
         statusCode: 500,
         headers,
         body: JSON.stringify({ 
           error: `Gemini API error: ${response.status}`,
-          details: responseText,
-          debugInfo: {
-            url: url.replace(geminiKey, 'KEY_HIDDEN'),
-            status: response.status,
-            keyLength: geminiKey.length
-          }
+          details: errorText
         })
       };
     }
 
-    const data = JSON.parse(responseText);
+    const data = await response.json();
     const generatedPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     if (!generatedPrompt) {
@@ -115,12 +100,12 @@ Format as clean markdown that's ready to copy/paste.`;
         headers,
         body: JSON.stringify({ 
           error: 'No prompt in response',
-          details: responseText
+          details: JSON.stringify(data)
         })
       };
     }
 
-    console.log('Success! Prompt length:', generatedPrompt.length);
+    console.log('Success! Prompt generated.');
 
     return {
       statusCode: 200,
@@ -135,8 +120,7 @@ Format as clean markdown that's ready to copy/paste.`;
       headers,
       body: JSON.stringify({ 
         error: 'Failed to generate prompt',
-        details: error.message,
-        stack: error.stack
+        details: error.message
       })
     };
   }
