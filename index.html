@@ -440,7 +440,7 @@
   <div class="motto">Independent Builder Intelligence</div>
 
   <p>
-    Tech Murmurs surfaces side-quest ideas that blend thoughtful indie hacker prompts, early-stage product opportunities, 
+    Side-quest ideas that blend thoughtful indie hacker prompts, early-stage product opportunities, 
     and playful creative experiments. Each idea is generated from live signals in the builder ecosystem — GitHub issues, 
     hackathon themes, protocol updates, and developer conversations — then synthesized by AI into buildable, vibe-coder-friendly 
     projects you can actually ship.
@@ -706,7 +706,7 @@
             ${(q.sources || []).map(s => {
               const iconHTML = s.type === 'github' 
                 ? '<i data-lucide="github" style="width: 14px; height: 14px;"></i>'
-                : s.type === 'x' || s.type === 'twitter'
+                : (s.type === 'x' || s.type === 'twitter')
                 ? '<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'
                 : '<i data-lucide="rss" style="width: 14px; height: 14px;"></i>';
               
@@ -749,12 +749,17 @@
     try {
       console.log('Calling generatePrompt with:', ideaData);
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+      
       const response = await fetch('/.netlify/functions/generatePrompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ideaData)
+        body: JSON.stringify(ideaData),
+        signal: controller.signal
       });
       
+      clearTimeout(timeoutId);
       console.log('Response status:', response.status);
       
       if (!response.ok) {
@@ -820,10 +825,16 @@
       
     } catch (error) {
       console.error('Error generating prompt:', error);
+      
+      let errorMessage = error.message;
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out after 45 seconds. Please try again.';
+      }
+      
       modalContent.innerHTML = `
         <div style="text-align: center; padding: 2rem; color: var(--muted);">
           <p>Oops! Something went wrong generating the prompt.</p>
-          <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #f87171;">${error.message}</p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #f87171;">${errorMessage}</p>
           <p style="margin-top: 1rem;">
             <button onclick="closeBuildModal()" style="padding: 0.5rem 1rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer;">
               Close
