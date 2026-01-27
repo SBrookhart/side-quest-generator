@@ -42,23 +42,26 @@ export const handler = async (event) => {
 
     const difficultyGuidance = {
       'Easy': {
-        steps: '5-7 clear, beginner-friendly steps',
-        code: '2-3 complete code examples'
+        steps: '5-7 beginner-friendly steps',
+        code: '2-3 code examples',
+        tone: 'encouraging and supportive'
       },
       'Medium': {
-        steps: '4-6 structured steps',
-        code: '1-2 key code patterns'
+        steps: '4-6 practical steps',
+        code: '1-2 code patterns',
+        tone: 'focused on shipping'
       },
       'Hard': {
         steps: '3-5 architectural steps',
-        code: '1 architectural example'
+        code: '1 system design example',
+        tone: 'technical and in-depth'
       }
     };
 
     const guidance = difficultyGuidance[difficulty] || difficultyGuidance['Medium'];
     const worthList = Array.isArray(worth) ? worth.join(', ') : (worth || 'Building something cool');
 
-    const promptText = `Generate a detailed build prompt in markdown. Output ONLY markdown - no preamble, no postamble.
+    const promptText = `Generate a detailed build prompt in markdown. Output ONLY markdown - no preamble, no postamble, no conversational intro.
 
 Use FIRST PERSON language (I, my, me) throughout.
 
@@ -68,41 +71,43 @@ Goal: ${quest}
 Value: ${worthList}
 Level: ${difficulty}
 
-Structure:
+Create a complete guide with these exact sections:
 
 ## The Concept
-2-3 sentences in first person about what I'm building
+Write 2-3 sentences in first person about what I'm building.
 
 ## What I'm Building
-3-5 core features as bullets
+List 3-5 core features as bullet points.
 
 ## User Flow
-3-4 steps of how someone uses this
+Describe 3-4 steps of how someone uses this.
 
 ## Tech Stack Suggestions
-2-3 options for frontend/backend/tools (note I can swap these)
+List 2-3 specific technology options I can use (note these are swappable).
 
 ## Implementation Steps
-${guidance.steps}
+Write ${guidance.steps} in ${guidance.tone} tone.
 
 ## Starter Code Snippets
-${guidance.code}
+Include ${guidance.code}.
 
 ## Bonus Ideas
-2-3 extension ideas
+List 2-3 ways to extend this project.
 
 ## Tips
-${difficulty === 'Easy' ? 'Beginner-friendly advice' : difficulty === 'Medium' ? 'Shipping advice' : 'Architecture tips'}
+Write ${guidance.tone} advice specific to ${difficulty} level projects.
 
-Output ONLY markdown starting with ## The Concept`;
+CRITICAL: Output the COMPLETE guide. Do not truncate or summarize. Include all sections with full detail.
+
+Start directly with "## The Concept" - NO introduction text.`;
 
     console.log('Calling Gemini API...');
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`;
 
     // Add timeout to the fetch
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 40000); // 40 second server timeout
+    const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 second server timeout
 
     try {
       const response = await fetch(url, {
@@ -114,8 +119,9 @@ Output ONLY markdown starting with ## The Concept`;
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 4096,  // Increased from 3000
-            candidateCount: 1
+            maxOutputTokens: 8192,  // Increased significantly to prevent cutoffs
+            candidateCount: 1,
+            stopSequences: []  // No stop sequences that could truncate
           }
         }),
         signal: controller.signal
