@@ -101,7 +101,8 @@ Output the COMPLETE guide with ALL sections. Start with "## The Concept"`;
 
     console.log('Calling Gemini API...');
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+    // Use gemini-1.5-flash-latest or gemini-1.5-flash-8b for best free tier
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${geminiKey}`;
 
     // Add timeout to the fetch
     const controller = new AbortController();
