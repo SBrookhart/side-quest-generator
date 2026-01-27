@@ -58,9 +58,11 @@ export const handler = async (event) => {
     const guidance = difficultyGuidance[difficulty] || difficultyGuidance['Medium'];
     const worthList = Array.isArray(worth) ? worth.join(', ') : (worth || 'Building something cool');
 
-    const promptText = `You are generating a detailed build prompt that someone will copy/paste into an AI assistant to help them build a project.
+    const promptText = `You are generating a detailed build prompt that someone will copy/paste into an AI assistant to help them build their own project.
 
 Output ONLY markdown. Do NOT include any conversational introduction, preamble, or commentary. Start directly with "## The Concept" and end with the Tips section.
+
+IMPORTANT: Use first-person language throughout. This is a personal project the builder wants to create. Say "I'm building" not "you're building". Say "my project" not "your project".
 
 Project Details:
 - Title: ${title}
@@ -72,9 +74,9 @@ Project Details:
 Generate a comprehensive, detailed build prompt with these sections:
 
 ## The Concept
-Write 2-3 sentences explaining what this project is and why it's cool.
+Write 2-3 sentences in FIRST PERSON explaining what I'm building and why it's cool. Use "I", "my", "me" - NOT "you" or "your".
 
-## What You're Building
+## What I'm Building
 List 3-5 core features as bullet points. Be specific about functionality.
 
 ## User Flow
@@ -85,7 +87,7 @@ Provide 2-3 concrete technology options for:
 - Frontend (if applicable)
 - Backend (if applicable)  
 - APIs/Tools/Libraries
-Include a note that these can be swapped for their preferred stack.
+Include a note that I can swap these for my preferred stack.
 
 ## Implementation Steps
 Provide ${guidance.steps} to build this project from scratch to working MVP.
@@ -99,7 +101,10 @@ List 2-3 ways to extend or enhance the project once the core is working.
 ## Tips
 Provide ${difficulty === 'Easy' ? 'encouraging advice for beginners, including common pitfalls to avoid' : difficulty === 'Medium' ? 'practical advice on shipping and deployment' : 'architectural considerations and scaling advice'}.
 
-Remember: Output ONLY the markdown sections above. No introduction like "Let's build this!" or "Here's your prompt". Just the markdown content starting with ## The Concept.`;
+Remember: 
+1. Output ONLY the markdown sections above. No introduction or commentary.
+2. Use FIRST PERSON language (I, my, me) throughout - especially in The Concept section.
+3. Start directly with ## The Concept.`;
 
     console.log('Calling Gemini API...');
 
@@ -114,7 +119,7 @@ Remember: Output ONLY the markdown sections above. No introduction like "Let's b
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 3000  // Increased for full detailed content
+          maxOutputTokens: 3000
         }
       })
     });
