@@ -87,6 +87,103 @@
       text-decoration: none;
     }
 
+    .search-section {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .search-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .form-group input {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .form-group input::placeholder {
+      color: #6b7280;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .search-button, .clear-button {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .search-button {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+    }
+
+    .search-button:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .clear-button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .clear-button:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+    }
+
+    .results-count {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 1rem 0;
+    }
+
     main {
       max-width: 1100px;
       margin: auto;
@@ -358,6 +455,12 @@
       opacity: 1;
     }
 
+    @media (max-width: 968px) {
+      .search-form {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 640px) {
       h1 { font-size: 2.2rem; }
       .motto { font-size: 0.8rem; }
@@ -397,6 +500,36 @@
 </header>
 
 <main>
+  <div class="search-section">
+    <div class="search-title">
+      <i data-lucide="search"></i>
+      Search Archive
+    </div>
+    <div class="search-form">
+      <div class="form-group">
+        <label for="keyword">Keyword</label>
+        <input type="text" id="keyword" placeholder="Search title, description..." />
+      </div>
+      <div class="form-group">
+        <label for="fromDate">From Date</label>
+        <input type="text" id="fromDate" placeholder="MM-DD-YYYY" />
+      </div>
+      <div class="form-group">
+        <label for="toDate">To Date</label>
+        <input type="text" id="toDate" placeholder="MM-DD-YYYY" />
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="search-button" onclick="applyFilters()">
+          <i data-lucide="filter"></i> Filter
+        </button>
+        <button class="clear-button" onclick="clearFilters()">
+          <i data-lucide="x"></i> Clear
+        </button>
+      </div>
+    </div>
+    <div class="results-count" id="resultsCount"></div>
+  </div>
+
   <div id="archive"></div>
 </main>
 
@@ -418,12 +551,12 @@
 
 <script>
   let allIdeas = [];
+  let allData = {};
+  let filteredData = {};
 
   async function loadArchive() {
     const container = document.getElementById("archive");
     container.innerHTML = "";
-
-    let data = null;
 
     try {
       const res = await fetch(`/.netlify/functions/archive?v=${Date.now()}`, {
@@ -433,17 +566,19 @@
         }
       });
       if (res.ok) {
-        data = await res.json();
+        allData = await res.json();
       }
-    } catch {}
+    } catch (err) {
+      console.error('Failed to load archive:', err);
+    }
 
-    if (!data || Object.keys(data).length === 0) {
+    if (!allData || Object.keys(allData).length === 0) {
       container.innerHTML =
         "<p style='color:#9ca3af'>No archived ideas yet.</p>";
       return;
     }
 
-    // Get today's date in YYYY-MM-DD format (local timezone)
+    // Get today's date in YYYY-MM-DD format
     const today = new Date();
     const todayString = today.getFullYear() + '-' + 
                         String(today.getMonth() + 1).padStart(2, '0') + '-' + 
@@ -451,27 +586,35 @@
     
     console.log('Today\'s date:', todayString);
 
-    let globalIndex = 0;
-    allIdeas = [];
+    // Filter out today's date
+    filteredData = {};
+    Object.entries(allData).forEach(([date, ideas]) => {
+      if (date !== todayString) {
+        filteredData[date] = ideas;
+      }
+    });
 
-    // Filter out today's date and sort in reverse chronological order
-    const filteredEntries = Object.entries(data)
-      .filter(([date, ideas]) => {
-        const isToday = date === todayString;
-        if (isToday) {
-          console.log('Filtering out today\'s date:', date);
-        }
-        return !isToday;
-      })
-      .sort((a, b) => b[0].localeCompare(a[0]));
+    renderArchive(filteredData);
+  }
 
-    if (filteredEntries.length === 0) {
+  function renderArchive(data) {
+    const container = document.getElementById("archive");
+    container.innerHTML = "";
+
+    if (!data || Object.keys(data).length === 0) {
       container.innerHTML =
-        "<p style='color:#9ca3af'>No archived ideas yet. Check back tomorrow!</p>";
+        "<p style='color:#9ca3af'>No ideas match your search criteria.</p>";
+      updateResultsCount(0);
       return;
     }
 
-    filteredEntries.forEach(([date, ideas]) => {
+    let globalIndex = 0;
+    let totalIdeas = 0;
+    allIdeas = [];
+
+    const sortedEntries = Object.entries(data).sort((a, b) => b[0].localeCompare(a[0]));
+
+    sortedEntries.forEach(([date, ideas]) => {
       const day = document.createElement("div");
       day.className = "day";
 
@@ -483,8 +626,9 @@
 
       day.innerHTML =
         `<h2>${label}</h2>` +
-        ideas.map((q, localIdx) => {
+        ideas.map((q) => {
           const idx = globalIndex++;
+          totalIdeas++;
           allIdeas.push(q);
           
           return `
@@ -533,8 +677,97 @@
       container.appendChild(day);
     });
 
+    updateResultsCount(totalIdeas);
     lucide.createIcons();
   }
+
+  function updateResultsCount(count) {
+    const resultsCount = document.getElementById('resultsCount');
+    if (count === 0) {
+      resultsCount.textContent = 'No results found';
+    } else {
+      resultsCount.textContent = `Showing ${count} idea${count === 1 ? '' : 's'}`;
+    }
+  }
+
+  function parseDate(dateStr) {
+    // Parse MM-DD-YYYY format
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return null;
+    const month = parseInt(parts[0]) - 1;
+    const day = parseInt(parts[1]);
+    const year = parseInt(parts[2]);
+    return new Date(year, month, day);
+  }
+
+  function applyFilters() {
+    const keyword = document.getElementById('keyword').value.toLowerCase().trim();
+    const fromDateStr = document.getElementById('fromDate').value.trim();
+    const toDateStr = document.getElementById('toDate').value.trim();
+
+    let fromDate = null;
+    let toDate = null;
+
+    if (fromDateStr) {
+      fromDate = parseDate(fromDateStr);
+      if (!fromDate || isNaN(fromDate.getTime())) {
+        alert('Invalid From Date. Please use MM-DD-YYYY format.');
+        return;
+      }
+    }
+
+    if (toDateStr) {
+      toDate = parseDate(toDateStr);
+      if (!toDate || isNaN(toDate.getTime())) {
+        alert('Invalid To Date. Please use MM-DD-YYYY format.');
+        return;
+      }
+      // Set to end of day
+      toDate.setHours(23, 59, 59, 999);
+    }
+
+    const filtered = {};
+
+    Object.entries(filteredData).forEach(([dateStr, ideas]) => {
+      const date = new Date(dateStr + 'T00:00:00');
+
+      // Check date range
+      if (fromDate && date < fromDate) return;
+      if (toDate && date > toDate) return;
+
+      // Filter ideas by keyword
+      const matchingIdeas = ideas.filter(idea => {
+        if (!keyword) return true;
+        
+        const searchText = `${idea.title} ${idea.murmur} ${idea.quest}`.toLowerCase();
+        return searchText.includes(keyword);
+      });
+
+      if (matchingIdeas.length > 0) {
+        filtered[dateStr] = matchingIdeas;
+      }
+    });
+
+    renderArchive(filtered);
+  }
+
+  function clearFilters() {
+    document.getElementById('keyword').value = '';
+    document.getElementById('fromDate').value = '';
+    document.getElementById('toDate').value = '';
+    renderArchive(filteredData);
+  }
+
+  // Allow Enter key to trigger search
+  document.addEventListener('DOMContentLoaded', () => {
+    ['keyword', 'fromDate', 'toDate'].forEach(id => {
+      document.getElementById(id).addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          applyFilters();
+        }
+      });
+    });
+  });
 
   async function openBuildModal(ideaIndex) {
     const ideaData = allIdeas[ideaIndex];
@@ -543,7 +776,7 @@
     const modalContent = document.getElementById('modalPromptContent');
     
     modal.style.display = 'flex';
-    modalContent.innerHTML = '<div style="text-align: center; padding: 3rem;"><div class="loader"></div><p style="margin-top: 1rem; color: var(--muted);">Generating your build prompt...</p></div>';
+    modalContent.innerHTML = '<div style="text-align: center; padding: 3rem;"><div class="loader"></div><p style="margin-top: 1rem; color: var(--muted);">Generating your project\'s AI prompt<br><span style="font-size: 0.85rem;">(may take 10-15 seconds to think)</span></p></div>';
     
     try {
       console.log('Calling generatePrompt with:', ideaData);
