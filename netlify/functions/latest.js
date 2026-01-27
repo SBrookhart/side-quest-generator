@@ -16,14 +16,14 @@ function enrichSources(ideas) {
   ];
   
   const xSources = [
-    { name: "X discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
-    { name: "X thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
-    { name: "X conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" },
-    { name: "X discussion on dev tools", url: "https://x.com/search?q=developer%20tools%20productivity&f=live" },
-    { name: "X thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
-    { name: "X conversation on CLI tools", url: "https://x.com/search?q=CLI%20tool%20ideas&f=live" },
-    { name: "X discussion on code quality", url: "https://x.com/search?q=code%20quality%20tools&f=live" },
-    { name: "X thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" }
+    { name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+    { name: "Thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
+    { name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" },
+    { name: "Discussion on dev tools", url: "https://x.com/search?q=developer%20tools%20productivity&f=live" },
+    { name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
+    { name: "Conversation on CLI tools", url: "https://x.com/search?q=CLI%20tool%20ideas&f=live" },
+    { name: "Discussion on code quality", url: "https://x.com/search?q=code%20quality%20tools&f=live" },
+    { name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" }
   ];
   
   const rssSources = [
@@ -89,7 +89,7 @@ function getFallbackIdeas() {
       difficulty: "Easy",
       sources: [
         { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
-        { type: "x", name: "X thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
+        { type: "x", name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
         { type: "rss", name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" }
       ]
     },
@@ -105,7 +105,7 @@ function getFallbackIdeas() {
       difficulty: "Medium",
       sources: [
         { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
-        { type: "x", name: "X conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
+        { type: "x", name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
       ]
     },
     {
@@ -119,7 +119,7 @@ function getFallbackIdeas() {
       ],
       difficulty: "Easy",
       sources: [
-        { type: "x", name: "X discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+        { type: "x", name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
         { type: "rss", name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" }
       ]
     },
@@ -135,7 +135,7 @@ function getFallbackIdeas() {
       difficulty: "Medium",
       sources: [
         { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
-        { type: "x", name: "X thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" },
+        { type: "x", name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" },
         { type: "rss", name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" }
       ]
     },
