@@ -1,52 +1,4 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-
-const ARCHIVE_PATH = path.join('/tmp', 'archive.json');
-const LATEST_PATH = path.join('/tmp', 'latest.json');
-
-async function loadArchive() {
-  try {
-    const data = await fs.readFile(ARCHIVE_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch (err) {
-    return {};
-  }
-}
-
-async function saveArchive(archive) {
-  await fs.writeFile(ARCHIVE_PATH, JSON.stringify(archive, null, 2));
-}
-
-async function loadLatest() {
-  try {
-    const data = await fs.readFile(LATEST_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return null;
-  }
-}
-
-async function saveLatest(ideas) {
-  await fs.writeFile(LATEST_PATH, JSON.stringify(ideas, null, 2));
-}
-
-async function archiveYesterday(todayIdeas) {
-  const archive = await loadArchive();
-  
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayString = yesterday.getFullYear() + '-' + 
-                          String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
-                          String(yesterday.getDate()).padStart(2, '0');
-  
-  if (!archive[yesterdayString] && todayIdeas && todayIdeas.length > 0) {
-    console.log(`Archiving yesterday's date: ${yesterdayString}`);
-    archive[yesterdayString] = todayIdeas;
-    await saveArchive(archive);
-  }
-  
-  return archive;
-}
+import { getStore } from '@netlify/blobs';
 
 function enrichSources(ideas) {
   const githubSources = [
@@ -113,7 +65,7 @@ function enrichSources(ideas) {
   });
 }
 
-export const handler = async (event) => {
+export const handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -127,25 +79,38 @@ export const handler = async (event) => {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: 'Anthropic API key not configured',
-        ideas: getFallbackIdeas()
+        error: 'Anthropic API key not configured'
       })
     };
   }
 
   try {
+    const store = getStore('tech-murmurs');
+    
+    // Archive yesterday's ideas first
     try {
-      const currentLatest = await loadLatest();
+      const currentLatest = await store.get('latest', { type: 'json' });
       if (currentLatest && currentLatest.length > 0) {
-        await archiveYesterday(currentLatest);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayString = yesterday.getFullYear() + '-' + 
+                                String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
+                                String(yesterday.getDate()).padStart(2, '0');
+        
+        await store.set(`archive:${yesterdayString}`, JSON.stringify(currentLatest));
+        console.log(`Archived ideas for: ${yesterdayString}`);
       }
     } catch (err) {
       console.log('No previous data to archive:', err);
     }
 
+    // Generate today's new ideas
+    console.log('Generating new ideas with Anthropic...');
     let ideas = await generateIdeas(anthropicKey);
     ideas = enrichSources(ideas);
-    await saveLatest(ideas);
+    
+    // Save to blob storage
+    await store.set('latest', JSON.stringify(ideas));
 
     const today = new Date().toISOString().split('T')[0];
     console.log('Successfully generated and saved new ideas for:', today);
@@ -168,8 +133,7 @@ export const handler = async (event) => {
       headers,
       body: JSON.stringify({
         error: 'Failed to generate ideas',
-        details: error.message,
-        ideas: getFallbackIdeas()
+        details: error.message
       })
     };
   }
@@ -209,7 +173,7 @@ Output ONLY valid JSON array, no markdown fences.`;
       "anthropic-version": "2023-06-01"
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-5-20250929",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 4096,
       temperature: 0.8,
       messages: [
@@ -237,86 +201,4 @@ Output ONLY valid JSON array, no markdown fences.`;
   const ideas = JSON.parse(cleanedContent);
   
   return ideas;
-}
-
-function getFallbackIdeas() {
-  return [
-    {
-      title: "What If My Code Commits Were a Tamagotchi?",
-      murmur: "You commit code every day, but it's just numbers and graphs. What if your commit streak was a little creature you had to keep alive?",
-      quest: "Build a GitHub widget that turns your commit history into a virtual pet. The more you commit, the happier it gets. Skip a day and it gets sad. Let it evolve based on your coding patterns.",
-      worth: [
-        "Makes daily commits actually adorable",
-        "Guilt trips you in the cutest way",
-        "Perfect conversation starter for your README"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
-        { type: "x", name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
-        { type: "rss", name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" }
-      ]
-    },
-    {
-      title: "Can My Spotify Wrapped Be for My Code?",
-      murmur: "Spotify makes listening to music feel like an achievement. Why doesn't coding? You deserve a year-end recap of your most-used functions, weirdest variable names, and coding music.",
-      quest: "Build a tool that analyzes your GitHub repos and generates a beautiful Spotify Wrapped-style video: most productive hour, favorite programming language, most refactored file, and a playlist recommendation based on your commit messages.",
-      worth: [
-        "Makes you feel accomplished about your year",
-        "Extremely shareable on social media",
-        "Everyone will want one"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
-        { type: "x", name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
-      ]
-    },
-    {
-      title: "What If My To-Do List Was a Plant?",
-      murmur: "To-do apps are stressful and guilt-inducing. What if instead of checking boxes, you were watering a plant that grows with each completed task?",
-      quest: "Build a to-do app where each task is a seed. Complete it and the plant grows. Skip tasks and it wilts. Watch your productivity garden flourish over time. Export your garden as a printable poster.",
-      worth: [
-        "Makes productivity feel nurturing, not punishing",
-        "Your task list becomes something beautiful",
-        "Way more motivating than checkboxes"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "x", name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
-        { type: "rss", name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" }
-      ]
-    },
-    {
-      title: "Can My Browser History Tell a Story?",
-      murmur: "Your browser history is a treasure trove of who you are—late-night rabbit holes, research spirals, inspiration hunts. What if it could narrate your intellectual journey?",
-      quest: "Build a browser extension that turns your browsing history into a generated narrative. 'On Tuesday, you fell down a rabbit hole about mushroom foraging, then pivoted to sourdough bread at 2am.' Share your weekly story or keep it private.",
-      worth: [
-        "Makes your internet wandering feel meaningful",
-        "Great for reflection and self-awareness",
-        "Weirdly intimate and shareable"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
-        { type: "x", name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" },
-        { type: "rss", name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" }
-      ]
-    },
-    {
-      title: "What If Error Messages Were Compliments?",
-      murmur: "Debugging is already hard. Error messages don't need to be cold and technical. What if they hyped you up instead?",
-      quest: "Build a dev tool that intercepts error messages and rewrites them with encouragement. 'Syntax error on line 12' becomes 'Hey, almost there! Just a tiny typo on line 12—you got this!' Customize the vibe: supportive, sarcastic, or chaotic.",
-      worth: [
-        "Makes debugging way less demoralizing",
-        "Actually helps beginners stay motivated",
-        "Could become the most wholesome dev tool ever"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
-        { type: "rss", name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" }
-      ]
-    }
-  ];
 }
