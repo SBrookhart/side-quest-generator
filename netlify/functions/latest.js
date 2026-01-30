@@ -1,3 +1,5 @@
+import { getStore } from '@netlify/blobs';
+
 function enrichSources(ideas) {
   const githubSources = [
     { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
@@ -63,33 +65,31 @@ function enrichSources(ideas) {
   });
 }
 
-export const handler = async (event) => {
+export const handler = async (event, context) => {
   try {
-    // Get date key for caching - changes once per day
-    const today = new Date().toISOString().split('T')[0];
+    const store = getStore('tech-murmurs');
     
-    // Try calling generateDaily to get fresh ideas
-    try {
-      const response = await fetch('https://side-quest-generator.netlify.app/.netlify/functions/generateDaily');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.ideas) {
-          console.log('Loaded fresh ideas from generateDaily');
-          return {
-            statusCode: 200,
-            headers: { 
-              'Content-Type': 'application/json',
-              'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
-            },
-            body: JSON.stringify(data.ideas)
-          };
-        }
-      }
-    } catch (err) {
-      console.log('Could not fetch from generateDaily, using fallback');
+    // Try to load AI-generated ideas from blob storage
+    const latestData = await store.get('latest', { type: 'text' });
+    
+    if (latestData) {
+      let ideas = JSON.parse(latestData);
+      ideas = enrichSources(ideas);
+      
+      console.log('Loaded AI-generated ideas from blob storage');
+      
+      return {
+        statusCode: 200,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=3600'
+        },
+        body: JSON.stringify(ideas)
+      };
     }
     
-    // Fallback to curated ideas
+    // Fallback to curated ideas if no AI-generated ones exist
+    console.log('No AI ideas found, using fallback');
     let ideas = getFallbackIdeas();
     ideas = enrichSources(ideas);
     
@@ -101,8 +101,12 @@ export const handler = async (event) => {
       },
       body: JSON.stringify(ideas)
     };
+    
   } catch (error) {
     console.error('Latest endpoint error:', error);
+    
+    let ideas = getFallbackIdeas();
+    ideas = enrichSources(ideas);
     
     return {
       statusCode: 200,
@@ -110,7 +114,7 @@ export const handler = async (event) => {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache'
       },
-      body: JSON.stringify(getFallbackIdeas())
+      body: JSON.stringify(ideas)
     };
   }
 };
@@ -127,11 +131,7 @@ function getFallbackIdeas() {
         "Perfect conversation starter for your README"
       ],
       difficulty: "Easy",
-      sources: [
-        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
-        { type: "x", name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
-        { type: "rss", name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" }
-      ]
+      sources: []
     },
     {
       title: "Can My Spotify Wrapped Be for My Code?",
@@ -143,10 +143,7 @@ function getFallbackIdeas() {
         "Everyone will want one"
       ],
       difficulty: "Medium",
-      sources: [
-        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
-        { type: "x", name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
-      ]
+      sources: []
     },
     {
       title: "What If My To-Do List Was a Plant?",
@@ -158,10 +155,7 @@ function getFallbackIdeas() {
         "Way more motivating than checkboxes"
       ],
       difficulty: "Easy",
-      sources: [
-        { type: "x", name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
-        { type: "rss", name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" }
-      ]
+      sources: []
     },
     {
       title: "Can My Browser History Tell a Story?",
@@ -173,11 +167,7 @@ function getFallbackIdeas() {
         "Weirdly intimate and shareable"
       ],
       difficulty: "Medium",
-      sources: [
-        { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
-        { type: "x", name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" },
-        { type: "rss", name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" }
-      ]
+      sources: []
     },
     {
       title: "What If Error Messages Were Compliments?",
@@ -189,10 +179,7 @@ function getFallbackIdeas() {
         "Could become the most wholesome dev tool ever"
       ],
       difficulty: "Easy",
-      sources: [
-        { type: "github", name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
-        { type: "rss", name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" }
-      ]
+      sources: []
     }
   ];
 }
