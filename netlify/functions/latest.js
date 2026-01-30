@@ -1,5 +1,3 @@
-import { getStore } from '@netlify/blobs';
-
 function enrichSources(ideas) {
   const githubSources = [
     { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
@@ -65,31 +63,59 @@ function enrichSources(ideas) {
   });
 }
 
-export const handler = async (event, context) => {
+// In-memory cache (persists for lifetime of function container)
+let cachedIdeas = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+
+export const handler = async (event) => {
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  
   try {
-    const store = getStore('tech-murmurs');
-    
-    // Try to load AI-generated ideas from blob storage
-    const latestData = await store.get('latest', { type: 'text' });
-    
-    if (latestData) {
-      let ideas = JSON.parse(latestData);
-      ideas = enrichSources(ideas);
-      
-      console.log('Loaded AI-generated ideas from blob storage');
-      
+    // Check if cache is still valid
+    const now = Date.now();
+    if (cachedIdeas && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+      console.log('Serving from in-memory cache');
       return {
         statusCode: 200,
         headers: { 
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=3600'
+          'Cache-Control': 'public, max-age=21600' // 6 hours
         },
-        body: JSON.stringify(ideas)
+        body: JSON.stringify(cachedIdeas)
       };
     }
     
-    // Fallback to curated ideas if no AI-generated ones exist
-    console.log('No AI ideas found, using fallback');
+    // Generate new ideas if we have API key
+    if (anthropicKey) {
+      console.log('Generating fresh AI ideas...');
+      
+      try {
+        let ideas = await generateIdeas(anthropicKey);
+        ideas = enrichSources(ideas);
+        
+        // Update cache
+        cachedIdeas = ideas;
+        cacheTimestamp = now;
+        
+        console.log('Successfully generated and cached new ideas');
+        
+        return {
+          statusCode: 200,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=21600' // 6 hours
+          },
+          body: JSON.stringify(ideas)
+        };
+      } catch (aiError) {
+        console.error('AI generation failed:', aiError);
+        // Fall through to fallback
+      }
+    }
+    
+    // Fallback to curated ideas
+    console.log('Using fallback ideas');
     let ideas = getFallbackIdeas();
     ideas = enrichSources(ideas);
     
@@ -97,7 +123,7 @@ export const handler = async (event, context) => {
       statusCode: 200,
       headers: { 
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': 'public, max-age=3600' // 1 hour for fallback
       },
       body: JSON.stringify(ideas)
     };
@@ -118,6 +144,70 @@ export const handler = async (event, context) => {
     };
   }
 };
+
+async function generateIdeas(apiKey) {
+  const systemPrompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
+
+Generate exactly 5 project ideas with this distribution:
+- 2 thoughtful indie hacker / solo builder prompts (40%)
+- 1 early-stage product opportunity (20%)
+- 2 creative experiments & playful tools (40%)
+
+Each idea should be:
+- Conversational and playful in tone
+- Concrete and buildable (weekend project scale)
+- Specific enough to start immediately
+- Inspiring without being intimidating
+
+Format each idea as JSON with:
+- title: A conversational question or observation (not a product pitch)
+- murmur: Why this exists (2-3 sentences, casual tone)
+- quest: What to actually build (concrete, 2-3 sentences)
+- worth: Array of 3 short reasons why it's worth building
+- difficulty: "Easy", "Medium", or "Hard"
+- sources: Empty array (will be filled with actual signals later)
+
+Output ONLY valid JSON array, no markdown fences.`;
+
+  const userPrompt = `Generate 5 diverse side quest ideas for indie builders right now. Make them feel fresh, playful, and immediately buildable.`;
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4096,
+      temperature: 0.8,
+      messages: [
+        { 
+          role: "user", 
+          content: systemPrompt + "\n\n" + userPrompt
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Anthropic API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  const content = data.content?.[0]?.text || '';
+  
+  const cleanedContent = content
+    .replace(/```json\n?/g, '')
+    .replace(/```\n?/g, '')
+    .trim();
+
+  const ideas = JSON.parse(cleanedContent);
+  
+  return ideas;
+}
 
 function getFallbackIdeas() {
   return [
