@@ -1,5 +1,3 @@
-import { getStore } from '@netlify/blobs';
-
 function enrichSources(ideas) {
   const githubSources = [
     { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
@@ -65,7 +63,7 @@ function enrichSources(ideas) {
   });
 }
 
-export const handler = async (event, context) => {
+export const handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -85,35 +83,12 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const store = getStore('tech-murmurs');
-    
-    // Archive yesterday's ideas first
-    try {
-      const currentLatest = await store.get('latest', { type: 'json' });
-      if (currentLatest && currentLatest.length > 0) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayString = yesterday.getFullYear() + '-' + 
-                                String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
-                                String(yesterday.getDate()).padStart(2, '0');
-        
-        await store.set(`archive:${yesterdayString}`, JSON.stringify(currentLatest));
-        console.log(`Archived ideas for: ${yesterdayString}`);
-      }
-    } catch (err) {
-      console.log('No previous data to archive:', err);
-    }
-
-    // Generate today's new ideas
     console.log('Generating new ideas with Anthropic...');
     let ideas = await generateIdeas(anthropicKey);
     ideas = enrichSources(ideas);
-    
-    // Save to blob storage
-    await store.set('latest', JSON.stringify(ideas));
 
     const today = new Date().toISOString().split('T')[0];
-    console.log('Successfully generated and saved new ideas for:', today);
+    console.log('Successfully generated new ideas for:', today);
 
     return {
       statusCode: 200,
