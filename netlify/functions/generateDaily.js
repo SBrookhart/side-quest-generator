@@ -33,14 +33,12 @@ async function saveLatest(ideas) {
 async function archiveYesterday(todayIdeas) {
   const archive = await loadArchive();
   
-  // Get yesterday's date in YYYY-MM-DD format
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayString = yesterday.getFullYear() + '-' + 
                           String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
                           String(yesterday.getDate()).padStart(2, '0');
   
-  // Only archive if we don't already have yesterday's data and we have ideas to archive
   if (!archive[yesterdayString] && todayIdeas && todayIdeas.length > 0) {
     console.log(`Archiving yesterday's date: ${yesterdayString}`);
     archive[yesterdayString] = todayIdeas;
@@ -50,7 +48,6 @@ async function archiveYesterday(todayIdeas) {
   return archive;
 }
 
-// Add diverse sources to ideas that have too few
 function enrichSources(ideas) {
   const githubSources = [
     { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
@@ -85,22 +82,17 @@ function enrichSources(ideas) {
   ];
   
   return ideas.map(idea => {
-    // If idea already has 2+ sources, keep them
     if (idea.sources && idea.sources.length >= 2) {
       return idea;
     }
     
-    // Build new diverse sources array
     const newSources = [];
-    
-    // Always include 1-2 GitHub sources
     const numGithub = Math.random() > 0.5 ? 2 : 1;
     for (let i = 0; i < numGithub; i++) {
       const source = githubSources[Math.floor(Math.random() * githubSources.length)];
       newSources.push({ type: 'github', ...source });
     }
     
-    // Add 1 X source (70% chance) or RSS (30% chance)
     if (Math.random() > 0.3) {
       const source = xSources[Math.floor(Math.random() * xSources.length)];
       newSources.push({ type: 'x', ...source });
@@ -109,7 +101,6 @@ function enrichSources(ideas) {
       newSources.push({ type: 'rss', ...source });
     }
     
-    // 50% chance to add a 3rd source
     if (Math.random() > 0.5 && newSources.length === 2) {
       const source = rssSources[Math.floor(Math.random() * rssSources.length)];
       newSources.push({ type: 'rss', ...source });
@@ -123,28 +114,26 @@ function enrichSources(ideas) {
 }
 
 export const handler = async (event) => {
-  // Add CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
 
-  const openaiKey = process.env.OPENAI_API_KEY;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-  if (!openaiKey) {
+  if (!anthropicKey) {
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: 'OpenAI API key not configured',
+        error: 'Anthropic API key not configured',
         ideas: getFallbackIdeas()
       })
     };
   }
 
   try {
-    // Archive yesterday's ideas first (using current latest as yesterday's data)
     try {
       const currentLatest = await loadLatest();
       if (currentLatest && currentLatest.length > 0) {
@@ -154,13 +143,8 @@ export const handler = async (event) => {
       console.log('No previous data to archive:', err);
     }
 
-    // Generate today's new ideas
-    let ideas = await generateIdeas(openaiKey);
-    
-    // Enrich sources to ensure diversity
+    let ideas = await generateIdeas(anthropicKey);
     ideas = enrichSources(ideas);
-    
-    // Save as latest
     await saveLatest(ideas);
 
     const today = new Date().toISOString().split('T')[0];
@@ -217,28 +201,33 @@ Output ONLY valid JSON array, no markdown fences.`;
 
   const userPrompt = `Generate 5 diverse side quest ideas for indie builders right now. Make them feel fresh, playful, and immediately buildable.`;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01"
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "claude-3-5-sonnet-20241022",
+      max_tokens: 4096,
       temperature: 0.8,
       messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
+        { 
+          role: "user", 
+          content: systemPrompt + "\n\n" + userPrompt
+        }
       ]
     })
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`Anthropic API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '';
+  const content = data.content?.[0]?.text || '';
   
   const cleanedContent = content
     .replace(/```json\n?/g, '')
