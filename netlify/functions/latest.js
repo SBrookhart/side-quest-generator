@@ -1,8 +1,3 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-
-const LATEST_PATH = path.join('/tmp', 'latest.json');
-
 function enrichSources(ideas) {
   const githubSources = [
     { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
@@ -70,26 +65,39 @@ function enrichSources(ideas) {
 
 export const handler = async (event) => {
   try {
-    let ideas;
+    // Get date key for caching - changes once per day
+    const today = new Date().toISOString().split('T')[0];
     
-    // Try to load from latest.json (saved by generateDaily)
+    // Try calling generateDaily to get fresh ideas
     try {
-      const data = await fs.readFile(LATEST_PATH, 'utf-8');
-      ideas = JSON.parse(data);
-      console.log('Loaded ideas from latest.json');
+      const response = await fetch('https://side-quest-generator.netlify.app/.netlify/functions/generateDaily');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.ideas) {
+          console.log('Loaded fresh ideas from generateDaily');
+          return {
+            statusCode: 200,
+            headers: { 
+              'Content-Type': 'application/json',
+              'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
+            },
+            body: JSON.stringify(data.ideas)
+          };
+        }
+      }
     } catch (err) {
-      console.log('No latest.json found, using fallback');
-      ideas = getFallbackIdeas();
+      console.log('Could not fetch from generateDaily, using fallback');
     }
     
-    // Enrich sources if needed
+    // Fallback to curated ideas
+    let ideas = getFallbackIdeas();
     ideas = enrichSources(ideas);
     
     return {
       statusCode: 200,
       headers: { 
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'public, max-age=3600'
       },
       body: JSON.stringify(ideas)
     };
