@@ -3,7 +3,6 @@ import path from 'path';
 
 const LATEST_PATH = path.join('/tmp', 'latest.json');
 
-// Add diverse sources to ideas that have too few
 function enrichSources(ideas) {
   const githubSources = [
     { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
@@ -38,22 +37,17 @@ function enrichSources(ideas) {
   ];
   
   return ideas.map(idea => {
-    // If idea already has 2+ sources, keep them
     if (idea.sources && idea.sources.length >= 2) {
       return idea;
     }
     
-    // Build new diverse sources array
     const newSources = [];
-    
-    // Always include 1-2 GitHub sources
     const numGithub = Math.random() > 0.5 ? 2 : 1;
     for (let i = 0; i < numGithub; i++) {
       const source = githubSources[Math.floor(Math.random() * githubSources.length)];
       newSources.push({ type: 'github', ...source });
     }
     
-    // Add 1 X source (70% chance) or RSS (30% chance)
     if (Math.random() > 0.3) {
       const source = xSources[Math.floor(Math.random() * xSources.length)];
       newSources.push({ type: 'x', ...source });
@@ -62,7 +56,6 @@ function enrichSources(ideas) {
       newSources.push({ type: 'rss', ...source });
     }
     
-    // 50% chance to add a 3rd source
     if (Math.random() > 0.5 && newSources.length === 2) {
       const source = rssSources[Math.floor(Math.random() * rssSources.length)];
       newSources.push({ type: 'rss', ...source });
@@ -74,6 +67,45 @@ function enrichSources(ideas) {
     };
   });
 }
+
+export const handler = async (event) => {
+  try {
+    let ideas;
+    
+    // Try to load from latest.json (saved by generateDaily)
+    try {
+      const data = await fs.readFile(LATEST_PATH, 'utf-8');
+      ideas = JSON.parse(data);
+      console.log('Loaded ideas from latest.json');
+    } catch (err) {
+      console.log('No latest.json found, using fallback');
+      ideas = getFallbackIdeas();
+    }
+    
+    // Enrich sources if needed
+    ideas = enrichSources(ideas);
+    
+    return {
+      statusCode: 200,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      body: JSON.stringify(ideas)
+    };
+  } catch (error) {
+    console.error('Latest endpoint error:', error);
+    
+    return {
+      statusCode: 200,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      body: JSON.stringify(getFallbackIdeas())
+    };
+  }
+};
 
 function getFallbackIdeas() {
   return [
@@ -156,45 +188,3 @@ function getFallbackIdeas() {
     }
   ];
 }
-
-export const handler = async (event) => {
-  try {
-    let ideas;
-    
-    // Try to load from latest.json
-    try {
-      const data = await fs.readFile(LATEST_PATH, 'utf-8');
-      ideas = JSON.parse(data);
-    } catch (err) {
-      // If no latest.json, use fallback
-      console.log('No latest.json found, using fallback');
-      ideas = getFallbackIdeas();
-    }
-    
-    // Enrich sources to ensure diversity
-    ideas = enrichSources(ideas);
-    
-    return {
-      statusCode: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
-      body: JSON.stringify(ideas)
-    };
-  } catch (error) {
-    console.error('Latest endpoint error:', error);
-    
-    // Return fallback on any error
-    const fallbackIdeas = getFallbackIdeas();
-    
-    return {
-      statusCode: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
-      body: JSON.stringify(fallbackIdeas)
-    };
-  }
-};
