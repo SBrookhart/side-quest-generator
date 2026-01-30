@@ -1,21 +1,19 @@
-import { getStore } from "@netlify/blobs";
-
-export async function handler() {
-  const store = getStore("tech-murmurs-test", {
-    siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_AUTH_TOKEN
-  });
-
-  await store.set("hello", { ok: true });
-
-  const value = await store.get("hello", { type: "json" });
-
+export const handler = async (event) => {
   return {
     statusCode: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    },
     body: JSON.stringify({
-      success: true,
-      value
+      message: 'Tech Murmurs API is working!',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        latest: '/.netlify/functions/latest',
+        archive: '/.netlify/functions/archive',
+        generateDaily: '/.netlify/functions/generateDaily',
+        generatePrompt: '/.netlify/functions/generatePrompt'
+      }
     })
   };
-}
+};
