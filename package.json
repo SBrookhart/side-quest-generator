@@ -1,11 +1,24 @@
 {
-  "name": "tech-murmurs",
-  "private": true,
+  "name": "tech-murmurs-side-quest-generator",
+  "version": "1.0.0",
+  "description": "Daily AI-generated side project ideas for indie builders",
   "type": "module",
   "scripts": {
-    "build": "echo \"No build step required\""
+    "dev": "netlify dev",
+    "build": "echo 'No build step required'"
   },
+  "keywords": [
+    "side-projects",
+    "indie-hacking",
+    "project-ideas"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
-    "@netlify/blobs": "^7.0.0"
+    "@netlify/blobs": "^8.1.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
