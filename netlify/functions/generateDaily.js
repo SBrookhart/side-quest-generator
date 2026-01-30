@@ -209,7 +209,7 @@ Output ONLY valid JSON array, no markdown fences.`;
       "anthropic-version": "2023-06-01"
     },
     body: JSON.stringify({
-      model: "claude-4-5-sonnet-20250929",
+      model: "claude-sonnet-4-5-20250929",
       max_tokens: 4096,
       temperature: 0.8,
       messages: [
