@@ -53,29 +53,35 @@ async function archiveYesterday(todayIdeas) {
 // Add diverse sources to ideas that have too few
 function enrichSources(ideas) {
   const githubSources = [
-    { name: "Issue: Feature request thread", url: "https://github.com/features/issues" },
-    { name: "VSCode extension discussions", url: "https://github.com/microsoft/vscode/discussions" },
-    { name: "awesome-list proposal", url: "https://github.com/sindresorhus/awesome" },
-    { name: "Developer tools discussion", url: "https://github.com/topics/developer-tools" },
-    { name: "CLI tool enhancement", url: "https://github.com/topics/cli" }
+    { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
+    { name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions" },
+    { name: "Awesome developer tools", url: "https://github.com/topics/developer-tools" },
+    { name: "CLI tools showcase", url: "https://github.com/topics/cli" },
+    { name: "Web development discussions", url: "https://github.com/topics/web-development" },
+    { name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
+    { name: "Awesome lists collection", url: "https://github.com/sindresorhus/awesome" }
   ];
   
   const xSources = [
-    { name: "@swyx on dev workflows", url: "https://x.com/swyx/status/1234567890" },
-    { name: "@cassidoo on indie building", url: "https://x.com/cassidoo/status/2345678901" },
-    { name: "@levelsio building in public", url: "https://x.com/levelsio/status/3456789012" },
-    { name: "@dhh on developer experience", url: "https://x.com/dhh/status/4567890123" },
-    { name: "@kentcdodds dev tools thread", url: "https://x.com/kentcdodds/status/5678901234" },
-    { name: "@addyosmani on performance", url: "https://x.com/addyosmani/status/6789012345" },
-    { name: "@Una on creative coding", url: "https://x.com/Una/status/7890123456" }
+    { name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+    { name: "Thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
+    { name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" },
+    { name: "Discussion on dev tools", url: "https://x.com/search?q=developer%20tools%20productivity&f=live" },
+    { name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
+    { name: "Conversation on CLI tools", url: "https://x.com/search?q=CLI%20tool%20ideas&f=live" },
+    { name: "Discussion on code quality", url: "https://x.com/search?q=code%20quality%20tools&f=live" },
+    { name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" }
   ];
   
   const rssSources = [
-    { name: "Dev.to - Side project ideas", url: "https://dev.to/side-projects" },
-    { name: "Hacker News discussion", url: "https://news.ycombinator.com" },
-    { name: "Indie Hackers - Building tools", url: "https://www.indiehackers.com/articles" },
-    { name: "CSS-Tricks workflow tips", url: "https://css-tricks.com" },
-    { name: "Smashing Magazine - Dev tools", url: "https://www.smashingmagazine.com" }
+    { name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" },
+    { name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" },
+    { name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" },
+    { name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" },
+    { name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" },
+    { name: "JavaScript Weekly archives", url: "https://javascriptweekly.com/issues" },
+    { name: "Node Weekly archives", url: "https://nodeweekly.com/issues" },
+    { name: "Web.dev articles", url: "https://web.dev/articles" }
   ];
   
   return ideas.map(idea => {
@@ -117,12 +123,19 @@ function enrichSources(ideas) {
 }
 
 export const handler = async (event) => {
+  // Add CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
+
   const openaiKey = process.env.OPENAI_API_KEY;
 
   if (!openaiKey) {
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ 
         error: 'OpenAI API key not configured',
         ideas: getFallbackIdeas()
@@ -150,19 +163,28 @@ export const handler = async (event) => {
     // Save as latest
     await saveLatest(ideas);
 
+    const today = new Date().toISOString().split('T')[0];
+    console.log('Successfully generated and saved new ideas for:', today);
+
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ideas)
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: 'New ideas generated successfully',
+        date: today,
+        ideas
+      })
     };
 
   } catch (error) {
     console.error('Generation failed:', error);
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         error: 'Failed to generate ideas',
+        details: error.message,
         ideas: getFallbackIdeas()
       })
     };
@@ -231,80 +253,80 @@ Output ONLY valid JSON array, no markdown fences.`;
 function getFallbackIdeas() {
   return [
     {
-      title: "What If My Dotfiles Had a Version Picker?",
-      murmur: "You tweak your shell config constantly, but there's no easy way to roll back when something breaks. Git helps, but it's not instant.",
-      quest: "Build a dotfiles manager that snapshots your config after every change and lets you switch between versions with a TUI. See a diff of what changed and quickly revert bad edits.",
+      title: "What If My Code Commits Were a Tamagotchi?",
+      murmur: "You commit code every day, but it's just numbers and graphs. What if your commit streak was a little creature you had to keep alive?",
+      quest: "Build a GitHub widget that turns your commit history into a virtual pet. The more you commit, the happier it gets. Skip a day and it gets sad. Let it evolve based on your coding patterns.",
       worth: [
-        "Makes config experimentation risk-free",
-        "Great for trying new shell setups",
-        "Could help others learn from your dotfiles evolution"
-      ],
-      difficulty: "Medium",
-      sources: [
-        { type: "github", name: "dotfiles automation discussion", url: "https://github.com/webpro/awesome-dotfiles/discussions/78" },
-        { type: "x", name: "@ThePrimeagen on dotfile chaos", url: "https://x.com/ThePrimeagen/status/1593578024" },
-        { type: "rss", name: "Hacker News - Managing dotfiles thread", url: "https://news.ycombinator.com/item?id=32847392" }
-      ]
-    },
-    {
-      title: "Can My Browser Tabs Auto-Organize by Project?",
-      murmur: "You have 50 tabs open across 3 different projects, but they're all mixed together. Finding the right tab becomes archaeological work.",
-      quest: "Build a browser extension that uses ML to detect which project each tab belongs to (by domain patterns, keywords, or manual tagging) and auto-groups them into collapsible sections.",
-      worth: [
-        "Instant mental clarity for multitaskers",
-        "Reduces context switching friction",
-        "Could learn your project patterns over time"
-      ],
-      difficulty: "Hard",
-      sources: [
-        { type: "github", name: "Chrome extension: Tab grouping feature request", url: "https://github.com/GoogleChrome/chrome-extensions-samples/issues/234" },
-        { type: "x", name: "@sarah_edo on browser organization", url: "https://x.com/sarah_edo/status/2583691470" }
-      ]
-    },
-    {
-      title: "What If npm install Told Me Why It's Slow?",
-      murmur: "npm install takes forever sometimes, and you have no idea which package is the bottleneck. You just stare at the spinner and wait.",
-      quest: "Build a wrapper around npm/yarn that shows you which package is currently downloading, how large it is, and how long it's taking. Get real-time visibility into your install process.",
-      worth: [
-        "Instant feedback on what's actually happening",
-        "Helps identify problem dependencies",
-        "Makes slow installs less frustrating"
+        "Makes daily commits actually adorable",
+        "Guilt trips you in the cutest way",
+        "Perfect conversation starter for your README"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "npm: Install progress improvements", url: "https://github.com/npm/cli/issues/4321" },
-        { type: "rss", name: "Node Weekly - Package manager performance", url: "https://nodeweekly.com/issues/478" }
+        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
+        { type: "x", name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
+        { type: "rss", name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" }
       ]
     },
     {
-      title: "Can My IDE Remember My Mental Bookmarks?",
-      murmur: "You mentally bookmark certain files or lines while coding ('that's where the auth logic is'), but your IDE forgets the moment you close it.",
-      quest: "Build an IDE extension that lets you drop invisible bookmarks in your code with notes. They persist across sessions and show up as a sidebar list. Jump to any bookmark instantly.",
+      title: "Can My Spotify Wrapped Be for My Code?",
+      murmur: "Spotify makes listening to music feel like an achievement. Why doesn't coding? You deserve a year-end recap of your most-used functions, weirdest variable names, and coding music.",
+      quest: "Build a tool that analyzes your GitHub repos and generates a beautiful Spotify Wrapped-style video: most productive hour, favorite programming language, most refactored file, and a playlist recommendation based on your commit messages.",
       worth: [
-        "Externalizes your mental code map",
-        "Great for large codebases",
-        "Could share bookmarks with teammates"
-      ],
-      difficulty: "Easy",
-      sources: [
-        { type: "github", name: "VSCode: Persistent bookmarks feature", url: "https://github.com/microsoft/vscode/issues/56789" },
-        { type: "x", name: "@TejasKumar_ on code navigation", url: "https://x.com/TejasKumar_/status/1472583690" },
-        { type: "rss", name: "JetBrains blog - Navigating large codebases", url: "https://blog.jetbrains.com/idea/2024/01/navigation-tips/" }
-      ]
-    },
-    {
-      title: "What If My README Had Live Badges That Actually Mean Something?",
-      murmur: "GitHub README badges are everywhere, but most are just static images. What if they could show real-time, useful data about your project?",
-      quest: "Build a badge service that tracks meaningful metrics: last commit recency, issue response time, documentation coverage, or 'vibe score' based on commit message sentiment. Make badges informative again.",
-      worth: [
-        "Honest project health at a glance",
-        "Encourages maintainer accountability",
-        "Could become a new standard for READMEs"
+        "Makes you feel accomplished about your year",
+        "Extremely shareable on social media",
+        "Everyone will want one"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "shields.io enhancement ideas", url: "https://github.com/badges/shields/discussions/9087" },
-        { type: "x", name: "@chriscoyier on README design", url: "https://x.com/chriscoyier/status/3692581470" }
+        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
+        { type: "x", name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
+      ]
+    },
+    {
+      title: "What If My To-Do List Was a Plant?",
+      murmur: "To-do apps are stressful and guilt-inducing. What if instead of checking boxes, you were watering a plant that grows with each completed task?",
+      quest: "Build a to-do app where each task is a seed. Complete it and the plant grows. Skip tasks and it wilts. Watch your productivity garden flourish over time. Export your garden as a printable poster.",
+      worth: [
+        "Makes productivity feel nurturing, not punishing",
+        "Your task list becomes something beautiful",
+        "Way more motivating than checkboxes"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "x", name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+        { type: "rss", name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" }
+      ]
+    },
+    {
+      title: "Can My Browser History Tell a Story?",
+      murmur: "Your browser history is a treasure trove of who you are—late-night rabbit holes, research spirals, inspiration hunts. What if it could narrate your intellectual journey?",
+      quest: "Build a browser extension that turns your browsing history into a generated narrative. 'On Tuesday, you fell down a rabbit hole about mushroom foraging, then pivoted to sourdough bread at 2am.' Share your weekly story or keep it private.",
+      worth: [
+        "Makes your internet wandering feel meaningful",
+        "Great for reflection and self-awareness",
+        "Weirdly intimate and shareable"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
+        { type: "x", name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" },
+        { type: "rss", name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" }
+      ]
+    },
+    {
+      title: "What If Error Messages Were Compliments?",
+      murmur: "Debugging is already hard. Error messages don't need to be cold and technical. What if they hyped you up instead?",
+      quest: "Build a dev tool that intercepts error messages and rewrites them with encouragement. 'Syntax error on line 12' becomes 'Hey, almost there! Just a tiny typo on line 12—you got this!' Customize the vibe: supportive, sarcastic, or chaotic.",
+      worth: [
+        "Makes debugging way less demoralizing",
+        "Actually helps beginners stay motivated",
+        "Could become the most wholesome dev tool ever"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
+        { type: "rss", name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" }
       ]
     }
   ];
