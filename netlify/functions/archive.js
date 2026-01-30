@@ -3,322 +3,559 @@ import path from 'path';
 
 const ARCHIVE_PATH = path.join('/tmp', 'archive.json');
 
-// Realistic archive with authentic-looking sources
 const FALLBACK_ARCHIVE = {
   "2026-01-23": [
     {
-      title: "What If My Terminal Had Undo/Redo?",
-      murmur: "We've all typed `rm -rf` and immediately regretted it. Command history helps, but what if your terminal could actually revert filesystem changes?",
-      quest: "Build a terminal wrapper that tracks filesystem operations and lets you undo/redo them with Ctrl+Z/Ctrl+Y. Create snapshots before dangerous commands and roll back when needed.",
+      title: "What If My Terminal Had Undo?",
+      murmur: "You accidentally rm -rf something important and your heart drops. What if your terminal just... remembered?",
+      quest: "Build a terminal wrapper that snapshots your file system state before destructive commands. Hit Ctrl+Z to undo that accidental deletion or failed script.",
       worth: [
-        "Saves you from catastrophic mistakes",
-        "Makes learning command line less scary",
-        "Could integrate with existing shell tools"
+        "Never lose work to a typo again",
+        "Builds confidence in terminal experimentation",
+        "Could save someone's thesis one day"
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "Issue: Add undo feature to zsh", url: "https://github.com/zsh-users/zsh/issues/42" },
-        { type: "x", name: "@climagic's terminal safety thread", url: "https://x.com/climagic/status/1234567890" },
-        { type: "rss", name: "Julia Evans - Making bash safer", url: "https://jvns.ca/blog/2023/08/08/new-zine--how-git-works-/" }
+        { type: "github", name: "zsh plugin discussions", url: "https://github.com/topics/zsh" },
+        { type: "x", name: "Discussion on terminal workflows", url: "https://x.com/search?q=terminal%20workflow%20tips&f=live" },
+        { type: "rss", name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" }
       ]
     },
     {
-      title: "Can My Package.json Write Its Own README?",
-      murmur: "READMEs get out of sync with code. Your package.json knows your dependencies, scripts, and project structure. Why not use that to generate docs?",
-      quest: "Build a tool that scans package.json, analyzes your scripts, and auto-generates README sections for installation, usage, and available commands. Keep it updated on every commit.",
+      title: "Can package.json Write Its Own README?",
+      murmur: "Your package.json knows everything about your project—dependencies, scripts, description. Why are you manually syncing this to your README?",
+      quest: "Build a tool that auto-generates README sections from package.json. Dependencies become a table, scripts become usage examples, and it updates on every npm install.",
       worth: [
-        "Documentation that never gets stale",
-        "Reduces manual README maintenance",
-        "Could become a standard npm package"
+        "READMEs that never go stale",
+        "One source of truth for project info",
+        "Saves so much documentation tedium"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "Discussion: Auto-generate docs from package.json", url: "https://github.com/npm/cli/discussions/4567" },
-        { type: "x", name: "@swyx on better docs", url: "https://x.com/swyx/status/9876543210" }
+        { type: "github", name: "npm CLI discussions", url: "https://github.com/npm/cli/discussions" },
+        { type: "x", name: "Conversation on documentation", url: "https://x.com/search?q=documentation%20automation&f=live" }
       ]
     },
     {
-      title: "What If Code Comments Showed Up in Git Blame?",
-      murmur: "Git blame shows who wrote the code, but not why. Comments exist in the file, but they're divorced from the commit context.",
-      quest: "Build a Git extension that associates inline comments with specific commits, then surfaces them in git blame. See not just who changed line 42, but what they were thinking.",
+      title: "What If Git Blame Had Vibes?",
+      murmur: "Git blame shows who wrote the code, but not why they were feeling when they wrote it. Was it 3am panic code or thoughtful refactoring?",
+      quest: "Build a git blame overlay that analyzes commit messages for sentiment and shows emotional context. Color-code lines by energy: calm green, stressed red, excited purple.",
       worth: [
-        "Preserves architectural decisions over time",
-        "Makes onboarding way faster",
-        "Could reduce 'why did we do this?' Slack messages"
+        "Understand code archaeology better",
+        "Adds empathy to code review",
+        "Weirdly therapeutic to see patterns"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "Git annotate enhancement request", url: "https://github.com/git/git/issues/789" },
-        { type: "x", name: "@b0rk on git archaeology", url: "https://x.com/b0rk/status/1357924680" },
-        { type: "rss", name: "ThoughtWorks Tech Radar - Code archaeology", url: "https://www.thoughtworks.com/radar" }
+        { type: "github", name: "Git enhancement requests", url: "https://github.com/topics/git" },
+        { type: "x", name: "Thread on developer experience", url: "https://x.com/search?q=developer%20experience&f=live" },
+        { type: "rss", name: "Web.dev articles", url: "https://web.dev/articles" }
       ]
     },
     {
-      title: "Can I See What My API Costs in Real-Time?",
-      murmur: "Cloud bills are a surprise every month. What if you could see your API costs ticking up as you developed, like a taxi meter?",
-      quest: "Build a dev tool that wraps your API calls (AWS, OpenAI, Stripe) and shows a running cost counter in your terminal or IDE. Set budgets and get warnings before you blow past them.",
+      title: "Can I Track My API Spend in Real-Time?",
+      murmur: "You call OpenAI, Stripe, AWS APIs and have no idea what you're spending until the bill arrives. Real-time cost visibility shouldn't be this hard.",
+      quest: "Build a lightweight proxy that sits between your app and external APIs, calculates costs per request, and shows a live dashboard of spend by endpoint.",
       worth: [
-        "No more surprise $500 bills",
-        "Helps optimize API usage early",
-        "Great learning tool for cloud economics"
+        "Never get surprised by API bills",
+        "Helps optimize expensive calls",
+        "Great for prototyping budget-conscious apps"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "Feature request: Real-time cost tracking", url: "https://github.com/aws/aws-sdk-js/issues/3456" },
-        { type: "x", name: "@GergelyOrosz on cloud cost horror stories", url: "https://x.com/GergelyOrosz/status/2468013579" }
+        { type: "github", name: "AWS SDK discussions", url: "https://github.com/aws/aws-sdk-js/discussions" },
+        { type: "x", name: "Discussion on API costs", url: "https://x.com/search?q=API%20cost%20tracking&f=live" }
       ]
     },
     {
       title: "What If My Cursor Left Breadcrumbs?",
-      murmur: "You jump around your codebase all day, but the 'go back' button only goes one level deep. What if your cursor left a trail you could follow?",
-      quest: "Build an IDE extension that tracks your cursor position history across files, letting you navigate back through your recent exploration like browser tabs. Visualize your path as a mini-map.",
+      murmur: "You jump between files in your editor constantly, but lose your train of thought. What if your cursor left a trail you could retrace?",
+      quest: "Build a VSCode extension that records your cursor's path through files and lets you replay it like a time-travel debug session. See where you've been, jump back instantly.",
       worth: [
-        "Makes code exploration less disorienting",
-        "Helps you retrace your debugging steps",
-        "Could reveal interesting navigation patterns"
+        "Never lose your place in large codebases",
+        "Great for onboarding or explaining code",
+        "Feels like magic when it works"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "VSCode: Better navigation history", url: "https://github.com/microsoft/vscode/issues/12345" },
-        { type: "rss", name: "JetBrains blog - IDE navigation tips", url: "https://blog.jetbrains.com/idea/2024/01/navigation/" }
+        { type: "github", name: "VSCode extension ideas", url: "https://github.com/microsoft/vscode" },
+        { type: "rss", name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" }
       ]
     }
   ],
   "2026-01-24": [
     {
-      title: "What If My Tests Showed Me What Changed?",
-      murmur: "When tests fail, you get red dots and stack traces. But you don't see what actually changed in the output. Visual diffs for test results would be game-changing.",
-      quest: "Build a test runner wrapper that takes snapshots of test outputs and shows you a visual diff when they fail. See exactly what value changed from 42 to 43.",
+      title: "Can Tests Show Me What Changed Visually?",
+      murmur: "Your tests pass but the UI looks totally broken. Unit tests don't catch visual regressions and manual QA is exhausting.",
+      quest: "Build a visual diff tool that screenshots your app before/after changes and highlights pixel differences. Integrate it into your CI pipeline so PRs show visual diffs automatically.",
       worth: [
-        "Makes test failures instantly understandable",
-        "Reduces debugging time dramatically",
-        "Works with any testing framework"
+        "Catches UI bugs tests miss",
+        "Makes code review way more visual",
+        "Saves hours of manual testing"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "Jest: Visual diff for snapshots", url: "https://github.com/jestjs/jest/issues/8901" },
-        { type: "x", name: "@kentcdodds testing pain points", url: "https://x.com/kentcdodds/status/3692581470" },
-        { type: "rss", name: "Martin Fowler - Test output practices", url: "https://martinfowler.com/articles/test-output.html" }
+        { type: "github", name: "Jest enhancement ideas", url: "https://github.com/jestjs/jest/discussions" },
+        { type: "x", name: "Discussion on testing workflows", url: "https://x.com/search?q=visual%20testing&f=live" },
+        { type: "rss", name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" }
       ]
     },
     {
-      title: "Can My Localhost Have a Real Domain?",
-      murmur: "Testing OAuth, webhooks, and share previews on localhost is a pain. Ngrok works but the URL changes every time. What if localhost could have a consistent real domain?",
-      quest: "Build a service that gives your localhost a permanent subdomain (like yourname.devlocal.io) that always tunnels to your machine when you're online. Include SSL by default.",
+      title: "What If Localhost Had a Real Domain?",
+      murmur: "You're testing webhooks or OAuth but localhost URLs don't work. ngrok helps but expires and changes URLs constantly.",
+      quest: "Build a service that gives you a permanent *.yourdomain.dev that always tunnels to your localhost. One URL forever, no expiration, just works.",
       worth: [
-        "Makes local development way smoother",
-        "No more sharing random ngrok URLs",
-        "Could monetize with premium features"
+        "No more ngrok URL juggling",
+        "Makes webhook testing painless",
+        "Share local work with permanent links"
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "LocalTunnel issues thread", url: "https://github.com/localtunnel/localtunnel/issues/234" },
-        { type: "x", name: "@levelsio on dev workflows", url: "https://x.com/levelsio/status/1472583690" }
+        { type: "github", name: "LocalTunnel discussions", url: "https://github.com/localtunnel/localtunnel" },
+        { type: "x", name: "Thread on local development", url: "https://x.com/search?q=local%20development%20tools&f=live" }
       ]
     },
     {
-      title: "What If Environment Variables Were a Database?",
-      murmur: "Managing .env files across projects is messy. You copy-paste API keys, forget what they're for, and have no version history.",
-      quest: "Build a local encrypted database for environment variables that syncs across projects. Add tags, descriptions, and usage tracking. Share specific vars with team members securely.",
+      title: "Can My .env File Be a Database?",
+      murmur: "Environment variables are scattered across .env files, hosting dashboards, and CI configs. Finding the right value is archaeological work.",
+      quest: "Build a centralized env var manager with a CLI. Store variables with descriptions, sync them to any platform (Vercel, Railway, GitHub), and version control changes.",
       worth: [
-        "Centralized secret management",
-        "Never lose an API key again",
-        "Could expand to team/enterprise features"
+        "One source of truth for all secrets",
+        "Makes onboarding new devs instant",
+        "No more 'where did I put that API key?'"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "dotenv enhancement proposals", url: "https://github.com/motdotla/dotenv/issues/567" },
-        { type: "x", name: "@cassidoo on managing secrets", url: "https://x.com/cassidoo/status/2583691470" },
-        { type: "rss", name: "DevOps.com - Secret management best practices", url: "https://devops.com/secrets-management/" }
+        { type: "github", name: "dotenv proposals", url: "https://github.com/motdotla/dotenv" },
+        { type: "x", name: "Conversation on DevOps tools", url: "https://x.com/search?q=DevOps%20automation&f=live" },
+        { type: "rss", name: "DevOps.com articles", url: "https://devops.com" }
       ]
     },
     {
-      title: "Can I Preview My Deploy Before Merging?",
-      murmur: "You can preview Netlify deploys, but what about database migrations, cron jobs, and background workers? Full stack preview environments are still magic.",
-      quest: "Build a tool that spins up complete preview environments (frontend + backend + database) for every pull request. Auto-destroy them when the PR closes.",
+      title: "What If Every PR Had a Live Preview?",
+      murmur: "Reviewing code is hard when you can't see it running. You have to check out the branch, install deps, and run it locally every time.",
+      quest: "Build a GitHub Action that automatically deploys every PR to a temporary preview URL. Full stack, database included, expires after merge.",
       worth: [
-        "Catch integration issues before production",
-        "Better than staging environments",
-        "Reduces 'works on my machine' problems"
+        "Code review becomes visual and interactive",
+        "QA can test without technical setup",
+        "Catches issues before they hit production"
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "Railway: Ephemeral environments", url: "https://github.com/railwayapp/railway/discussions/890" },
-        { type: "x", name: "@zeithq preview deployments discussion", url: "https://x.com/zeithq/status/3692581470" }
+        { type: "github", name: "GitHub Actions discussions", url: "https://github.com/features/actions" },
+        { type: "x", name: "Thread on CI/CD workflows", url: "https://x.com/search?q=CI%20CD%20preview&f=live" }
       ]
     },
     {
-      title: "What If My 404 Page Was a Game?",
-      murmur: "404 pages are dead ends. What if instead of frustration, visitors got a playful mini-game while they figured out where they meant to go?",
-      quest: "Build a customizable 404 page framework with embedded games (Pong, Snake, Flappy Bird style). Track high scores and let users share their best runs. Make broken links fun.",
+      title: "Can My 404 Page Be a Game?",
+      murmur: "404 pages are wasted opportunities. Users hit them, shrug, and leave. What if they stayed to play instead?",
+      quest: "Build a simple, addictive browser game that lives on your 404 page. High scores save locally, leaderboard is optional, and broken links become fun detours.",
       worth: [
-        "Turns errors into delight",
-        "Keeps users engaged instead of bouncing",
-        "Could become a viral template"
+        "Turns frustration into delight",
+        "Increases time on site (weirdly)",
+        "Great conversation starter for your portfolio"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "x", name: "@round on creative 404 pages", url: "https://x.com/round/status/1593578024" },
-        { type: "rss", name: "Smashing Magazine - 404 page inspiration", url: "https://www.smashingmagazine.com/2024/01/404-pages/" }
+        { type: "x", name: "Discussion on web experiences", url: "https://x.com/search?q=creative%20web%20design&f=live" },
+        { type: "rss", name: "Smashing Magazine", url: "https://www.smashingmagazine.com" }
       ]
     }
   ],
   "2026-01-25": [
     {
-      title: "What If Pull Requests Had Voice Notes?",
-      murmur: "Code review comments lack nuance. Sometimes you just want to talk through your thoughts while looking at the code, not type paragraphs.",
-      quest: "Build a browser extension that lets you record voice notes on pull requests, tied to specific line numbers. Reviewers can listen while reading the code.",
+      title: "What If PRs Had Voice Notes?",
+      murmur: "Code review comments are text-only and sometimes you just need to explain something with your voice. Writing paragraphs feels exhausting.",
+      quest: "Build a browser extension for GitHub that lets you leave voice note comments on PRs. Record 30-second explanations, attach them to lines of code, and reviewers can listen instead of read.",
       worth: [
-        "More human code reviews",
-        "Faster than typing for complex feedback",
-        "Could help distributed teams feel more connected"
+        "Explains complex logic faster than typing",
+        "Adds warmth to remote collaboration",
+        "Great for async teams across timezones"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "GitHub Discussions: Voice comments", url: "https://github.com/community/community/discussions/6789" },
-        { type: "x", name: "@dhh on code review friction", url: "https://x.com/dhh/status/1583692470" },
-        { type: "rss", name: "Stack Overflow blog - Better code reviews", url: "https://stackoverflow.blog/2024/01/better-code-reviews/" }
+        { type: "github", name: "GitHub Discussions", url: "https://github.com/community/community/discussions" },
+        { type: "x", name: "Conversation on code review", url: "https://x.com/search?q=code%20review%20tools&f=live" },
+        { type: "rss", name: "Dev.to community posts", url: "https://dev.to" }
       ]
     },
     {
-      title: "Can My CSS Have Undo History?",
-      murmur: "Tweaking CSS in DevTools is addictive, but you lose everything on refresh. What if your browser remembered every style change and let you rewind?",
-      quest: "Build a DevTools extension that tracks all CSS changes you make and creates a timeline. Undo/redo through your styling history and export the final changes as a patch.",
+      title: "Can My CSS Have an Undo Button?",
+      murmur: "You're tweaking styles in DevTools and accidentally break something. Finding the exact change you made is impossible without refreshing and losing everything.",
+      quest: "Build a browser extension that adds undo/redo to DevTools CSS changes. Track every edit, let you step backward through changes, and export your final tweaks as a patch file.",
       worth: [
-        "Never lose your DevTools experiments",
-        "Makes CSS exploration less risky",
-        "Could help learn what actually worked"
+        "Makes CSS experimentation fearless",
+        "Never lose perfect styles to one bad edit",
+        "Helps you learn by reviewing what worked"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "Chrome DevTools: CSS history feature request", url: "https://github.com/ChromeDevTools/devtools-frontend/issues/4321" },
-        { type: "x", name: "@Una on DevTools workflows", url: "https://x.com/Una/status/2693581470" }
+        { type: "github", name: "Chrome DevTools discussions", url: "https://github.com/ChromeDevTools" },
+        { type: "x", name: "Thread on frontend tools", url: "https://x.com/search?q=frontend%20dev%20tools&f=live" }
       ]
     },
     {
-      title: "What If My Dependencies Showed Their Size?",
-      murmur: "You npm install a package and suddenly your bundle is 500KB heavier. You have no idea which dependency bloated it until you dig through webpack stats.",
-      quest: "Build a tool that intercepts npm/yarn install and shows you the bundle size impact of each package before you confirm. Flag heavy dependencies and suggest lighter alternatives.",
+      title: "What If npm Warned Me About Bundle Size?",
+      murmur: "You npm install a package and suddenly your bundle grows by 200KB. You only find out later when your build is slow and users complain.",
+      quest: "Build a CLI tool that intercepts npm install and shows you the bundle size impact before installing. Display alternatives if the package is huge, and let you cancel if it's too big.",
       worth: [
-        "Prevents bundle bloat proactively",
-        "Makes dependency choices more informed",
-        "Could integrate with package managers directly"
+        "Prevents bundle bloat at install time",
+        "Makes you more conscious of dependencies",
+        "Helps keep apps fast by default"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "npm RFC: Size warnings on install", url: "https://github.com/npm/rfcs/pull/234" },
-        { type: "x", name: "@addyosmani on bundle size", url: "https://x.com/addyosmani/status/3692581470" },
-        { type: "rss", name: "Web.dev - Bundle size optimization", url: "https://web.dev/bundle-size/" }
+        { type: "github", name: "npm feature requests", url: "https://github.com/npm/cli/discussions" },
+        { type: "x", name: "Discussion on web performance", url: "https://x.com/search?q=web%20performance%20bundle&f=live" },
+        { type: "rss", name: "Web.dev articles", url: "https://web.dev/articles" }
       ]
     },
     {
-      title: "Can I See My API's Shape Before Calling It?",
-      murmur: "You read API docs, make a request, get a 200, then parse JSON to see what fields actually came back. What if you could preview the response structure first?",
-      quest: "Build a dev tool that wraps fetch/axios and shows you a collapsible tree view of the response structure as it arrives. Save common responses as fixtures for offline dev.",
+      title: "Can API Responses Show Me Their Shape?",
+      murmur: "You call an API and get back JSON, but you have to dig through the response to understand its structure. TypeScript helps but isn't always available.",
+      quest: "Build a browser extension or CLI that intercepts API responses and generates a visual tree diagram of the JSON structure. Collapsible, searchable, and copyable as TypeScript interfaces.",
       worth: [
-        "Makes API integration way faster",
-        "Great for exploratory development",
-        "Helps document undocumented APIs"
+        "Understand APIs instantly without docs",
+        "Great for exploring new services",
+        "Turns raw JSON into useful types"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "axios: Response inspector feature", url: "https://github.com/axios/axios/issues/5678" },
-        { type: "rss", name: "Postman blog - API exploration tips", url: "https://blog.postman.com/api-exploration/" }
+        { type: "github", name: "axios discussions", url: "https://github.com/axios/axios/discussions" },
+        { type: "rss", name: "Postman blog", url: "https://blog.postman.com" }
       ]
     },
     {
-      title: "What If My Markdown Had Live Demos?",
-      murmur: "You write docs with code examples, but readers have to copy-paste into a playground to try them. What if the code blocks were executable right in the docs?",
-      quest: "Build a markdown renderer that detects code blocks and adds a 'Run' button. Execute JavaScript in a sandboxed iframe, show output inline. Support React, Vue, and Svelte components.",
+      title: "What If READMEs Were Interactive?",
+      murmur: "READMEs are static markdown files. What if you could run code examples directly in the browser without cloning the repo?",
+      quest: "Build a markdown processor that turns code blocks into runnable sandboxes. Users can edit examples, see output instantly, and experiment with your library without setup.",
       worth: [
-        "Interactive documentation by default",
-        "Reduces friction for trying examples",
-        "Could become a popular docs tool"
+        "Lowers the barrier to trying your project",
+        "Makes documentation way more engaging",
+        "Instant feedback for learners"
       ],
       difficulty: "Hard",
       sources: [
-        { type: "github", name: "MDX: Executable code blocks discussion", url: "https://github.com/mdx-js/mdx/discussions/1234" },
-        { type: "x", name: "@ryanflorence on docs that teach", url: "https://x.com/ryanflorence/status/1593578024" },
-        { type: "rss", name: "CSS-Tricks - Interactive documentation", url: "https://css-tricks.com/interactive-docs/" }
+        { type: "github", name: "MDX discussions", url: "https://github.com/mdx-js/mdx/discussions" },
+        { type: "x", name: "Thread on documentation", url: "https://x.com/search?q=interactive%20documentation&f=live" },
+        { type: "rss", name: "CSS-Tricks", url: "https://css-tricks.com" }
       ]
     }
   ],
   "2026-01-26": [
     {
-      title: "What If My GitHub Was a Trading Card?",
-      murmur: "GitHub profiles are functional but boring. What if they could be collectible, shareable, and fun?",
-      quest: "Build a service that turns GitHub profiles into collectible trading cards with stats, badges, and rarity levels based on repos, stars, and contributions. Let people share or 'trade' cards.",
+      title: "What If My GitHub Profile Was a Trading Card?",
+      murmur: "Your GitHub profile is a wall of green squares. What if it was a collectible card with stats, rarity, and personality?",
+      quest: "Build a tool that generates trading card-style images from GitHub profiles. Show contribution streaks as power levels, languages as types, and repos as special abilities. Make them shareable as PNGs.",
       worth: [
-        "Playful take on developer identity",
-        "Encourages exploration of others' work",
-        "Could become a viral developer meme"
+        "Turns your GitHub into something fun to share",
+        "Great icebreaker for developer communities",
+        "Weekend build that's immediately viral"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "github-profile-readme discussions", url: "https://github.com/abhisheknaiidu/awesome-github-profile-readme/discussions/234" },
-        { type: "x", name: "@hackclub on gamifying profiles", url: "https://x.com/hackclub/status/1593578024" },
-        { type: "rss", name: "Dev.to - Creative GitHub profiles", url: "https://dev.to/github-profiles" }
+        { type: "github", name: "awesome-github-profile-readme", url: "https://github.com/abhisheknaiidu/awesome-github-profile-readme" },
+        { type: "x", name: "Discussion on developer portfolios", url: "https://x.com/search?q=github%20profile%20design&f=live" },
+        { type: "rss", name: "Dev.to community", url: "https://dev.to" }
       ]
     },
     {
-      title: "Can My Slack Messages Self-Destruct?",
-      murmur: "Slack history is forever, which makes people afraid to be candid. What if messages could disappear after being read, like Snapchat for work?",
-      quest: "Build a Slack bot that adds a /disappear command. Messages sent this way are visible for 60 seconds, then automatically deleted. Great for sensitive discussions or quick questions.",
+      title: "Can Slack Messages Self-Destruct?",
+      murmur: "You share sensitive info in Slack that should only be visible temporarily. Edit/delete works but isn't automatic and you forget.",
+      quest: "Build a Slack bot that lets you send self-destructing messages. Use /burn to set a timer, and the message disappears after 5 minutes, 1 hour, or whatever you choose.",
       worth: [
-        "More honest team communication",
+        "Keeps sensitive info from living forever",
         "Reduces Slack clutter naturally",
-        "Could help with compliance in regulated industries"
+        "Adds a spy-movie vibe to work chat"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "github", name: "Slack API: Message deletion patterns", url: "https://github.com/slackapi/node-slack-sdk/issues/567" },
-        { type: "x", name: "@Jason on async communication", url: "https://x.com/jasonfried/status/2583691470" }
+        { type: "github", name: "Slack API patterns", url: "https://github.com/slackapi" },
+        { type: "x", name: "Thread on workplace tools", url: "https://x.com/search?q=slack%20automation&f=live" }
       ]
     },
     {
-      title: "What If Console.log Had Timestamps?",
-      murmur: "When debugging race conditions or performance issues, you log like crazy. But you have no idea when each log actually fired or how long between them.",
-      quest: "Build a console.log wrapper that automatically adds high-precision timestamps and time deltas. Color-code logs by how long since the last one. Export as a timeline.",
+      title: "What If console.log Had Timestamps?",
+      murmur: "You're debugging async code and logs appear out of order. You have no idea when each log actually fired relative to others.",
+      quest: "Build a tiny console.log wrapper that automatically prefixes every log with a high-precision timestamp and time delta from the previous log. See exactly how long operations take.",
       worth: [
-        "Makes performance debugging way easier",
-        "No more manual timestamp logging",
-        "Could reveal unexpected delays"
+        "Makes async debugging crystal clear",
+        "No more adding timestamps manually",
+        "Helps optimize slow operations instantly"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "Chrome DevTools: Timestamp feature request", url: "https://github.com/ChromeDevTools/devtools-frontend/issues/8765" },
-        { type: "x", name: "@argyleink on debugging techniques", url: "https://x.com/argyleink/status/3692581470" }
+        { type: "github", name: "Chrome DevTools feature requests", url: "https://github.com/ChromeDevTools" },
+        { type: "x", name: "Conversation on debugging", url: "https://x.com/search?q=debugging%20javascript&f=live" }
       ]
     },
     {
-      title: "Can I Turn My Bookmarks Into a Newsletter?",
-      murmur: "You save interesting articles all week but never revisit them. What if your browser could auto-compile them into a weekly digest you'd actually read?",
-      quest: "Build a browser extension that watches your bookmarks and generates a beautiful weekly newsletter with your saved links, categorized by topic. Email it to yourself every Sunday.",
+      title: "Can My Bookmarks Become a Newsletter?",
+      murmur: "You save dozens of interesting articles every week but never revisit them. What if your bookmarks auto-organized into a weekly digest?",
+      quest: "Build a browser extension that groups your saved bookmarks by week and generates a beautiful newsletter-style HTML page. Share it privately or publish as a blog post.",
       worth: [
-        "Makes saved links actually useful",
-        "Forces you to reflect on what you found interesting",
-        "Could expand to team knowledge sharing"
+        "Makes saved content actually useful",
+        "Great way to share curated finds",
+        "Your weekly reads become a product"
       ],
       difficulty: "Medium",
       sources: [
-        { type: "x", name: "@chriscoyier on reading habits", url: "https://x.com/chriscoyier/status/1472583690" },
-        { type: "rss", name: "Brain Pickings - Curation methods", url: "https://www.themarginalian.org/curation/" }
+        { type: "x", name: "Discussion on content curation", url: "https://x.com/search?q=content%20curation%20tools&f=live" },
+        { type: "rss", name: "Brain Pickings style curation", url: "https://www.themarginalian.org" }
       ]
     },
     {
-      title: "What If My Commit Messages Were Poems?",
-      murmur: "Commit messages are dry and robotic. What if they could be haikus, limericks, or verses that made your git log actually fun to read?",
-      quest: "Build a Git hook that takes your commit message and transforms it into a poem using AI. Keep the original content but make it whimsical. Gradually build a poetic history of your project.",
+      title: "What If Git Commits Were Poems?",
+      murmur: "Commit messages are boring status updates. What if they were haikus or limericks instead? Make version control poetic.",
+      quest: "Build a git hook that validates commit messages are valid haikus (5-7-5 syllables). Reject commits that don't rhyme. Make your git history an art project.",
       worth: [
-        "Makes git log delightful to read",
-        "Encourages more thoughtful commit messages",
-        "Could become a fun team tradition"
+        "Makes commits way more memorable",
+        "Forces you to think about changes poetically",
+        "Your git log becomes literature"
       ],
       difficulty: "Easy",
       sources: [
-        { type: "github", name: "git-hooks creative examples", url: "https://github.com/aitemr/awesome-git-hooks" },
-        { type: "x", name: "@horse_js on fun dev tools", url: "https://x.com/horse_js/status/1593578024" },
-        { type: "rss", name: "Increment - Git storytelling", url: "https://increment.com/git-storytelling/" }
+        { type: "github", name: "awesome-git-hooks", url: "https://github.com/aitemr/awesome-git-hooks" },
+        { type: "x", name: "Thread on creative coding", url: "https://x.com/search?q=creative%20programming&f=live" },
+        { type: "rss", name: "Increment magazine", url: "https://increment.com" }
+      ]
+    }
+  ],
+  "2026-01-27": [
+    {
+      title: "What If My Code Commits Were a Tamagotchi?",
+      murmur: "You commit code every day, but it's just numbers and graphs. What if your commit streak was a little creature you had to keep alive?",
+      quest: "Build a GitHub widget that turns your commit history into a virtual pet. The more you commit, the happier it gets. Skip a day and it gets sad. Let it evolve based on your coding patterns.",
+      worth: [
+        "Makes daily commits actually adorable",
+        "Guilt trips you in the cutest way",
+        "Perfect conversation starter for your README"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
+        { type: "x", name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
+        { type: "rss", name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" }
+      ]
+    },
+    {
+      title: "Can My Spotify Wrapped Be for My Code?",
+      murmur: "Spotify makes listening to music feel like an achievement. Why doesn't coding? You deserve a year-end recap of your most-used functions, weirdest variable names, and coding music.",
+      quest: "Build a tool that analyzes your GitHub repos and generates a beautiful Spotify Wrapped-style video: most productive hour, favorite programming language, most refactored file, and a playlist recommendation based on your commit messages.",
+      worth: [
+        "Makes you feel accomplished about your year",
+        "Extremely shareable on social media",
+        "Everyone will want one"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "GitHub API discussions", url: "https://github.com/topics/github-api" },
+        { type: "x", name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
+      ]
+    },
+    {
+      title: "What If My To-Do List Was a Plant?",
+      murmur: "To-do apps are stressful and guilt-inducing. What if instead of checking boxes, you were watering a plant that grows with each completed task?",
+      quest: "Build a to-do app where each task is a seed. Complete it and the plant grows. Skip tasks and it wilts. Watch your productivity garden flourish over time. Export your garden as a printable poster.",
+      worth: [
+        "Makes productivity feel nurturing, not punishing",
+        "Your task list becomes something beautiful",
+        "Way more motivating than checkboxes"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "x", name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+        { type: "rss", name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" }
+      ]
+    },
+    {
+      title: "Can My Browser History Tell a Story?",
+      murmur: "Your browser history is a treasure trove of who you are—late-night rabbit holes, research spirals, inspiration hunts. What if it could narrate your intellectual journey?",
+      quest: "Build a browser extension that turns your browsing history into a generated narrative. 'On Tuesday, you fell down a rabbit hole about mushroom foraging, then pivoted to sourdough bread at 2am.' Share your weekly story or keep it private.",
+      worth: [
+        "Makes your internet wandering feel meaningful",
+        "Great for reflection and self-awareness",
+        "Weirdly intimate and shareable"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "Chrome extensions samples", url: "https://github.com/GoogleChrome/chrome-extensions-samples" },
+        { type: "x", name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" },
+        { type: "rss", name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" }
+      ]
+    },
+    {
+      title: "What If Error Messages Were Compliments?",
+      murmur: "Debugging is already hard. Error messages don't need to be cold and technical. What if they hyped you up instead?",
+      quest: "Build a dev tool that intercepts error messages and rewrites them with encouragement. 'Syntax error on line 12' becomes 'Hey, almost there! Just a tiny typo on line 12—you got this!' Customize the vibe: supportive, sarcastic, or chaotic.",
+      worth: [
+        "Makes debugging way less demoralizing",
+        "Actually helps beginners stay motivated",
+        "Could become the most wholesome dev tool ever"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
+        { type: "rss", name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" }
+      ]
+    }
+  ],
+  "2026-01-28": [
+    {
+      title: "What If My Zoom Calls Had Subtitles... But Funnier?",
+      murmur: "Zoom auto-captions are helpful but robotic. What if they added personality—roasting tangents, celebrating good points, or just making meetings less boring?",
+      quest: "Build a tool that intercepts Zoom captions, runs them through a sentiment AI, and adds snarky commentary or emoji reactions in real-time. 'This meeting could have been an email 😴'",
+      worth: [
+        "Makes long meetings actually entertaining",
+        "Great for keeping attention in all-hands",
+        "Instant viral tool for remote work"
+      ],
+      difficulty: "Hard",
+      sources: [
+        { type: "github", name: "Zoom SDK discussions", url: "https://github.com/zoom" },
+        { type: "x", name: "Discussion on remote work tools", url: "https://x.com/search?q=remote%20work%20tools&f=live" },
+        { type: "rss", name: "JavaScript Weekly", url: "https://javascriptweekly.com/issues" }
+      ]
+    },
+    {
+      title: "Can My GitHub Contributions Be a Pixelated Garden?",
+      murmur: "The green contribution graph is boring. What if each commit was a flower, tree, or mushroom that grew over time in a tiny pixel art garden?",
+      quest: "Build a tool that turns your GitHub contribution graph into a procedurally generated pixel art garden. More commits = more plants. Let it export as wallpaper or animated GIF.",
+      worth: [
+        "Makes your profile actually beautiful",
+        "Gamifies contributions in a chill way",
+        "Perfect portfolio piece energy"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "GitHub API projects", url: "https://github.com/topics/github-api" },
+        { type: "x", name: "Thread on creative coding", url: "https://x.com/search?q=creative%20coding%20projects&f=live" }
+      ]
+    },
+    {
+      title: "What If Podcasts Had Chapter Markers... Automatically?",
+      murmur: "Long podcasts are hard to navigate. You remember a great insight but can't find it. What if AI generated chapter markers from the transcript?",
+      quest: "Build a tool that takes a podcast MP3, transcribes it, uses AI to detect topic changes, and generates chapter markers. Export as enhanced MP3 with embedded chapters.",
+      worth: [
+        "Makes podcasts way more usable",
+        "Helps creators without editing skills",
+        "Could process your entire backlog overnight"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "Audio processing libraries", url: "https://github.com/topics/audio-processing" },
+        { type: "x", name: "Conversation on podcast tools", url: "https://x.com/search?q=podcast%20editing%20tools&f=live" },
+        { type: "rss", name: "Indie Hackers - Media tools", url: "https://www.indiehackers.com/products" }
+      ]
+    },
+    {
+      title: "Can My Calendar Show My 'Deep Work' Blocks?",
+      murmur: "Your calendar is full of meetings, but you don't know when you actually have focus time. What if it highlighted your uninterrupted blocks automatically?",
+      quest: "Build a calendar overlay that detects gaps between meetings, labels them as deep work time, and suggests optimal times to schedule new meetings that preserve focus blocks.",
+      worth: [
+        "Makes protecting deep work effortless",
+        "Helps you say no to bad meeting times",
+        "Visual reminder of your actual productive hours"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Calendar API projects", url: "https://github.com/topics/calendar" },
+        { type: "rss", name: "Smashing Magazine - Productivity", url: "https://www.smashingmagazine.com/category/tools" }
+      ]
+    },
+    {
+      title: "What If My Keyboard Typed in Comic Sans When I'm Stressed?",
+      murmur: "You're frustrated coding and your typing gets aggressive. What if your editor detected stress and switched fonts to de-escalate the situation?",
+      quest: "Build an editor extension that monitors typing speed and force. When you're stress-typing, it temporarily switches to Comic Sans (or another calming font) until you chill out.",
+      worth: [
+        "Surprisingly effective mood regulator",
+        "Makes debugging less rage-inducing",
+        "Extremely funny conversation starter"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "VSCode extension ideas", url: "https://github.com/microsoft/vscode" },
+        { type: "x", name: "Thread on developer wellness", url: "https://x.com/search?q=developer%20mental%20health&f=live" }
+      ]
+    }
+  ],
+  "2026-01-29": [
+    {
+      title: "What If My Music Taste Was a Data Visualization?",
+      murmur: "Your Spotify history is just lists. What if it was an evolving, interactive artwork that showed your musical journey over time?",
+      quest: "Build a tool that visualizes your music listening history as an animated graph—genres as colors, time as a flowing river, moods as weather patterns. Export as video or live dashboard.",
+      worth: [
+        "Your taste becomes actual art",
+        "Great way to discover forgotten favorites",
+        "Makes Spotify data actually meaningful"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "Spotify API projects", url: "https://github.com/topics/spotify-api" },
+        { type: "x", name: "Discussion on data visualization", url: "https://x.com/search?q=data%20visualization%20creative&f=live" },
+        { type: "rss", name: "Web.dev articles", url: "https://web.dev/articles" }
+      ]
+    },
+    {
+      title: "Can Pull Requests Be Summarized... in Haiku?",
+      murmur: "PR descriptions are walls of text. What if AI condensed them into beautiful haikus that captured the essence of the change?",
+      quest: "Build a GitHub Action that analyzes PR diffs, generates a haiku summary, and posts it as the first comment. Bonus: rate PRs by how poetic their changes are.",
+      worth: [
+        "Makes code review instantly more fun",
+        "Forces clarity in change descriptions",
+        "Your git history becomes poetry"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "GitHub Actions marketplace", url: "https://github.com/marketplace?type=actions" },
+        { type: "x", name: "Thread on creative coding", url: "https://x.com/search?q=creative%20programming%20fun&f=live" }
+      ]
+    },
+    {
+      title: "What If Emails Had Mood Indicators?",
+      murmur: "You can't tell tone in emails. Is this person annoyed or just brief? What if every message had an AI-generated mood emoji?",
+      quest: "Build a browser extension that analyzes incoming emails for sentiment and adds a mood indicator (😊 🤔 😤) next to the sender's name. Never misread tone again.",
+      worth: [
+        "Prevents email misunderstandings",
+        "Helps you prioritize responses by urgency",
+        "Makes inbox management less stressful"
+      ],
+      difficulty: "Medium",
+      sources: [
+        { type: "github", name: "Email parsing libraries", url: "https://github.com/topics/email" },
+        { type: "x", name: "Conversation on communication tools", url: "https://x.com/search?q=email%20productivity%20tools&f=live" },
+        { type: "rss", name: "CSS-Tricks", url: "https://css-tricks.com" }
+      ]
+    },
+    {
+      title: "Can My Desktop Wallpaper Change Based on My Mood?",
+      murmur: "Your wallpaper is static and boring. What if it adapted to how you're feeling based on your activity patterns?",
+      quest: "Build a background app that monitors your typing speed, music choice, and calendar to guess your mood. Switch wallpapers automatically: calm blues when focused, energizing colors when stressed.",
+      worth: [
+        "Ambient environment that adapts to you",
+        "Makes your workspace feel alive",
+        "Surprisingly effective mood booster"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Desktop automation tools", url: "https://github.com/topics/automation" },
+        { type: "rss", name: "Hacker News - Show HN", url: "https://news.ycombinator.com/show" }
+      ]
+    },
+    {
+      title: "What If Wikipedia Had a 'Random Walk' Game?",
+      murmur: "Wikipedia rabbit holes are amazing but aimless. What if there was a game that challenged you to get from one topic to another in the fewest clicks?",
+      quest: "Build a browser extension for Wikipedia that sets start/end articles and tracks your path. Compete for shortest routes, discover weird connections, share your journey.",
+      worth: [
+        "Makes learning accidentally competitive",
+        "Reveals surprising topic connections",
+        "Perfect procrastination tool"
+      ],
+      difficulty: "Easy",
+      sources: [
+        { type: "github", name: "Wikipedia API projects", url: "https://github.com/topics/wikipedia" },
+        { type: "x", name: "Discussion on educational games", url: "https://x.com/search?q=educational%20games%20web&f=live" },
+        { type: "rss", name: "Smashing Magazine", url: "https://www.smashingmagazine.com" }
       ]
     }
   ]
@@ -327,35 +564,29 @@ const FALLBACK_ARCHIVE = {
 async function loadArchive() {
   try {
     const data = await fs.readFile(ARCHIVE_PATH, 'utf-8');
-    const archive = JSON.parse(data);
-    
-    // Merge fallback data with any existing archive data
-    return { ...FALLBACK_ARCHIVE, ...archive };
+    return JSON.parse(data);
   } catch (err) {
-    // If no archive exists yet, return fallback
-    return FALLBACK_ARCHIVE;
+    return {};
   }
 }
 
-async function getLatestIdeas() {
-  try {
-    const response = await fetch('https://side-quest-generator.netlify.app/.netlify/functions/latest');
-    if (!response.ok) return null;
-    const data = await response.json();
-    return Array.isArray(data) ? data : (Array.isArray(data?.ideas) ? data.ideas : null);
-  } catch {
-    return null;
-  }
+async function saveArchive(archive) {
+  await fs.writeFile(ARCHIVE_PATH, JSON.stringify(archive, null, 2));
 }
 
 export const handler = async (event) => {
   try {
-    const archive = await loadArchive();
+    let archive = await loadArchive();
     
-    // Check if latest ideas should be archived (they're from yesterday)
-    const latestIdeas = await getLatestIdeas();
+    // Merge with fallback archive (fallback takes precedence for dates not in storage)
+    archive = { ...FALLBACK_ARCHIVE, ...archive };
     
-    if (latestIdeas && latestIdeas.length > 0) {
+    // Try to get latest ideas and archive them if they're from yesterday
+    try {
+      const latestPath = path.join('/tmp', 'latest.json');
+      const latestData = await fs.readFile(latestPath, 'utf-8');
+      const latestIdeas = JSON.parse(latestData);
+      
       // Get yesterday's date
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
@@ -363,18 +594,14 @@ export const handler = async (event) => {
                               String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
                               String(yesterday.getDate()).padStart(2, '0');
       
-      // If we don't have yesterday's data yet, add it
-      if (!archive[yesterdayString]) {
-        console.log(`Auto-archiving ${yesterdayString} from latest`);
+      // If we don't have yesterday's data and latest exists, add it
+      if (!archive[yesterdayString] && latestIdeas && latestIdeas.length > 0) {
         archive[yesterdayString] = latestIdeas;
-        
-        // Try to persist this to temp storage for next request
-        try {
-          await fs.writeFile(ARCHIVE_PATH, JSON.stringify(archive, null, 2));
-        } catch (writeErr) {
-          console.log('Could not persist to temp storage:', writeErr);
-        }
+        await saveArchive(archive);
       }
+    } catch (err) {
+      // Latest doesn't exist, which is fine
+      console.log('No latest ideas to auto-archive');
     }
     
     return {
@@ -387,10 +614,15 @@ export const handler = async (event) => {
     };
   } catch (error) {
     console.error('Archive error:', error);
+    
+    // On any error, return the fallback archive
     return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Failed to load archive' })
+      statusCode: 200,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      body: JSON.stringify(FALLBACK_ARCHIVE)
     };
   }
 };
