@@ -414,7 +414,7 @@
   <div class="top-row">
     <div class="nav">
       <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
-      <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
+      <a href="/methodology"><i data-lucide="book-open"></i> Methodology</a>
     </div>
 
     <div class="legend">
@@ -439,162 +439,6 @@
   </div>
 </footer>
 
-<!-- METHODOLOGY MODAL -->
-<div class="modal" id="methodology" onclick="toggleMethodology()">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="close-x" onclick="toggleMethodology()">✕</div>
-
-    <h2>What The Generator Does</h2>
-
-    <p>Tech Murmurs is an AI-powered ideation system designed to surface small, buildable opportunities from public builder activity. It listens for early signals — ideas that are being discussed, hinted at, or partially articulated in the wild — before they harden into roadmaps, products, or dominant narratives.</p>
-
-    <p>The system draws from places where builders naturally express intent: open-source issue threads, hackathon prompts, protocol updates, and public developer conversations. These sources are chosen not for volume, but for proximity to real, unfinished work.</p>
-
-    <p>Rather than treating every signal as equally meaningful, Tech Murmurs looks for specific expressions of friction, absence, or creative possibility. Language such as "missing," "wish there was," "no tool for," recurring feature requests, or experimental ideas are treated as higher-signal than general commentary. Vague or purely speculative input is intentionally filtered out.</p>
-
-    <p>Each day, collected signals are synthesized by AI into five distinct "side quests" — small, concrete project ideas designed for indie builders, vibe coders, and creative experimenters. These aren't market opportunities or startup ideas; they're weekend builds, playful tools, and thoughtful prompts that blend practical utility with creative exploration.</p>
-
-    <p>The AI generation process emphasizes three overlapping categories:</p>
-
-    <ul>
-      <li><strong>Thoughtful indie hacker / solo builder prompts (40% weight)</strong> — Tools and workflows that make individual building more delightful, efficient, or expressive.</li>
-      <li><strong>Early-stage product opportunities (20% weight)</strong> — Nascent gaps where a focused tool could provide real value without becoming a platform.</li>
-      <li><strong>Creative experiments & playful tools (40% weight)</strong> — Whimsical, aesthetic, or exploratory projects that prioritize curiosity and vibes over immediate utility.</li>
-    </ul>
-
-    <p>Tech Murmurs publishes ideas as a daily snapshot rather than a continuous feed. This is a deliberate choice. A fixed daily set preserves context, avoids recency bias, and creates a historical archive that reveals how certain needs emerge, persist, fade, or recur over time.</p>
-
-    <p>When live sources are temporarily unavailable, the system falls back to a curated baseline of representative ideas. This ensures continuity while making the system's state explicit to the reader.</p>
-
-    <p>Tech Murmurs does not attempt to evaluate market size, adoption likelihood, commercial viability, or technical feasibility. It is not a recommendation engine. Its role is to make early, often-quiet signals visible — and to transform them into prompts that feel worth exploring.</p>
-
-    <p>All inputs are public. Attribution is preserved through outbound links, and no private or user-restricted data is accessed.</p>
-
-    <h2>How The Generator Works (For Transparency)</h2>
-
-    <p>The sections below describe how the system operates at a technical level. They are included for transparency and auditability, not as a prerequisite for using the tool.</p>
-
-    <h3>System Architecture</h3>
-
-    <p>Tech Murmurs is a client-rendered web application backed by serverless ingestion and generation functions. Data collection is performed via Netlify Functions, which proxy public APIs and feeds. AI synthesis happens server-side to protect API credentials and ensure consistent prompt engineering. This design allows the system to gather live signals and generate ideas without exposing sensitive configuration in the browser.</p>
-
-    <h3>Integrated Data Sources</h3>
-
-    <p>Current integrations include the GitHub Search API (for open issues and repository activity), GitHub Releases (used as proxies for protocol roadmaps), public hackathon feeds accessed via RSS, and lightweight article ingestion from developer blogs. Each source is queried independently and normalized into a common signal structure before being passed to the AI synthesis layer.</p>
-
-    <p>Sources are treated as complementary rather than authoritative. No single platform is assumed to represent the full landscape of builder intent. The system prioritizes diversity of input over depth from any one source.</p>
-
-    <h3>Signal Collection & Filtering</h3>
-
-    <p>During ingestion, Tech Murmurs applies lightweight language analysis to distinguish actionable signals from general discussion. The goal is not semantic understanding or sentiment analysis, but the identification of explicit expressions of unmet need, creative possibility, or workflow friction.</p>
-
-    <p>Incoming text from issues, prompts, posts, and articles is scanned for a small, evolving vocabulary of intent-bearing phrases. These include expressions that typically indicate absence, friction, experimentation, or unfinished work, such as:</p>
-
-    <ul>
-      <li>"missing" or "lacking"</li>
-      <li>"wish there was" or "it would be great if"</li>
-      <li>"no tool for" or "hard to" or "difficult to"</li>
-      <li>"what if" or "imagine if" (indicating creative exploration)</li>
-      <li>repeated feature requests across issues or discussions</li>
-    </ul>
-
-    <p>These phrases are treated as heuristic markers rather than definitive signals. Their presence increases the likelihood that a piece of text represents a genuine builder need or creative opportunity, but does not automatically qualify it for inclusion.</p>
-
-    <p>In addition to phrase matching, the system considers contextual signals, such as:</p>
-
-    <ul>
-      <li>whether the statement appears in a problem description rather than commentary</li>
-      <li>whether similar requests appear across multiple sources or over time</li>
-      <li>whether the need is described with enough specificity to suggest a concrete build</li>
-      <li>whether the language suggests playfulness, curiosity, or experimental intent</li>
-    </ul>
-
-    <p>Text that is vague, speculative without grounding, or purely opinion-based is intentionally deprioritized. The system favors clarity over enthusiasm, repetition over novelty, and specificity over abstraction.</p>
-
-    <p>This filtering keeps the analysis transparent and interpretable. Rather than relying on opaque machine-learning classifiers, Tech Murmurs uses simple, explainable heuristics that can be inspected, adjusted, and reasoned about as the system evolves.</p>
-
-    <h3>AI Synthesis Pipeline</h3>
-
-    <p>Once signals pass initial filtering, they are sent to an AI language model (currently OpenAI's GPT-4o-mini) for creative synthesis. The AI is prompted to transform raw signals into five distinct side-quest ideas that balance practical utility, creative experimentation, and playful exploration.</p>
-
-    <p>The prompt engineering emphasizes:</p>
-
-    <ul>
-      <li><strong>Conversational tone</strong> — Titles should feel like questions or observations ("What If My GitHub Was a Trading Card?") rather than product pitches ("Developer Portfolio Gamification Tool").</li>
-      <li><strong>Specificity without intimidation</strong> — Ideas should be concrete enough to start building, but scoped small enough to feel achievable.</li>
-      <li><strong>Diversity of type</strong> — The AI is guided to produce a mix of thoughtful tools (40%), early product opportunities (20%), and creative experiments (40%).</li>
-      <li><strong>Vibe-coder friendliness</strong> — Language should feel playful, curious, and human rather than corporate or technical.</li>
-    </ul>
-
-    <p>The AI generates ideas in a structured format, which includes:</p>
-
-    <ul>
-      <li><strong>Title</strong> — A conversational question or playful observation</li>
-      <li><strong>Murmur</strong> — Why this idea exists (the underlying problem or curiosity)</li>
-      <li><strong>Quest</strong> — What to actually build (concrete but not prescriptive)</li>
-      <li><strong>Worth</strong> — Three short reasons why it's worth exploring</li>
-      <li><strong>Difficulty</strong> — Easy, Medium, or Hard (based on scope and technical complexity)</li>
-      <li><strong>Sources</strong> — Links back to the original signals that inspired the idea</li>
-    </ul>
-
-    <p>If the AI generation fails or returns unusable output, the system falls back to a curated set of representative ideas that match the system's intended tone and scope.</p>
-
-    <h3>Let's Build! Feature</h3>
-
-    <p>Each idea card includes a "Let's Build!" button that generates a detailed, AI-powered build prompt on demand. When clicked, the system sends the idea to Google's Gemini AI with difficulty-adjusted instructions:</p>
-
-    <ul>
-      <li><strong>Easy ideas</strong> — Beginner-friendly, step-by-step prompts with code examples and encouragement</li>
-      <li><strong>Medium ideas</strong> — Balanced, practical prompts focused on architecture and shipping</li>
-      <li><strong>Hard ideas</strong> — Technical, architectural prompts emphasizing tradeoffs and scalability</li>
-    </ul>
-
-    <p>The generated prompt includes concept overview, core features, user flow, tech stack suggestions (with 2-3 specific options that can be swapped), implementation steps, starter code snippets, bonus extension ideas, and contextual tips. This prompt can be copied and pasted directly into Claude, ChatGPT, Gemini, or any other AI assistant to begin building.</p>
-
-    <p>This on-demand approach minimizes API costs while ensuring builders get tailored guidance when they're ready to start.</p>
-
-    <h3>Snapshot & Archival Logic</h3>
-
-    <p>Rather than streaming signals continuously, Tech Murmurs publishes a fixed daily snapshot. This reduces noise, avoids recency bias, and creates a time-series archive that can be reviewed longitudinally to observe how certain needs persist, evolve, or disappear over time.</p>
-
-    <p>Each day's snapshot represents a point-in-time synthesis rather than a constantly updating feed. The archive preserves context and enables pattern recognition across weeks and months.</p>
-
-    <h3>Failure Modes & Fallbacks</h3>
-
-    <p>If one or more live data sources fail due to rate limits, network errors, or upstream API changes, the system enters Sample Data Mode. In this state, representative ideas are shown in place of live signals, and the system's status is explicitly surfaced in the interface banner.</p>
-
-    <p>If AI generation fails completely, the system falls back to a curated set of high-quality ideas that exemplify the intended tone and scope. This ensures continuity without masking system state or over-claiming real-time coverage.</p>
-
-    <h3>Prompt Engineering Philosophy</h3>
-
-    <p>The system's AI prompts are designed to encourage:</p>
-
-    <ul>
-      <li><strong>Playfulness over seriousness</strong> — Ideas should feel like side quests, not job assignments</li>
-      <li><strong>Experimentation over optimization</strong> — Curiosity and creative expression take priority over market fit</li>
-      <li><strong>Specificity over abstraction</strong> — Concrete projects over vague concepts</li>
-      <li><strong>Solo builder scale</strong> — Weekend builds, not startup roadmaps</li>
-      <li><strong>Human voice</strong> — Conversational tone that feels like talking to a friend, not reading marketing copy</li>
-    </ul>
-
-    <p>These priorities are embedded in the system prompts and reinforced through examples, constraints, and temperature settings (slightly elevated to encourage creative variation).</p>
-
-    <h3>Scope & Limitations</h3>
-
-    <p>Tech Murmurs does not evaluate commercial viability, adoption likelihood, technical feasibility, or market timing. It does not attempt to predict outcomes, recommend specific paths forward, or optimize for any particular definition of success.</p>
-
-    <p>The system is designed to surface signals and synthesize prompts, not to validate ideas or prescribe implementations. Builders are expected to exercise judgment, adapt ideas to their context, and make their own decisions about what to pursue.</p>
-
-    <p>All inputs are public, and no private, gated, or user-identifiable data is accessed or inferred. The system operates entirely on openly available information.</p>
-
-    <h3>Evolution & Iteration</h3>
-
-    <p>Tech Murmurs is an evolving system. Signal sources, filtering heuristics, AI prompts, and synthesis strategies may change over time as we learn what produces the most useful and inspiring outputs. Changes that materially affect how ideas are generated will be documented in this methodology.</p>
-
-    <p>The archive serves as both a historical record and a feedback mechanism — allowing us to observe which types of ideas resonate, recur, or fade, and to adjust the system accordingly.</p>
-
-  </div>
-</div>
 
 <!-- BUILD PROMPT MODAL -->
 <div class="modal" id="buildModal" style="display: none;">
@@ -846,10 +690,6 @@
     }
   }
 
-  function toggleMethodology() {
-    const m = document.getElementById("methodology");
-    m.style.display = m.style.display === "flex" ? "none" : "flex";
-  }
 
   // Close modal when clicking outside
   window.onclick = function(event) {
