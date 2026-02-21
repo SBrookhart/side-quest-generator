@@ -573,6 +573,24 @@
     </div>
 
     <div class="section">
+      <h3>Orchestration</h3>
+      <p>Tech Murmurs refreshes itself every day without anyone pressing a button. That daily rhythm — fetching signals, generating ideas, and making them available when you arrive — is what orchestration means here. It is the invisible coordination layer that makes the site feel alive on its own.</p>
+      <p>Think of it like a bakery. Someone has to come in before opening, bake the bread, and put it on the shelf — not because a customer asked, but because the shop opens at the same time every day. Tech Murmurs works the same way: a scheduled job wakes up in the small hours, does the work, and by the time anyone visits, fresh quests are already waiting.</p>
+      <p>The scheduler that makes this happen lives inside the database itself — not as a separate service or a timer on a laptop somewhere, but as a built-in feature of PostgreSQL called <strong>pg_cron</strong>. Every morning it fires two jobs in sequence. First, yesterday's quests get moved into the archive (the filing cabinet). One minute later, today's quests get generated and placed on the shelf. The one-minute gap is intentional — it makes sure yesterday is safely put away before today arrives.</p>
+      <p>To prevent the same work from accidentally happening twice, the generation step always checks first: have today's quests already been made? If yes, it stops immediately and does nothing. This is the same logic as a coffee maker that won't brew a second pot if one is already full.</p>
+      <p>As an extra layer of reliability, Netlify — the platform that hosts the site — also has its own built-in scheduler pointed at the same generation step. If the database's trigger ever fails to fire, Netlify's backup will catch it. Two alarm clocks, set one minute apart, just in case.</p>
+    </div>
+
+    <div class="section">
+      <h3>Data Storage</h3>
+      <p>Every quest Tech Murmurs generates is saved to a database rather than computed fresh on every page load. This means the site can serve today's ideas instantly, preserve a growing archive of past quests, and recover gracefully if any part of the generation pipeline has a bad day.</p>
+      <p>The database is PostgreSQL, hosted via Supabase. It uses two tables — think of them as two different trays on a desk.</p>
+      <p>The first tray, <strong>daily_quests</strong>, holds the five ideas currently live on the site. Each quest is stored as a row with its title, the murmur (the underlying problem or curiosity), the quest description, a list of reasons it's worth exploring, a difficulty rating, and the source links that inspired it. The source links and reasons are stored as flexible lists rather than fixed fields, so their structure can grow over time without disrupting anything else.</p>
+      <p>The second tray, <strong>quest_archive</strong>, is where quests go once their day is done. Every morning, before new quests are generated, yesterday's ideas are moved from <code>daily_quests</code> to <code>quest_archive</code>. Once something lands in the archive it stays there unchanged — it is a permanent, append-only record of every set of quests the site has ever published.</p>
+      <p>When you visit the site, it reads from <code>daily_quests</code> first. When you browse the archive, it pulls from both tables and stitches the results together chronologically. If the database is unreachable for any reason, the site falls back to a built-in set of representative quests so the page is never empty.</p>
+    </div>
+
+    <div class="section">
       <h3>Failure Modes &amp; Fallbacks</h3>
       <p>If one or more live data sources fail due to rate limits, network errors, or upstream API changes, the system enters Sample Data Mode. In this state, representative ideas are shown in place of live signals, and the system's status is explicitly surfaced in the interface banner.</p>
       <p>If AI generation fails completely, the system falls back to a curated set of high-quality ideas that exemplify the intended tone and scope. This ensures continuity without masking system state or over-claiming real-time coverage.</p>
