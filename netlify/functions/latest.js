@@ -8,7 +8,7 @@ function enrichSources(ideas) {
     { name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
     { name: "Awesome lists collection", url: "https://github.com/sindresorhus/awesome" }
   ];
-  
+
   const xSources = [
     { name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
     { name: "Thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
@@ -19,7 +19,7 @@ function enrichSources(ideas) {
     { name: "Discussion on code quality", url: "https://x.com/search?q=code%20quality%20tools&f=live" },
     { name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" }
   ];
-  
+
   const rssSources = [
     { name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" },
     { name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" },
@@ -30,19 +30,19 @@ function enrichSources(ideas) {
     { name: "Node Weekly archives", url: "https://nodeweekly.com/issues" },
     { name: "Web.dev articles", url: "https://web.dev/articles" }
   ];
-  
+
   return ideas.map(idea => {
     if (idea.sources && idea.sources.length >= 2) {
       return idea;
     }
-    
+
     const newSources = [];
     const numGithub = Math.random() > 0.5 ? 2 : 1;
     for (let i = 0; i < numGithub; i++) {
       const source = githubSources[Math.floor(Math.random() * githubSources.length)];
       newSources.push({ type: 'github', ...source });
     }
-    
+
     if (Math.random() > 0.3) {
       const source = xSources[Math.floor(Math.random() * xSources.length)];
       newSources.push({ type: 'x', ...source });
@@ -50,12 +50,12 @@ function enrichSources(ideas) {
       const source = rssSources[Math.floor(Math.random() * rssSources.length)];
       newSources.push({ type: 'rss', ...source });
     }
-    
+
     if (Math.random() > 0.5 && newSources.length === 2) {
       const source = rssSources[Math.floor(Math.random() * rssSources.length)];
       newSources.push({ type: 'rss', ...source });
     }
-    
+
     return {
       ...idea,
       sources: newSources
@@ -63,80 +63,97 @@ function enrichSources(ideas) {
   });
 }
 
-// In-memory cache (persists for lifetime of function container)
-let cachedIdeas = null;
-let cacheTimestamp = null;
-const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+function getTodayET() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
+async function getFromSupabase() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) return null;
+
+  const today = getTodayET();
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/daily_quests?quest_date=eq.${today}&order=display_order.asc`,
+    {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    }
+  );
+
+  if (!res.ok) return null;
+  const rows = await res.json();
+  if (!rows.length) return null;
+
+  return rows.map(r => ({
+    title: r.title,
+    murmur: r.murmur,
+    quest: r.quest,
+    worth: r.worth,
+    difficulty: r.difficulty,
+    sources: r.sources
+  }));
+}
 
 export const handler = async (event) => {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  
+
   try {
-    // Check if cache is still valid
-    const now = Date.now();
-    if (cachedIdeas && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
-      console.log('Serving from in-memory cache');
+    // Try Supabase first
+    const supabaseIdeas = await getFromSupabase();
+    if (supabaseIdeas) {
+      console.log('Serving from Supabase');
       return {
         statusCode: 200,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=21600' // 6 hours
+          'Cache-Control': 'public, max-age=3600'
         },
-        body: JSON.stringify(cachedIdeas)
+        body: JSON.stringify(supabaseIdeas)
       };
     }
-    
-    // Generate new ideas if we have API key
+
+    // Generate on-demand if AI key available
     if (anthropicKey) {
-      console.log('Generating fresh AI ideas...');
-      
+      console.log('Supabase empty, generating on-demand...');
       try {
         let ideas = await generateIdeas(anthropicKey);
         ideas = enrichSources(ideas);
-        
-        // Update cache
-        cachedIdeas = ideas;
-        cacheTimestamp = now;
-        
-        console.log('Successfully generated and cached new ideas');
-        
         return {
           statusCode: 200,
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=21600' // 6 hours
+            'Cache-Control': 'public, max-age=3600'
           },
           body: JSON.stringify(ideas)
         };
       } catch (aiError) {
         console.error('AI generation failed:', aiError);
-        // Fall through to fallback
       }
     }
-    
-    // Fallback to curated ideas
+
+    // Last resort: hardcoded fallback
     console.log('Using fallback ideas');
     let ideas = getFallbackIdeas();
     ideas = enrichSources(ideas);
-    
     return {
       statusCode: 200,
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600' // 1 hour for fallback
+        'Cache-Control': 'public, max-age=3600'
       },
       body: JSON.stringify(ideas)
     };
-    
+
   } catch (error) {
     console.error('Latest endpoint error:', error);
-    
     let ideas = getFallbackIdeas();
     ideas = enrichSources(ideas);
-    
     return {
       statusCode: 200,
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache'
       },
@@ -183,8 +200,8 @@ Output ONLY valid JSON array, no markdown fences.`;
       max_tokens: 4096,
       temperature: 0.8,
       messages: [
-        { 
-          role: "user", 
+        {
+          role: "user",
           content: systemPrompt + "\n\n" + userPrompt
         }
       ]
@@ -198,15 +215,13 @@ Output ONLY valid JSON array, no markdown fences.`;
 
   const data = await response.json();
   const content = data.content?.[0]?.text || '';
-  
+
   const cleanedContent = content
     .replace(/```json\n?/g, '')
     .replace(/```\n?/g, '')
     .trim();
 
-  const ideas = JSON.parse(cleanedContent);
-  
-  return ideas;
+  return JSON.parse(cleanedContent);
 }
 
 function getFallbackIdeas() {
