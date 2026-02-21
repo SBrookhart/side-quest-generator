@@ -53,12 +53,12 @@ SELECT cron.schedule('archive-quests-est','0 5 * * *','SELECT archive_daily_ques
 SELECT cron.schedule('archive-quests-edt','0 4 * * *','SELECT archive_daily_quests()');
 
 -- pg_cron: trigger generation 1 min after archive
--- REPLACE YOUR_NETLIFY_DOMAIN and YOUR_CRON_SECRET before running
+-- Replace YOUR_CRON_SECRET below with the value of your CRON_SECRET Netlify env var
 SELECT cron.schedule('generate-quests-est','1 5 * * *',
   $$SELECT net.http_post(url:='https://side-quest-generator.netlify.app/.netlify/functions/scheduled-daily',
-    headers:=jsonb_build_object('Content-Type','application/json','x-cron-secret','a6b7dac0eea72897f3255b1573063dc6e25b31c74469de8772651b7288db0d99'),
+    headers:=jsonb_build_object('Content-Type','application/json','x-cron-secret','YOUR_CRON_SECRET'),
     body:='{}'::jsonb)$$);
 SELECT cron.schedule('generate-quests-edt','1 4 * * *',
   $$SELECT net.http_post(url:='https://side-quest-generator.netlify.app/.netlify/functions/scheduled-daily',
-    headers:=jsonb_build_object('Content-Type','application/json','x-cron-secret','a6b7dac0eea72897f3255b1573063dc6e25b31c74469de8772651b7288db0d99'),
+    headers:=jsonb_build_object('Content-Type','application/json','x-cron-secret','YOUR_CRON_SECRET'),
     body:='{}'::jsonb)$$);
