@@ -1,65 +1,70 @@
-function enrichSources(ideas) {
-  const githubSources = [
-    { name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
-    { name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions" },
-    { name: "Awesome developer tools", url: "https://github.com/topics/developer-tools" },
-    { name: "CLI tools showcase", url: "https://github.com/topics/cli" },
-    { name: "Web development discussions", url: "https://github.com/topics/web-development" },
-    { name: "Developer productivity tools", url: "https://github.com/topics/productivity" },
-    { name: "Awesome lists collection", url: "https://github.com/sindresorhus/awesome" }
-  ];
+import { getGitHubSignals } from './github.js';
+import { getArticleSignals } from './articles.js';
 
-  const xSources = [
-    { name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
-    { name: "Thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
-    { name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" },
-    { name: "Discussion on dev tools", url: "https://x.com/search?q=developer%20tools%20productivity&f=live" },
-    { name: "Thread on building in public", url: "https://x.com/search?q=building%20in%20public&f=live" },
-    { name: "Conversation on CLI tools", url: "https://x.com/search?q=CLI%20tool%20ideas&f=live" },
-    { name: "Discussion on code quality", url: "https://x.com/search?q=code%20quality%20tools&f=live" },
-    { name: "Thread on web performance", url: "https://x.com/search?q=web%20performance%20optimization&f=live" }
-  ];
+// Curated fallback sources used only when live signals are unavailable
+const FALLBACK_GITHUB = [
+  { type: 'github', name: "GitHub Issues discussions", url: "https://github.com/features/issues" },
+  { type: 'github', name: "VSCode feature requests", url: "https://github.com/microsoft/vscode/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions" },
+  { type: 'github', name: "Awesome developer tools", url: "https://github.com/topics/developer-tools" },
+  { type: 'github', name: "CLI tools showcase", url: "https://github.com/topics/cli" },
+  { type: 'github', name: "Developer productivity tools", url: "https://github.com/topics/productivity" }
+];
 
-  const rssSources = [
-    { name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" },
-    { name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" },
-    { name: "Indie Hackers - Product ideas", url: "https://www.indiehackers.com/products" },
-    { name: "CSS-Tricks - Developer workflows", url: "https://css-tricks.com/tag/workflow/" },
-    { name: "Smashing Magazine - Tools", url: "https://www.smashingmagazine.com/category/tools" },
-    { name: "JavaScript Weekly archives", url: "https://javascriptweekly.com/issues" },
-    { name: "Node Weekly archives", url: "https://nodeweekly.com/issues" },
-    { name: "Web.dev articles", url: "https://web.dev/articles" }
-  ];
+const FALLBACK_ARTICLE = [
+  { type: 'rss', name: "Dev.to - Building CLI tools", url: "https://dev.to/t/cli" },
+  { type: 'rss', name: "Hacker News - Show HN projects", url: "https://news.ycombinator.com/show" },
+  { type: 'rss', name: "JavaScript Weekly archives", url: "https://javascriptweekly.com/issues" },
+  { type: 'rss', name: "Web.dev articles", url: "https://web.dev/articles" }
+];
+
+const FALLBACK_X = [
+  { type: 'x', name: "Discussion on indie hacking", url: "https://x.com/search?q=indie%20hacker%20tools&f=live" },
+  { type: 'x', name: "Thread on developer workflows", url: "https://x.com/search?q=developer%20workflow%20tips&f=live" },
+  { type: 'x', name: "Conversation on side projects", url: "https://x.com/search?q=side%20project%20ideas&f=live" }
+];
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function enrichSources(ideas, githubSignals, articleSignals) {
+  const githubPool = githubSignals.length > 0
+    ? githubSignals.map(s => ({ type: 'github', name: (s.text || s.name || 'GitHub issue').slice(0, 80), url: s.url }))
+    : FALLBACK_GITHUB;
+
+  const articlePool = articleSignals.length > 0
+    ? articleSignals.map(s => ({ type: 'rss', name: s.name.slice(0, 80), url: s.url }))
+    : FALLBACK_ARTICLE;
 
   return ideas.map(idea => {
-    if (idea.sources && idea.sources.length >= 2) {
-      return idea;
-    }
+    if (idea.sources && idea.sources.length >= 2) return idea;
 
-    const newSources = [];
+    const sources = [];
+
+    // 1-2 GitHub sources
     const numGithub = Math.random() > 0.5 ? 2 : 1;
-    for (let i = 0; i < numGithub; i++) {
-      const source = githubSources[Math.floor(Math.random() * githubSources.length)];
-      newSources.push({ type: 'github', ...source });
+    const usedGithub = new Set();
+    for (let i = 0; i < numGithub && i < githubPool.length; i++) {
+      let candidate;
+      let tries = 0;
+      do { candidate = pick(githubPool); tries++; } while (usedGithub.has(candidate.url) && tries < 10);
+      usedGithub.add(candidate.url);
+      sources.push(candidate);
     }
 
+    // 1 X or article source
     if (Math.random() > 0.3) {
-      const source = xSources[Math.floor(Math.random() * xSources.length)];
-      newSources.push({ type: 'x', ...source });
+      sources.push(pick(FALLBACK_X));
     } else {
-      const source = rssSources[Math.floor(Math.random() * rssSources.length)];
-      newSources.push({ type: 'rss', ...source });
+      sources.push(pick(articlePool));
     }
 
-    if (Math.random() > 0.5 && newSources.length === 2) {
-      const source = rssSources[Math.floor(Math.random() * rssSources.length)];
-      newSources.push({ type: 'rss', ...source });
+    // Optional second article source
+    if (Math.random() > 0.5 && sources.length === 2) {
+      sources.push(pick(articlePool));
     }
 
-    return {
-      ...idea,
-      sources: newSources
-    };
+    return { ...idea, sources };
   });
 }
 
@@ -93,7 +98,6 @@ export async function generateAndStore() {
       const existing = await checkRes.json();
       if (existing.length > 0) {
         console.log('Quests already exist for today, skipping generation');
-        // Return the existing quests
         const existingRes = await fetch(
           `${supabaseUrl}/rest/v1/daily_quests?quest_date=eq.${today}&order=display_order.asc`,
           { headers: supabaseHeaders(supabaseKey) }
@@ -111,9 +115,19 @@ export async function generateAndStore() {
     }
   }
 
-  // Generate fresh ideas
-  let ideas = await generateIdeas(anthropicKey);
-  ideas = enrichSources(ideas);
+  // Fetch live signals in parallel — failures are isolated and non-blocking
+  console.log('Fetching live signals from GitHub and article feeds...');
+  const [githubResult, articleResult] = await Promise.allSettled([
+    getGitHubSignals(),
+    getArticleSignals()
+  ]);
+  const githubSignals = githubResult.status === 'fulfilled' ? githubResult.value : [];
+  const articleSignals = articleResult.status === 'fulfilled' ? articleResult.value : [];
+  console.log(`Signals collected — GitHub: ${githubSignals.length}, Articles: ${articleSignals.length}`);
+
+  // Generate fresh ideas using live signals as context
+  let ideas = await generateIdeas(anthropicKey, githubSignals, articleSignals);
+  ideas = enrichSources(ideas, githubSignals, articleSignals);
 
   // Store in Supabase
   if (supabaseUrl && supabaseKey) {
@@ -189,7 +203,7 @@ export const handler = async (event) => {
   }
 };
 
-async function generateIdeas(apiKey) {
+async function generateIdeas(apiKey, githubSignals = [], articleSignals = []) {
   const systemPrompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
 
 Generate exactly 5 project ideas with this distribution:
@@ -213,7 +227,27 @@ Format each idea as JSON with:
 
 Output ONLY valid JSON array, no markdown fences.`;
 
-  const userPrompt = `Generate 5 diverse side quest ideas for indie builders right now. Make them feel fresh, playful, and immediately buildable.`;
+  // Build signal context from live data
+  let signalContext = '';
+  if (githubSignals.length > 0 || articleSignals.length > 0) {
+    signalContext = '\n\nHere are real signals from the developer community today. Use them as creative inspiration — riff on the underlying pain points, don\'t copy directly:\n';
+
+    if (githubSignals.length > 0) {
+      signalContext += '\nGitHub developer pain points (real open issues):\n';
+      githubSignals.slice(0, 5).forEach(s => {
+        signalContext += `- "${s.text}"\n`;
+      });
+    }
+
+    if (articleSignals.length > 0) {
+      signalContext += '\nWhat developers are reading today:\n';
+      articleSignals.slice(0, 6).forEach(s => {
+        signalContext += `- "${s.name}" (${s.source})\n`;
+      });
+    }
+  }
+
+  const userPrompt = `Generate 5 diverse side quest ideas for indie builders right now. Make them feel fresh, playful, and immediately buildable.${signalContext}`;
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
