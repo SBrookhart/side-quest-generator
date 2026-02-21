@@ -159,40 +159,61 @@ const FALLBACK_ARCHIVE = {
   ]
 };
 
+function getTodayET() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
+function mapRow(r) {
+  return {
+    title: r.title,
+    murmur: r.murmur,
+    quest: r.quest,
+    worth: r.worth,
+    difficulty: r.difficulty,
+    sources: r.sources
+  };
+}
+
 async function getFromSupabase() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !supabaseKey) return null;
 
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/quest_archive?order=quest_date.desc,display_order.asc`,
-    {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
-    }
-  );
+  const today = getTodayET();
+  const headers = {
+    'apikey': supabaseKey,
+    'Authorization': `Bearer ${supabaseKey}`
+  };
 
-  if (!res.ok) return null;
-  const rows = await res.json();
-  if (!rows.length) return null;
+  // Read from both tables: quest_archive (legacy Jan 23-29) and daily_quests (Jan 30+)
+  const [archiveRes, dailyRes] = await Promise.all([
+    fetch(`${supabaseUrl}/rest/v1/quest_archive?order=quest_date.desc,display_order.asc`, { headers }),
+    fetch(`${supabaseUrl}/rest/v1/daily_quests?quest_date=neq.${today}&order=quest_date.desc,display_order.asc`, { headers })
+  ]);
 
-  // Group by date
+  const archiveRows = archiveRes.ok ? await archiveRes.json() : [];
+  const dailyRows = dailyRes.ok ? await dailyRes.json() : [];
+
+  if (!archiveRows.length && !dailyRows.length) return null;
+
+  // Group quest_archive rows first
   const grouped = {};
-  for (const r of rows) {
+  for (const r of archiveRows) {
     const date = r.quest_date;
     if (!grouped[date]) grouped[date] = [];
-    grouped[date].push({
-      title: r.title,
-      murmur: r.murmur,
-      quest: r.quest,
-      worth: r.worth,
-      difficulty: r.difficulty,
-      sources: r.sources
-    });
+    grouped[date].push(mapRow(r));
   }
-  return grouped;
+
+  // Group daily_quests rows — daily_quests takes precedence for any overlapping date
+  const dailyGrouped = {};
+  for (const r of dailyRows) {
+    const date = r.quest_date;
+    if (!dailyGrouped[date]) dailyGrouped[date] = [];
+    dailyGrouped[date].push(mapRow(r));
+  }
+
+  const merged = { ...grouped, ...dailyGrouped };
+  return Object.keys(merged).length ? merged : null;
 }
 
 export const handler = async (event) => {
