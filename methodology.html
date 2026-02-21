@@ -6,6 +6,42 @@
 <title>Methodology — Tech Murmurs</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#1f2538',
+      primaryTextColor: '#e8ebf3',
+      primaryBorderColor: '#3d4a6b',
+      lineColor: '#6b7a9e',
+      secondaryColor: '#121622',
+      tertiaryColor: '#0b0d12',
+      background: '#0b0d12',
+      mainBkg: '#1f2538',
+      nodeBorder: '#3d4a6b',
+      titleColor: '#e8ebf3',
+      edgeLabelBackground: '#1f2538',
+      actorBkg: '#1a2035',
+      actorBorder: '#3d4a6b',
+      actorTextColor: '#e8ebf3',
+      actorLineColor: '#3d4a6b',
+      signalColor: '#6b7a9e',
+      signalTextColor: '#cfd5e6',
+      labelBoxBkgColor: '#121622',
+      labelBoxBorderColor: '#3d4a6b',
+      labelTextColor: '#cfd5e6',
+      loopTextColor: '#cfd5e6',
+      noteBorderColor: '#3d4a6b',
+      noteBkgColor: '#1a2035',
+      noteTextColor: '#cfd5e6',
+      activationBorderColor: '#3d4a6b',
+      activationBkgColor: '#262f4a',
+      sequenceNumberColor: '#9aa3b2'
+    }
+  });
+</script>
 
 <style>
 :root {
@@ -75,6 +111,30 @@ li {
 .note {
   color: var(--muted);
   font-size: .9rem;
+}
+
+.diagram-wrap {
+  margin: 2rem 0 2.5rem;
+  background: #0d1018;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem 1rem;
+  overflow-x: auto;
+}
+
+.diagram-label {
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.diagram-wrap .mermaid svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
 }
 </style>
 </head>
@@ -233,6 +293,102 @@ Tech Murmurs does not evaluate commercial viability, adoption likelihood, or tec
 <p>
 All inputs are public, and no private, gated, or user-identifiable data is accessed or inferred.
 </p>
+</div>
+
+
+<h2>How It All Fits Together</h2>
+
+<p>
+Tech Murmurs runs on two separate tracks: a <strong>scheduled overnight pipeline</strong> that produces each day's quests automatically, and an <strong>on-demand path</strong> that fires whenever you click "Let's Build!" Both tracks are serverless — small functions spin up in the cloud, do their job, and disappear. There's no server sitting idle waiting for work.
+</p>
+
+<div class="section">
+<h3>The Overnight Pipeline</h3>
+<p>
+Every night at 5:01 AM UTC, a scheduler built into the database — a PostgreSQL extension called <strong>pg_cron</strong> — wakes up and fires an authenticated HTTP request to a Netlify serverless function. That function immediately checks whether quests already exist for today (an <em>idempotency check</em> — a guard against doing the same work twice if the alarm fires more than once). If not, it fetches live signals from GitHub and developer article feeds in parallel, then calls <strong>Anthropic's Claude Sonnet 4</strong> with those signals as context to generate five ideas grounded in real developer pain points. The results are stored in the database for the day.
+</p>
+<p>
+If either signal source fails, generation continues with whatever is available. If Claude is unavailable, the function falls back to a set of pre-written ideas so the site is never empty. At 4:00 AM UTC, a second scheduled job quietly archives the previous day's quests before new ones arrive.
+</p>
+
+<h3>The On-Demand Path</h3>
+<p>
+When you click "Let's Build!" your browser sends the quest details to a separate Netlify function. That function constructs a difficulty-adjusted prompt and sends it to <strong>Google Gemini 2.5 Flash</strong>, which returns a detailed build guide in markdown. If Gemini times out (45-second limit) or hits a rate limit, the function returns a clear error rather than hanging.
+</p>
+<p>
+The two AI models are intentionally separate: Claude handles the creative, divergent work of imagining what could be built — informed by live signals from the developer community. Gemini handles the convergent, practical work of explaining how to build it.
+</p>
+</div>
+
+<h2>System Flow</h2>
+
+<p>The diagrams below show how data and requests move through the system end-to-end.</p>
+
+<div class="diagram-wrap">
+  <div class="diagram-label">Daily Generation Pipeline</div>
+  <div class="mermaid">
+sequenceDiagram
+    participant C as pg_cron
+    participant N as Netlify Function
+    participant G as GitHub API
+    participant A as Dev.to / Hashnode
+    participant AI as Anthropic Claude
+    participant DB as Supabase DB
+
+    Note over C,DB: 4:00 AM UTC — Archive job
+    C->>DB: Move yesterday's quests → archive table
+
+    Note over C,DB: 5:01 AM UTC — Generation job
+    C->>N: POST /scheduled-daily
+    N->>N: Validate cron secret header
+    N->>DB: Query: quests exist today?
+    DB-->>N: No results
+
+    par Fetch live signals
+        N->>G: GET search/issues (pain-point phrases)
+        G-->>N: Matching open issues
+    and
+        N->>A: GET dev.to/feed + hashnode/rss
+        A-->>N: Recent article titles + URLs
+    end
+
+    N->>AI: POST /messages (5 quest prompt + signals)
+    AI-->>N: 5 quest ideas (JSON)
+    N->>N: enrichSources() — attach real signal URLs
+    N->>DB: INSERT into daily_quests
+    DB-->>N: 201 Created
+  </div>
+</div>
+
+<div class="diagram-wrap">
+  <div class="diagram-label">On-Demand "Let's Build!" Path</div>
+  <div class="mermaid">
+sequenceDiagram
+    participant U as Browser
+    participant N as Netlify Function
+    participant Gem as Google Gemini
+
+    U->>U: User clicks "Let's Build!"
+    U->>U: Open modal (loading spinner)
+    U->>N: POST /generatePrompt
+    Note right of U: payload: title, murmur,<br/>quest, worth, difficulty
+
+    N->>N: Validate API key + required fields
+    N->>N: Build difficulty-adjusted prompt
+    N->>Gem: POST /generateContent (45s timeout)
+
+    alt Success
+        Gem-->>N: Markdown build guide
+        N->>N: Clean markdown formatting
+        N-->>U: { prompt: "...markdown..." }
+        U->>U: Convert markdown → HTML
+        U->>U: Display in modal with copy button
+    else Rate limit or timeout
+        Gem-->>N: 429 or timeout
+        N-->>U: Error message
+        U->>U: Display error in modal
+    end
+  </div>
 </div>
 
 </main>

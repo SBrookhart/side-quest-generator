@@ -1,48 +1,64 @@
 // netlify/functions/articles.js
 
-export async function getArticleSignals() {
-  const feeds = [
-    "https://dev.to/feed",
-    "https://hashnode.com/rss"
-  ];
+const FEEDS = [
+  { url: "https://dev.to/feed", source: "dev.to", type: "rss" },
+  { url: "https://hashnode.com/rss", source: "hashnode", type: "rss" }
+];
 
+const MAX_PER_FEED = 6;
+
+function extractItems(xml) {
+  const items = [];
+  const itemBlocks = xml.match(/<item>([\s\S]*?)<\/item>/gi) || [];
+
+  for (const block of itemBlocks) {
+    // Title: handle both CDATA and plain
+    const titleMatch = block.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/i)
+      || block.match(/<title>([\s\S]*?)<\/title>/i);
+    const title = (titleMatch?.[1] || '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+
+    // Link: prefer <link>, fall back to <guid> if it looks like a URL
+    const linkMatch = block.match(/<link>(https?:\/\/[^\s<]+)<\/link>/i)
+      || block.match(/<guid[^>]*>(https?:\/\/[^\s<]+)<\/guid>/i);
+    const url = (linkMatch?.[1] || '').trim();
+
+    if (title.length > 15 && url.startsWith('http')) {
+      items.push({ title, url });
+    }
+  }
+
+  return items.slice(0, MAX_PER_FEED);
+}
+
+export async function getArticleSignals() {
   const signals = [];
 
-  for (const feed of feeds) {
+  for (const feed of FEEDS) {
     try {
-      const res = await fetch(feed);
+      const res = await fetch(feed.url, {
+        signal: AbortSignal.timeout(8000),
+        headers: { 'User-Agent': 'TechMurmurs/1.0 (+https://techmurmurs.com)' }
+      });
       if (!res.ok) continue;
 
-      const text = await res.text();
+      const xml = await res.text();
+      const items = extractItems(xml);
 
-      // Very lightweight extraction — no scraping, no parsing libs
-      const matches = text.match(/<title>(.*?)<\/title>|<description>(.*?)<\/description>/gi) || [];
-
-      for (const m of matches) {
-        const cleaned = m
-          .replace(/<\/?[^>]+(>|$)/g, "")
-          .toLowerCase();
-
-        if (
-          cleaned.includes("hard to") ||
-          cleaned.includes("missing") ||
-          cleaned.includes("wish there was") ||
-          cleaned.includes("no good way")
-        ) {
-          signals.push({
-            type: "article",
-            name: "Developer Essay",
-            text: cleaned.slice(0, 300),
-            url: feed
-          });
-        }
+      for (const item of items) {
+        signals.push({
+          type: feed.type,
+          source: feed.source,
+          name: item.title.slice(0, 100),
+          text: item.title,
+          url: item.url
+        });
       }
     } catch {
       continue;
     }
   }
 
-  return signals.slice(0, 5);
+  return signals;
 }
 
 // Required Netlify handler
