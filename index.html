@@ -13,6 +13,9 @@
   <!-- Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Mermaid (for methodology diagrams) -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+
   <style>
     :root {
       --bg:#0b0e14;
@@ -384,6 +387,36 @@
       color: var(--text);
     }
 
+    .modal-content .section {
+      border-left: 2px solid var(--border);
+      padding-left: 1.4rem;
+      margin-top: 1.5rem;
+    }
+
+    .modal-content .diagram-wrap {
+      margin: 1.5rem 0 2rem;
+      background: #0d1018;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem 1rem;
+      overflow-x: auto;
+    }
+
+    .modal-content .diagram-label {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+
+    .modal-content .diagram-wrap .mermaid svg {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+    }
+
     @media (max-width: 640px) {
       h1 { font-size: 2.2rem; }
       .motto { font-size: 0.8rem; }
@@ -414,7 +447,7 @@
   <div class="top-row">
     <div class="nav">
       <a href="archive.html"><i data-lucide="archive"></i> Archive</a>
-      <a href="/methodology"><i data-lucide="book-open"></i> Methodology</a>
+      <button onclick="toggleMethodology()"><i data-lucide="book-open"></i> Methodology</button>
     </div>
 
     <div class="legend">
@@ -439,6 +472,176 @@
   </div>
 </footer>
 
+
+<!-- METHODOLOGY MODAL -->
+<div class="modal" id="methodology" onclick="toggleMethodology()">
+  <div class="modal-content" onclick="event.stopPropagation()" style="max-width:860px;">
+    <div class="close-x" onclick="toggleMethodology()">✕</div>
+
+    <h2>What The Generator Does</h2>
+
+    <p>Tech Murmurs is an AI-powered ideation system designed to surface small, buildable opportunities from public builder activity. It listens for early signals — ideas that are being discussed, hinted at, or partially articulated in the wild — before they harden into roadmaps, products, or dominant narratives.</p>
+    <p>The system draws from places where builders naturally express intent: open-source issue threads, hackathon prompts, protocol updates, and public developer conversations. These sources are chosen not for volume, but for proximity to real, unfinished work.</p>
+    <p>Rather than treating every signal as equally meaningful, Tech Murmurs looks for specific expressions of friction, absence, or creative possibility. Language such as "missing," "wish there was," "no tool for," recurring feature requests, or experimental ideas are treated as higher-signal than general commentary. Vague or purely speculative input is intentionally filtered out.</p>
+    <p>Each day, collected signals are synthesized by AI into five distinct "side quests" — small, concrete project ideas designed for indie builders, vibe coders, and creative experimenters. These aren't market opportunities or startup ideas; they're weekend builds, playful tools, and thoughtful prompts that blend practical utility with creative exploration.</p>
+    <p>The AI generation process emphasizes three overlapping categories:</p>
+    <ul>
+      <li><strong>Thoughtful indie hacker / solo builder prompts (40% weight)</strong> — Tools and workflows that make individual building more delightful, efficient, or expressive.</li>
+      <li><strong>Early-stage product opportunities (20% weight)</strong> — Nascent gaps where a focused tool could provide real value without becoming a platform.</li>
+      <li><strong>Creative experiments &amp; playful tools (40% weight)</strong> — Whimsical, aesthetic, or exploratory projects that prioritize curiosity and vibes over immediate utility.</li>
+    </ul>
+    <p>Tech Murmurs publishes ideas as a daily snapshot rather than a continuous feed. A fixed daily set preserves context, avoids recency bias, and creates a historical archive that reveals how certain needs emerge, persist, fade, or recur over time.</p>
+    <p>When live sources are temporarily unavailable, the system falls back to a curated baseline of representative ideas. This ensures continuity while making the system's state explicit to the reader.</p>
+    <p>Tech Murmurs does not attempt to evaluate market size, adoption likelihood, commercial viability, or technical feasibility. It is not a recommendation engine. Its role is to make early, often-quiet signals visible — and to transform them into prompts that feel worth exploring.</p>
+    <p>All inputs are public. Attribution is preserved through outbound links, and no private or user-restricted data is accessed.</p>
+
+    <h2>How The Generator Works <span style="color:var(--muted);font-size:.85em;">(For Transparency)</span></h2>
+    <p>The sections below describe how the system operates at a technical level. They are included for transparency and auditability, not as a prerequisite for using the tool.</p>
+
+    <div class="section">
+      <h3>System Architecture</h3>
+      <p>Tech Murmurs is a client-rendered web application backed by serverless ingestion and generation functions. Data collection is performed via Netlify Functions, which proxy public APIs and feeds. AI synthesis happens server-side to protect API credentials and ensure consistent prompt engineering.</p>
+    </div>
+
+    <div class="section">
+      <h3>Integrated Data Sources</h3>
+      <p>Current integrations include the GitHub Search API (for open issues and repository activity), GitHub Releases (used as proxies for protocol roadmaps), public hackathon feeds accessed via RSS, and lightweight article ingestion from developer blogs. Each source is queried independently and normalized into a common signal structure before being passed to the AI synthesis layer.</p>
+      <p>Sources are treated as complementary rather than authoritative. No single platform is assumed to represent the full landscape of builder intent. The system prioritizes diversity of input over depth from any one source.</p>
+    </div>
+
+    <div class="section">
+      <h3>Signal Collection &amp; Filtering</h3>
+      <p>During ingestion, Tech Murmurs applies lightweight language analysis to distinguish actionable signals from general discussion. Incoming text is scanned for intent-bearing phrases such as:</p>
+      <ul>
+        <li>"missing" or "lacking"</li>
+        <li>"wish there was" or "it would be great if"</li>
+        <li>"no tool for" or "hard to" or "difficult to"</li>
+        <li>"what if" or "imagine if" (indicating creative exploration)</li>
+        <li>repeated feature requests across issues or discussions</li>
+      </ul>
+      <p>These are heuristic markers, not definitive signals. The system also considers contextual signals: whether the need appears in a problem description, recurs across sources, is specific enough to suggest a build, or carries a tone of playfulness or curiosity. Text that is vague or purely opinion-based is intentionally deprioritized.</p>
+    </div>
+
+    <div class="section">
+      <h3>AI Synthesis Pipeline</h3>
+      <p>Once signals pass initial filtering, they are sent to an AI language model for creative synthesis. The AI transforms raw signals into five distinct side-quest ideas balancing practical utility, creative experimentation, and playful exploration.</p>
+      <p>The prompt engineering emphasizes conversational tone, specificity without intimidation, diversity of type (40% tools / 20% product opportunities / 40% experiments), and vibe-coder friendliness. Each idea includes a title, murmur (why it exists), quest (what to build), worth (three reasons), difficulty, and source links.</p>
+      <p>If AI generation fails, the system falls back to a curated set of representative ideas that match the intended tone and scope.</p>
+    </div>
+
+    <div class="section">
+      <h3>Let's Build! Feature</h3>
+      <p>Each idea card includes a "Let's Build!" button that generates a detailed, AI-powered build prompt on demand via Google Gemini, with difficulty-adjusted instructions — beginner-friendly for Easy, architecture-focused for Medium, and tradeoff-heavy for Hard. The resulting prompt can be pasted directly into any AI assistant to begin building.</p>
+    </div>
+
+    <div class="section">
+      <h3>Snapshot &amp; Archival Logic</h3>
+      <p>Tech Murmurs publishes a fixed daily snapshot rather than a continuously updating feed. This reduces noise, avoids recency bias, and creates a time-series archive that can be reviewed longitudinally to observe how needs persist, evolve, or disappear over time.</p>
+    </div>
+
+    <div class="section">
+      <h3>Failure Modes &amp; Fallbacks</h3>
+      <p>If live data sources fail, the system enters Sample Data Mode, showing representative ideas while surfacing the system state in the interface banner. If AI generation fails completely, a curated set of high-quality ideas is shown to ensure continuity.</p>
+    </div>
+
+    <div class="section">
+      <h3>Prompt Engineering Philosophy</h3>
+      <ul>
+        <li><strong>Playfulness over seriousness</strong> — Ideas should feel like side quests, not job assignments</li>
+        <li><strong>Experimentation over optimization</strong> — Curiosity and creative expression take priority over market fit</li>
+        <li><strong>Specificity over abstraction</strong> — Concrete projects over vague concepts</li>
+        <li><strong>Solo builder scale</strong> — Weekend builds, not startup roadmaps</li>
+        <li><strong>Human voice</strong> — Conversational tone that feels like talking to a friend, not reading marketing copy</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h3>Evolution &amp; Iteration</h3>
+      <p>Tech Murmurs is an evolving system. Signal sources, filtering heuristics, AI prompts, and synthesis strategies may change over time. Changes that materially affect how ideas are generated will be documented here. The archive serves as both a historical record and a feedback mechanism.</p>
+    </div>
+
+    <h2>How It All Fits Together</h2>
+    <p>Tech Murmurs runs on two separate tracks: a <strong>scheduled overnight pipeline</strong> that produces each day's quests automatically, and an <strong>on-demand path</strong> that fires whenever you click "Let's Build!" Both tracks are serverless.</p>
+
+    <div class="section">
+      <h3>The Overnight Pipeline</h3>
+      <p>Every night at 5:01 AM UTC, a pg_cron job fires an authenticated HTTP request to a Netlify function. That function checks whether quests already exist for today (idempotency guard), then fetches live signals from GitHub and developer article feeds in parallel, calls <strong>Anthropic Claude Sonnet</strong> to generate five grounded ideas, and stores the results in Supabase. If sources fail, generation continues with whatever is available. If Claude is unavailable, pre-written fallback ideas are used so the site is never empty.</p>
+      <h3>The On-Demand Path</h3>
+      <p>When you click "Let's Build!" your browser sends the quest details to a separate Netlify function, which builds a difficulty-adjusted prompt and sends it to <strong>Google Gemini 2.5 Flash</strong>. If Gemini times out (45s) or hits a rate limit, a clear error is returned. Claude handles creative divergent ideation informed by live signals; Gemini handles convergent, practical how-to-build guidance.</p>
+    </div>
+
+    <h2>System Flow</h2>
+    <p>The diagrams below show how data and requests move through the system end-to-end.</p>
+
+    <div class="diagram-wrap">
+      <div class="diagram-label">Daily Generation Pipeline</div>
+      <div class="mermaid">
+sequenceDiagram
+    participant C as pg_cron
+    participant N as Netlify Function
+    participant G as GitHub API
+    participant A as Dev.to / Hashnode
+    participant AI as Anthropic Claude
+    participant DB as Supabase DB
+
+    Note over C,DB: 4:00 AM UTC — Archive job
+    C->>DB: Move yesterday's quests → archive table
+
+    Note over C,DB: 5:01 AM UTC — Generation job
+    C->>N: POST /scheduled-daily
+    N->>N: Validate cron secret header
+    N->>DB: Query: quests exist today?
+    DB-->>N: No results
+
+    par Fetch live signals
+        N->>G: GET search/issues (pain-point phrases)
+        G-->>N: Matching open issues
+    and
+        N->>A: GET dev.to/feed + hashnode/rss
+        A-->>N: Recent article titles + URLs
+    end
+
+    N->>AI: POST /messages (5 quest prompt + signals)
+    AI-->>N: 5 quest ideas (JSON)
+    N->>N: enrichSources() — attach real signal URLs
+    N->>DB: INSERT into daily_quests
+    DB-->>N: 201 Created
+      </div>
+    </div>
+
+    <div class="diagram-wrap">
+      <div class="diagram-label">On-Demand "Let's Build!" Path</div>
+      <div class="mermaid">
+sequenceDiagram
+    participant U as Browser
+    participant N as Netlify Function
+    participant Gem as Google Gemini
+
+    U->>U: User clicks "Let's Build!"
+    U->>U: Open modal (loading spinner)
+    U->>N: POST /generatePrompt
+    Note right of U: payload: title, murmur,<br/>quest, worth, difficulty
+
+    N->>N: Validate API key + required fields
+    N->>N: Build difficulty-adjusted prompt
+    N->>Gem: POST /generateContent (45s timeout)
+
+    alt Success
+        Gem-->>N: Markdown build guide
+        N->>N: Clean markdown formatting
+        N-->>U: { prompt: "...markdown..." }
+        U->>U: Convert markdown → HTML
+        U->>U: Display in modal with copy button
+    else Rate limit or timeout
+        Gem-->>N: 429 or timeout
+        N-->>U: Error message
+        U->>U: Display error in modal
+    end
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- BUILD PROMPT MODAL -->
 <div class="modal" id="buildModal" style="display: none;">
@@ -696,6 +899,37 @@
     const modal = document.getElementById('buildModal');
     if (event.target === modal) {
       closeBuildModal();
+    }
+  }
+
+  // Methodology modal
+  let mermaidInitialized = false;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#1f2538', primaryTextColor: '#e8ebf3', primaryBorderColor: '#3d4a6b',
+      lineColor: '#6b7a9e', secondaryColor: '#121622', tertiaryColor: '#0b0d12',
+      background: '#0b0d12', mainBkg: '#1f2538', nodeBorder: '#3d4a6b',
+      actorBkg: '#1a2035', actorBorder: '#3d4a6b', actorTextColor: '#e8ebf3',
+      actorLineColor: '#3d4a6b', signalColor: '#6b7a9e', signalTextColor: '#cfd5e6',
+      labelBoxBkgColor: '#121622', labelBoxBorderColor: '#3d4a6b', labelTextColor: '#cfd5e6',
+      loopTextColor: '#cfd5e6', noteBorderColor: '#3d4a6b', noteBkgColor: '#1a2035',
+      noteTextColor: '#cfd5e6', activationBorderColor: '#3d4a6b', activationBkgColor: '#262f4a',
+      sequenceNumberColor: '#9aa3b2', edgeLabelBackground: '#1f2538', titleColor: '#e8ebf3'
+    }
+  });
+
+  function toggleMethodology() {
+    const m = document.getElementById('methodology');
+    if (m.style.display === 'flex') {
+      m.style.display = 'none';
+    } else {
+      m.style.display = 'flex';
+      if (!mermaidInitialized) {
+        mermaid.run({ nodes: document.querySelectorAll('#methodology .mermaid') });
+        mermaidInitialized = true;
+      }
     }
   }
 
