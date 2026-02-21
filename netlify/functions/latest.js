@@ -115,12 +115,12 @@ export const handler = async (event) => {
       };
     }
 
-    // Generate on-demand if AI key available
+    // Generate and store so today's quests remain stable across requests
     if (anthropicKey) {
-      console.log('Supabase empty, generating on-demand...');
+      console.log('Supabase empty, generating and storing for today...');
       try {
-        let ideas = await generateIdeas(anthropicKey);
-        ideas = enrichSources(ideas);
+        const { generateAndStore } = await import('./generateDaily.js');
+        const ideas = await generateAndStore();
         return {
           statusCode: 200,
           headers: {
