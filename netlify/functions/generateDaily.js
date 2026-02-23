@@ -68,6 +68,100 @@ function enrichSources(ideas, githubSignals, articleSignals) {
   });
 }
 
+
+const TECHNICAL_TERMS = [
+  /\bci\/?cd\b/i,
+  /\bcli\b/i,
+  /\bdevops\b/i,
+  /\bwebhook(s)?\b/i,
+  /\bmiddleware\b/i,
+  /\bcontainer(s|ization)?\b/i,
+  /\bproxy\b/i,
+  /\bterminal\b/i,
+  /\bdebug(ger)?\b/i,
+  /\blinter\b/i,
+  /\bgithub action(s)?\b/i,
+  /\bapi gateway\b/i,
+  /\bcron job\b/i,
+  /\bdeployment pipeline\b/i,
+  /\binfrastructure\b/i,
+  /\bself-host(ed|ing)?\b/i,
+  /\bkubernetes\b/i,
+  /\bdocker\b/i,
+  /\bserverless\b/i
+];
+
+function isTooTechnical(idea) {
+  const text = `${idea.title || ''} ${idea.murmur || ''} ${idea.quest || ''}`;
+  return TECHNICAL_TERMS.some(pattern => pattern.test(text));
+}
+
+function rewriteForVibeCoder(idea) {
+  const rewrite = (text = '') => text
+    .replace(/\bCI\/?CD\b/gi, 'automated checks')
+    .replace(/\bCLI\b/gi, 'simple command tool')
+    .replace(/\bDevOps\b/gi, 'app setup')
+    .replace(/\bwebhooks?\b/gi, 'live updates')
+    .replace(/\bmiddleware\b/gi, 'helper layer')
+    .replace(/\bcontainers?\b/gi, 'app packaging')
+    .replace(/\bcontainerization\b/gi, 'app packaging')
+    .replace(/\bproxy\b/gi, 'middle helper')
+    .replace(/\bterminal\b/gi, 'workspace')
+    .replace(/\bdebug(ger)?\b/gi, 'fixing workflow')
+    .replace(/\blinter\b/gi, 'quality helper')
+    .replace(/\bGitHub Actions?\b/gi, 'auto steps')
+    .replace(/\bAPI gateway\b/gi, 'request router')
+    .replace(/\bcron jobs?\b/gi, 'scheduled runs')
+    .replace(/\bdeployment pipeline\b/gi, 'release flow')
+    .replace(/\binfrastructure\b/gi, 'setup')
+    .replace(/\bself-host(ed|ing)?\b/gi, 'run-it-yourself')
+    .replace(/\bKubernetes\b/gi, 'orchestration stack')
+    .replace(/\bDocker\b/gi, 'packaged app')
+    .replace(/\bserverless\b/gi, 'managed backend');
+
+  return {
+    ...idea,
+    title: rewrite(idea.title),
+    murmur: rewrite(idea.murmur),
+    quest: rewrite(idea.quest)
+  };
+}
+
+function normalizeIdeas(ideas, dateISO) {
+  const appliesHardCap = dateISO >= '2026-02-21';
+  let hardCount = 0;
+
+  return ideas.map((idea, index) => {
+    let next = rewriteForVibeCoder(idea);
+    if (isTooTechnical(next)) {
+      next = {
+        ...next,
+        difficulty: next.difficulty === 'Hard' ? 'Medium' : (next.difficulty || 'Medium')
+      };
+    }
+
+    if (appliesHardCap && next.difficulty === 'Hard') {
+      hardCount += 1;
+      if (hardCount > 1) {
+        next = { ...next, difficulty: 'Medium' };
+      }
+    }
+
+    return {
+      ...next,
+      title: next.title || `Side Quest ${index + 1}`,
+      murmur: next.murmur || 'A practical idea that solves a real everyday friction point in a playful way.',
+      quest: next.quest || 'Build a simple app flow that helps people do this faster with less stress.',
+      worth: Array.isArray(next.worth) && next.worth.length ? next.worth.slice(0, 3) : [
+        'Practical value people can feel immediately',
+        'Straightforward weekend build scope',
+        'Teaches useful product-thinking skills'
+      ],
+      difficulty: ['Easy', 'Medium', 'Hard'].includes(next.difficulty) ? next.difficulty : 'Medium'
+    };
+  });
+}
+
 function getTodayET() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
 }
@@ -127,6 +221,10 @@ export async function generateAndStore() {
 
   // Generate fresh ideas using live signals as context
   let ideas = await generateIdeas(anthropicKey, githubSignals, articleSignals);
+
+  // Medium strictness: rewrite overly technical phrasing + hard-cap enforcement
+  ideas = normalizeIdeas(ideas, today);
+
   ideas = enrichSources(ideas, githubSignals, articleSignals);
 
   // Store in Supabase
@@ -215,8 +313,10 @@ Generate exactly 5 project ideas with this distribution:
 
 Each idea MUST be:
 - Accessible to someone with zero coding background who builds by vibing with AI
-- About making everyday experiences more fun, visual, or human — NOT about developer infrastructure
-- Conversational and playful in tone (think "What if my to-do list was a plant?" not "Build a CI/CD pipeline")
+- Practical first: solves a real, everyday friction people actually face
+- Slightly technical is okay, but keep it understandable for non-technical builders
+- About making everyday experiences more fun, visual, or human — NOT developer infrastructure
+- Conversational and playful in tone
 - Concrete and buildable (weekend project scale)
 - Specific enough to start immediately
 - Inspiring without being intimidating
