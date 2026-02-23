@@ -156,14 +156,40 @@
     }
 
     .banner {
-      background: rgba(74,222,128,0.1);
-      border: 1px solid rgba(74,222,128,0.3);
-      color: #a7f3d0;
       border-radius: 14px;
       padding: 0.9rem 1.2rem;
       margin-bottom: 2rem;
       font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.3);
+      color: #a7f3d0;
     }
+
+    .banner.degraded {
+      background: rgba(250,204,21,0.1);
+      border-color: rgba(250,204,21,0.3);
+      color: #fef08a;
+    }
+
+    .banner.down {
+      background: rgba(248,113,113,0.1);
+      border-color: rgba(248,113,113,0.3);
+      color: #fca5a5;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: #4ade80;
+    }
+
+    .banner.degraded .status-dot { background: #facc15; }
+    .banner.down .status-dot { background: #f87171; }
 
     .day-label {
       font-family: "Space Grotesk", sans-serif;
@@ -460,7 +486,7 @@
 </header>
 
 <main>
-  <div class="banner">Live editorial signals detected.</div>
+  <div class="banner" id="statusBanner"><span class="status-dot"></span><span id="statusText">Checking system status…</span></div>
   <div class="day-label">Daily Drop</div>
   <div id="ideas"></div>
 </main>
@@ -719,6 +745,20 @@ sequenceDiagram
 <script>
   let currentIdea = null;
 
+  async function checkStatus() {
+    const banner = document.getElementById('statusBanner');
+    const statusText = document.getElementById('statusText');
+    try {
+      const res = await fetch('/.netlify/functions/status');
+      const data = await res.json();
+      banner.className = 'banner' + (data.status !== 'operational' ? ' ' + data.status : '');
+      statusText.textContent = data.message;
+    } catch {
+      banner.className = 'banner down';
+      statusText.textContent = 'Status check failed — serving fallback content.';
+    }
+  }
+
   async function loadIdeas() {
     const res = await fetch("/.netlify/functions/latest");
     const data = await res.json();
@@ -729,13 +769,6 @@ sequenceDiagram
       : Array.isArray(data?.ideas)
         ? data.ideas
         : [];
-
-    const banner = document.querySelector(".banner");
-    if (banner) {
-      banner.textContent = ideas.some(i => i.sources && i.sources.length)
-        ? "Live editorial signals detected."
-        : "Sample data mode — live signals unavailable.";
-    }
 
     if (!ideas.length) {
       container.innerHTML = `
@@ -997,6 +1030,7 @@ sequenceDiagram
     }
   }
 
+  checkStatus();
   loadIdeas();
   lucide.createIcons();
 </script>
