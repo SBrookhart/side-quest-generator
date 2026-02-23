@@ -79,7 +79,7 @@ export const handler = async (event) => {
 async function generateIdeas(apiKey) {
   const systemPrompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
 
-IMPORTANT — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is.
+CRITICAL AUDIENCE NOTE — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is. Think of them as artists with AI superpowers, not developers.
 
 Generate exactly 5 project ideas with this distribution:
 - 2 thoughtful indie hacker / solo builder prompts (40%)
@@ -88,28 +88,48 @@ Generate exactly 5 project ideas with this distribution:
 
 Each idea MUST be:
 - Accessible to someone with zero coding background who builds by vibing with AI
-- About making everyday experiences more fun, visual, or human — NOT about developer infrastructure
+- About making everyday HUMAN experiences more fun, visual, or delightful — NOT about developer workflows
 - Conversational and playful in tone (think "What if my to-do list was a plant?" not "Build a CI/CD pipeline")
+- Rooted in universal human experiences: habits, relationships, creativity, nostalgia, self-expression, daily routines, hobbies, emotions
 - Concrete and buildable (weekend project scale)
 - Specific enough to start immediately
 - Inspiring without being intimidating
+- Described WITHOUT any technical jargon — use plain language a non-coder would understand
 
-AVOID these — they are too technical for this audience:
-- Developer tools (linters, debuggers, CLI tools, git extensions, terminal utilities)
-- Infrastructure (APIs, proxies, pipelines, cron jobs, deployment tools)
-- Anything that assumes knowledge of databases, servers, or DevOps
-- Jargon-heavy concepts (webhooks, middleware, containerization, etc.)
+HARD AVOID — these are TOO TECHNICAL for this audience (even if the signals mention them):
+- Developer tools (linters, debuggers, CLI tools, git extensions, terminal utilities, code editors)
+- Infrastructure (APIs, proxies, pipelines, cron jobs, deployment tools, servers)
+- Anything that assumes knowledge of databases, servers, DevOps, or backend systems
+- Jargon-heavy concepts (webhooks, middleware, containerization, environment variables, etc.)
+- Tools primarily for programmers (package managers, testing frameworks, CI/CD, Docker)
+- Anything where the primary user is a developer solving a developer problem
+
+INSTEAD, focus on ideas in these spaces:
+- Personal life (journaling, habits, self-care, mood tracking, memory keeping)
+- Creative expression (art, music, writing, photography, design)
+- Social & relationships (gifts, messaging, shared experiences, family)
+- Fun & games (quizzes, challenges, collections, achievements)
+- Everyday tools reimagined (cooking, fitness, reading, travel, budgeting)
+- Whimsy & delight (playful interactions, surprise, humor, aesthetic experiences)
 
 GOOD examples of the right vibe:
 - "What If My To-Do List Was a Plant?" (fun metaphor, visual, anyone can relate)
-- "Can My 404 Page Be a Game?" (creative, playful, delightful)
-- "What If My Code Commits Were a Tamagotchi?" (whimsical, uses everyday metaphor)
-- "Can My Spotify Wrapped Be for My Code?" (riffs on something everyone knows)
+- "Can My Bookshelf Judge My Reading Taste?" (personal, playful, universal)
+- "What If My Morning Routine Had a Soundtrack?" (everyday experience + creativity)
+- "Can I Turn My Grocery List Into a Recipe?" (practical + delightful)
+- "What If My Mood Had a Color Palette?" (emotional, visual, personal)
+- "Can My Walking Route Draw Art on a Map?" (physical world + digital creativity)
+
+BAD examples (too technical — do NOT generate ideas like these):
+- "What If My Terminal Had Undo?" (terminal = developer tool)
+- "Can My .env File Be a Database?" (jargon, developer infrastructure)
+- "What If Every PR Had a Live Preview?" (PRs are a developer concept)
+- "Can I Track My API Spend in Real-Time?" (APIs, developer concern)
 
 Format each idea as JSON with:
 - title: A conversational question or observation (not a product pitch)
-- murmur: Why this exists (2-3 sentences, casual tone, no jargon)
-- quest: What to actually build (concrete, 2-3 sentences, described simply)
+- murmur: Why this exists (2-3 sentences, casual tone, absolutely no jargon)
+- quest: What to actually build (concrete, 2-3 sentences, described in plain language anyone can understand)
 - worth: Array of 3 short reasons why it's worth building
 - difficulty: "Easy", "Medium", or "Hard"
 - sources: Empty array (will be filled with actual signals later)

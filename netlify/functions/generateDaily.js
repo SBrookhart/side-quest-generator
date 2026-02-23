@@ -206,7 +206,7 @@ export const handler = async (event) => {
 async function generateIdeas(apiKey, githubSignals = [], articleSignals = []) {
   const systemPrompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
 
-IMPORTANT — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is.
+CRITICAL AUDIENCE NOTE — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is. Think of them as artists with AI superpowers, not developers.
 
 Generate exactly 5 project ideas with this distribution:
 - 2 thoughtful indie hacker / solo builder prompts (40%)
@@ -215,55 +215,77 @@ Generate exactly 5 project ideas with this distribution:
 
 Each idea MUST be:
 - Accessible to someone with zero coding background who builds by vibing with AI
-- About making everyday experiences more fun, visual, or human — NOT about developer infrastructure
+- About making everyday HUMAN experiences more fun, visual, or delightful — NOT about developer workflows
 - Conversational and playful in tone (think "What if my to-do list was a plant?" not "Build a CI/CD pipeline")
+- Rooted in universal human experiences: habits, relationships, creativity, nostalgia, self-expression, daily routines, hobbies, emotions
 - Concrete and buildable (weekend project scale)
 - Specific enough to start immediately
 - Inspiring without being intimidating
+- Described WITHOUT any technical jargon — use plain language a non-coder would understand
 
-AVOID these — they are too technical for this audience:
-- Developer tools (linters, debuggers, CLI tools, git extensions, terminal utilities)
-- Infrastructure (APIs, proxies, pipelines, cron jobs, deployment tools)
-- Anything that assumes knowledge of databases, servers, or DevOps
-- Jargon-heavy concepts (webhooks, middleware, containerization, etc.)
+HARD AVOID — these are TOO TECHNICAL for this audience (even if the signals mention them):
+- Developer tools (linters, debuggers, CLI tools, git extensions, terminal utilities, code editors)
+- Infrastructure (APIs, proxies, pipelines, cron jobs, deployment tools, servers)
+- Anything that assumes knowledge of databases, servers, DevOps, or backend systems
+- Jargon-heavy concepts (webhooks, middleware, containerization, environment variables, etc.)
+- Tools primarily for programmers (package managers, testing frameworks, CI/CD, Docker)
+- Anything where the primary user is a developer solving a developer problem
+
+INSTEAD, focus on ideas in these spaces:
+- Personal life (journaling, habits, self-care, mood tracking, memory keeping)
+- Creative expression (art, music, writing, photography, design)
+- Social & relationships (gifts, messaging, shared experiences, family)
+- Fun & games (quizzes, challenges, collections, achievements)
+- Everyday tools reimagined (cooking, fitness, reading, travel, budgeting)
+- Whimsy & delight (playful interactions, surprise, humor, aesthetic experiences)
 
 GOOD examples of the right vibe:
 - "What If My To-Do List Was a Plant?" (fun metaphor, visual, anyone can relate)
-- "Can My 404 Page Be a Game?" (creative, playful, delightful)
-- "What If My Code Commits Were a Tamagotchi?" (whimsical, uses everyday metaphor)
-- "Can My Spotify Wrapped Be for My Code?" (riffs on something everyone knows)
+- "Can My Bookshelf Judge My Reading Taste?" (personal, playful, universal)
+- "What If My Morning Routine Had a Soundtrack?" (everyday experience + creativity)
+- "Can I Turn My Grocery List Into a Recipe?" (practical + delightful)
+- "What If My Mood Had a Color Palette?" (emotional, visual, personal)
+- "Can My Walking Route Draw Art on a Map?" (physical world + digital creativity)
+
+BAD examples (too technical — do NOT generate ideas like these):
+- "What If My Terminal Had Undo?" (terminal = developer tool)
+- "Can My .env File Be a Database?" (jargon, developer infrastructure)
+- "What If Every PR Had a Live Preview?" (PRs are a developer concept)
+- "Can I Track My API Spend in Real-Time?" (APIs, developer concern)
 
 Format each idea as JSON with:
 - title: A conversational question or observation (not a product pitch)
-- murmur: Why this exists (2-3 sentences, casual tone, no jargon)
-- quest: What to actually build (concrete, 2-3 sentences, described simply)
+- murmur: Why this exists (2-3 sentences, casual tone, absolutely no jargon)
+- quest: What to actually build (concrete, 2-3 sentences, described in plain language anyone can understand)
 - worth: Array of 3 short reasons why it's worth building
 - difficulty: "Easy", "Medium", or "Hard"
 - sources: Empty array (will be filled with actual signals later)
 
 Output ONLY valid JSON array, no markdown fences.`;
 
-  // Build signal context from live data
+  // Build signal context from live data — reframe technical signals as human inspiration
   let signalContext = '';
   if (githubSignals.length > 0 || articleSignals.length > 0) {
-    signalContext = '\n\nHere are real signals from the developer community today. Use them as creative inspiration — riff on the underlying pain points, don\'t copy directly:\n';
+    signalContext = '\n\nBelow are signals from the tech community today. IMPORTANT: Do NOT build developer tools based on these. Instead, extract the HUMAN frustration or desire underneath each signal and imagine a fun, non-technical project that addresses that same human need for a general audience:\n';
 
     if (githubSignals.length > 0) {
-      signalContext += '\nGitHub developer pain points (real open issues):\n';
+      signalContext += '\nPain points people are expressing (look for the human emotion, not the technical problem):\n';
       githubSignals.slice(0, 5).forEach(s => {
         signalContext += `- "${s.text}"\n`;
       });
     }
 
     if (articleSignals.length > 0) {
-      signalContext += '\nWhat developers are reading today:\n';
+      signalContext += '\nTopics people are curious about today:\n';
       articleSignals.slice(0, 6).forEach(s => {
         signalContext += `- "${s.name}" (${s.source})\n`;
       });
     }
+
+    signalContext += '\nRemember: translate these into everyday, non-technical project ideas that anyone could relate to. A signal about "missing database feature" should inspire something like "What if my recipe collection organized itself?" — NOT a database tool.\n';
   }
 
-  const userPrompt = `Generate 5 diverse side quest ideas for indie builders right now. Make them feel fresh, playful, and immediately buildable.${signalContext}`;
+  const userPrompt = `Generate 5 diverse side quest ideas for creative builders right now. Make them feel fresh, playful, and immediately buildable. Focus on everyday human experiences — NOT developer tools.${signalContext}`;
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

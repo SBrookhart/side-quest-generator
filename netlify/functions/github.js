@@ -17,6 +17,27 @@ const GITHUB_SEARCH_QUERY = `
 
 const MAX_RESULTS = 20;
 
+// Filter out signals that are too developer-infrastructure-focused.
+// We want signals about human frustrations, not plumbing.
+const TECHNICAL_JARGON = [
+  'webpack', 'docker', 'kubernetes', 'k8s', 'nginx', 'ci/cd', 'pipeline',
+  'terraform', 'ansible', 'helm', 'cron', 'daemon', 'systemd',
+  'middleware', 'proxy', 'load balancer', 'ssl', 'tls', 'certificate',
+  'dockerfile', 'container', 'pod', 'deployment', 'ingress',
+  'linter', 'eslint', 'prettier', 'husky', 'pre-commit',
+  'env var', 'environment variable', '.env', 'dotenv',
+  'ci pipeline', 'github action', 'workflow file', 'yaml config',
+  'package manager', 'npm install', 'yarn', 'pnpm',
+  'monorepo', 'microservice', 'grpc', 'protobuf',
+  'database migration', 'schema migration', 'orm',
+  'stdout', 'stderr', 'stdin', 'bash script', 'shell script'
+];
+
+function isTooTechnical(text) {
+  const lower = text.toLowerCase();
+  return TECHNICAL_JARGON.some(term => lower.includes(term));
+}
+
 function cleanText(text = "") {
   return text
     .replace(/```[\s\S]*?```/g, "")
@@ -45,6 +66,7 @@ export async function getGitHubSignals() {
       .map(issue => {
         const text = cleanText(issue.body || issue.title || "");
         if (text.length < 60) return null;
+        if (isTooTechnical(text)) return null;
 
         return {
           type: "github",
