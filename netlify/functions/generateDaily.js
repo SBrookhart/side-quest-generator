@@ -2,6 +2,7 @@ import { getGitHubSignals } from './github.js';
 import { getArticleSignals } from './articles.js';
 import { normalizeQuestsForDate } from './lib/questTone.js';
 import { regenerateDuplicateIdeas } from './lib/duplicateRegeneration.js';
+import { getExistingQuestTitles } from './lib/historyTitles.js';
 
 // Curated fallback sources used only when live signals are unavailable
 const FALLBACK_GITHUB = [
@@ -81,23 +82,6 @@ function supabaseHeaders(key) {
     'apikey': key,
     'Authorization': `Bearer ${key}`
   };
-}
-
-async function getExistingQuestTitles(supabaseUrl, supabaseKey) {
-  if (!supabaseUrl || !supabaseKey) return [];
-
-  const headers = supabaseHeaders(supabaseKey);
-  const [dailyRes, archiveRes] = await Promise.all([
-    fetch(`${supabaseUrl}/rest/v1/daily_quests?select=title`, { headers }),
-    fetch(`${supabaseUrl}/rest/v1/quest_archive?select=title`, { headers })
-  ]);
-
-  const dailyRows = dailyRes.ok ? await dailyRes.json() : [];
-  const archiveRows = archiveRes.ok ? await archiveRes.json() : [];
-
-  return [...dailyRows, ...archiveRows]
-    .map((row) => row.title)
-    .filter(Boolean);
 }
 
 // Generates ideas and stores them in Supabase. Idempotent: skips if today's quests exist.
