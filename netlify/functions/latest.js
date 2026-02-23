@@ -79,21 +79,37 @@ export const handler = async (event) => {
 async function generateIdeas(apiKey) {
   const systemPrompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
 
+IMPORTANT — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is.
+
 Generate exactly 5 project ideas with this distribution:
 - 2 thoughtful indie hacker / solo builder prompts (40%)
 - 1 early-stage product opportunity (20%)
 - 2 creative experiments & playful tools (40%)
 
-Each idea should be:
-- Conversational and playful in tone
+Each idea MUST be:
+- Accessible to someone with zero coding background who builds by vibing with AI
+- About making everyday experiences more fun, visual, or human — NOT about developer infrastructure
+- Conversational and playful in tone (think "What if my to-do list was a plant?" not "Build a CI/CD pipeline")
 - Concrete and buildable (weekend project scale)
 - Specific enough to start immediately
 - Inspiring without being intimidating
 
+AVOID these — they are too technical for this audience:
+- Developer tools (linters, debuggers, CLI tools, git extensions, terminal utilities)
+- Infrastructure (APIs, proxies, pipelines, cron jobs, deployment tools)
+- Anything that assumes knowledge of databases, servers, or DevOps
+- Jargon-heavy concepts (webhooks, middleware, containerization, etc.)
+
+GOOD examples of the right vibe:
+- "What If My To-Do List Was a Plant?" (fun metaphor, visual, anyone can relate)
+- "Can My 404 Page Be a Game?" (creative, playful, delightful)
+- "What If My Code Commits Were a Tamagotchi?" (whimsical, uses everyday metaphor)
+- "Can My Spotify Wrapped Be for My Code?" (riffs on something everyone knows)
+
 Format each idea as JSON with:
 - title: A conversational question or observation (not a product pitch)
-- murmur: Why this exists (2-3 sentences, casual tone)
-- quest: What to actually build (concrete, 2-3 sentences)
+- murmur: Why this exists (2-3 sentences, casual tone, no jargon)
+- quest: What to actually build (concrete, 2-3 sentences, described simply)
 - worth: Array of 3 short reasons why it's worth building
 - difficulty: "Easy", "Medium", or "Hard"
 - sources: Empty array (will be filled with actual signals later)
