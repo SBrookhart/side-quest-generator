@@ -1,4 +1,6 @@
 
+import { normalizeQuestsForDate } from './lib/questTone.js';
+
 function getTodayET() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
@@ -23,17 +25,25 @@ async function getFromSupabase() {
   const rows = await res.json();
   if (!rows.length) return null;
 
-  return rows.map(r => ({
+  return normalizeQuestsForDate(rows.map(r => ({
     title: r.title,
     murmur: r.murmur,
     quest: r.quest,
     worth: r.worth,
     difficulty: r.difficulty,
     sources: r.sources
-  }));
+  })), today);
 }
 
 export const handler = async (event) => {
+  const commonHeaders = {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'X-Commit-Ref': process.env.COMMIT_REF || 'unknown'
+  };
+
   try {
     // Always try Supabase first — this is the only source of generated quests
     const supabaseIdeas = await getFromSupabase();
@@ -41,10 +51,7 @@ export const handler = async (event) => {
       console.log('Serving from Supabase');
       return {
         statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=3600'
-        },
+        headers: commonHeaders,
         body: JSON.stringify(supabaseIdeas)
       };
     }
@@ -56,10 +63,7 @@ export const handler = async (event) => {
     console.log('Using fallback ideas');
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=300'
-      },
+      headers: commonHeaders,
       body: JSON.stringify(getFallbackIdeas())
     };
 
@@ -67,10 +71,7 @@ export const handler = async (event) => {
     console.error('Latest endpoint error:', error);
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
+      headers: commonHeaders,
       body: JSON.stringify(getFallbackIdeas())
     };
   }

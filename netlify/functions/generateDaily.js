@@ -1,5 +1,6 @@
 import { getGitHubSignals } from './github.js';
 import { getArticleSignals } from './articles.js';
+import { findDuplicateQuestIndexes, normalizeQuestsForDate, normalizeTitleKey } from './lib/questTone.js';
 
 // Curated fallback sources used only when live signals are unavailable
 const FALLBACK_GITHUB = [
@@ -68,6 +69,7 @@ function enrichSources(ideas, githubSignals, articleSignals) {
   });
 }
 
+
 function getTodayET() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
 }
@@ -78,6 +80,60 @@ function supabaseHeaders(key) {
     'apikey': key,
     'Authorization': `Bearer ${key}`
   };
+}
+
+async function getExistingQuestTitles(supabaseUrl, supabaseKey) {
+  if (!supabaseUrl || !supabaseKey) return [];
+
+  const headers = supabaseHeaders(supabaseKey);
+  const [dailyRes, archiveRes] = await Promise.all([
+    fetch(`${supabaseUrl}/rest/v1/daily_quests?select=title`, { headers }),
+    fetch(`${supabaseUrl}/rest/v1/quest_archive?select=title`, { headers })
+  ]);
+
+  const dailyRows = dailyRes.ok ? await dailyRes.json() : [];
+  const archiveRows = archiveRes.ok ? await archiveRes.json() : [];
+
+  return [...dailyRows, ...archiveRows]
+    .map((row) => row.title)
+    .filter(Boolean);
+}
+
+async function regenerateDuplicateIdeas({ apiKey, ideas, existingTitles, today, githubSignals, articleSignals }) {
+  const updated = [...ideas];
+  const existingKeys = new Set(existingTitles.map(normalizeTitleKey).filter(Boolean));
+
+  while (true) {
+    const duplicateIndexes = findDuplicateQuestIndexes(updated, [...existingKeys]);
+    if (!duplicateIndexes.length) return updated;
+
+    for (const index of duplicateIndexes) {
+      let replacement = null;
+
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        const blockedTitleKeys = [
+          ...existingKeys,
+          ...updated.map((item) => normalizeTitleKey(item.title)).filter(Boolean)
+        ];
+
+        const generated = await generateIdeas(apiKey, githubSignals, articleSignals, 1, blockedTitleKeys);
+        const candidate = normalizeQuestsForDate(generated, today)[0];
+        const candidateKey = normalizeTitleKey(candidate?.title);
+
+        if (candidate && candidateKey && !existingKeys.has(candidateKey)) {
+          replacement = candidate;
+          existingKeys.add(candidateKey);
+          break;
+        }
+      }
+
+      if (!replacement) {
+        throw new Error('Failed to regenerate a non-duplicate quest after multiple attempts');
+      }
+
+      updated[index] = replacement;
+    }
+  }
 }
 
 // Generates ideas and stores them in Supabase. Idempotent: skips if today's quests exist.
@@ -127,6 +183,20 @@ export async function generateAndStore() {
 
   // Generate fresh ideas using live signals as context
   let ideas = await generateIdeas(anthropicKey, githubSignals, articleSignals);
+
+  // Medium strictness: rewrite overly technical phrasing + hard-cap enforcement
+  ideas = normalizeQuestsForDate(ideas, today);
+
+  const existingTitles = await getExistingQuestTitles(supabaseUrl, supabaseKey);
+  ideas = await regenerateDuplicateIdeas({
+    apiKey: anthropicKey,
+    ideas,
+    existingTitles,
+    today,
+    githubSignals,
+    articleSignals
+  });
+
   ideas = enrichSources(ideas, githubSignals, articleSignals);
 
   // Store in Supabase
@@ -203,20 +273,22 @@ export const handler = async (event) => {
   }
 };
 
-async function generateIdeas(apiKey, githubSignals = [], articleSignals = []) {
+async function generateIdeas(apiKey, githubSignals = [], articleSignals = [], ideaCount = 5, blockedTitleKeys = []) {
   const systemPrompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
 
 IMPORTANT — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is.
 
-Generate exactly 5 project ideas with this distribution:
+Generate exactly ${ideaCount} project ideas with this distribution (approximate if count < 5):
 - 2 thoughtful indie hacker / solo builder prompts (40%)
 - 1 early-stage product opportunity (20%)
 - 2 creative experiments & playful tools (40%)
 
 Each idea MUST be:
 - Accessible to someone with zero coding background who builds by vibing with AI
-- About making everyday experiences more fun, visual, or human — NOT about developer infrastructure
-- Conversational and playful in tone (think "What if my to-do list was a plant?" not "Build a CI/CD pipeline")
+- Practical first: solves a real, everyday friction people actually face
+- Slightly technical is okay, but keep it understandable for non-technical builders
+- About making everyday experiences more fun, visual, or human — NOT developer infrastructure
+- Conversational and playful in tone
 - Concrete and buildable (weekend project scale)
 - Specific enough to start immediately
 - Inspiring without being intimidating
@@ -263,7 +335,11 @@ Output ONLY valid JSON array, no markdown fences.`;
     }
   }
 
-  const userPrompt = `Generate 5 diverse side quest ideas for indie builders right now. Make them feel fresh, playful, and immediately buildable.${signalContext}`;
+  const blockedTitlesContext = blockedTitleKeys.length
+    ? `\n\nDo NOT reuse or closely paraphrase any of these existing title keys:\n- ${blockedTitleKeys.slice(0, 200).join('\n- ')}`
+    : '';
+
+  const userPrompt = `Generate ${ideaCount} diverse side quest idea${ideaCount === 1 ? '' : 's'} for indie builders right now. Make them feel fresh, playful, and immediately buildable.${signalContext}${blockedTitlesContext}`;
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

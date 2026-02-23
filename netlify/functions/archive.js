@@ -1,3 +1,5 @@
+import { normalizeQuestsForDate } from './lib/questTone.js';
+
 const FALLBACK_ARCHIVE = {
   "2026-01-23": [
     {
@@ -213,7 +215,12 @@ async function getFromSupabase() {
   }
 
   const merged = { ...grouped, ...dailyGrouped };
-  return Object.keys(merged).length ? merged : null;
+  const normalizedByDate = {};
+  for (const [date, quests] of Object.entries(merged)) {
+    normalizedByDate[date] = normalizeQuestsForDate(quests, date);
+  }
+
+  return Object.keys(normalizedByDate).length ? normalizedByDate : null;
 }
 
 export const handler = async (event) => {

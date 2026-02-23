@@ -1,6 +1,9 @@
+import { findDuplicateQuestIndexes, normalizeQuestsForDate, normalizeTitleKey } from './lib/questTone.js';
+
 // One-time backfill helper: generates quests for a single date and stores in daily_quests.
 // Called once per date — use the terminal loop in the README to process all missing dates.
 // Usage: GET /.netlify/functions/backfill?date=2026-01-30
+
 
 function supabaseHeaders(key) {
   return {
@@ -8,6 +11,58 @@ function supabaseHeaders(key) {
     'apikey': key,
     'Authorization': `Bearer ${key}`
   };
+}
+
+async function getExistingQuestTitles(supabaseUrl, supabaseKey) {
+  const headers = supabaseHeaders(supabaseKey);
+  const [dailyRes, archiveRes] = await Promise.all([
+    fetch(`${supabaseUrl}/rest/v1/daily_quests?select=title`, { headers }),
+    fetch(`${supabaseUrl}/rest/v1/quest_archive?select=title`, { headers })
+  ]);
+
+  const dailyRows = dailyRes.ok ? await dailyRes.json() : [];
+  const archiveRows = archiveRes.ok ? await archiveRes.json() : [];
+
+  return [...dailyRows, ...archiveRows]
+    .map((row) => row.title)
+    .filter(Boolean);
+}
+
+async function regenerateDuplicateIdeas({ apiKey, ideas, existingTitles, date }) {
+  const updated = [...ideas];
+  const existingKeys = new Set(existingTitles.map(normalizeTitleKey).filter(Boolean));
+
+  while (true) {
+    const duplicateIndexes = findDuplicateQuestIndexes(updated, [...existingKeys]);
+    if (!duplicateIndexes.length) return updated;
+
+    for (const index of duplicateIndexes) {
+      let replacement = null;
+
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        const blockedTitleKeys = [
+          ...existingKeys,
+          ...updated.map((item) => normalizeTitleKey(item.title)).filter(Boolean)
+        ];
+
+        const generated = await generateIdeas(apiKey, 1, blockedTitleKeys);
+        const candidate = normalizeQuestsForDate(generated, date)[0];
+        const candidateKey = normalizeTitleKey(candidate?.title);
+
+        if (candidate && candidateKey && !existingKeys.has(candidateKey)) {
+          replacement = candidate;
+          existingKeys.add(candidateKey);
+          break;
+        }
+      }
+
+      if (!replacement) {
+        throw new Error('Failed to regenerate a non-duplicate quest after multiple attempts');
+      }
+
+      updated[index] = replacement;
+    }
+  }
 }
 
 function enrichSources(ideas) {
@@ -53,20 +108,22 @@ function enrichSources(ideas) {
   });
 }
 
-async function generateIdeas(apiKey) {
+async function generateIdeas(apiKey, ideaCount = 5, blockedTitleKeys = []) {
   const prompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
 
 IMPORTANT — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is.
 
-Generate exactly 5 project ideas with this distribution:
+Generate exactly ${ideaCount} project ideas with this distribution (approximate if count < 5):
 - 2 thoughtful indie hacker / solo builder prompts (40%)
 - 1 early-stage product opportunity (20%)
 - 2 creative experiments & playful tools (40%)
 
 Each idea MUST be:
 - Accessible to someone with zero coding background who builds by vibing with AI
-- About making everyday experiences more fun, visual, or human — NOT about developer infrastructure
-- Conversational and playful in tone (think "What if my to-do list was a plant?" not "Build a CI/CD pipeline")
+- Practical first: solves a real, everyday friction people actually face
+- Slightly technical is okay, but keep it understandable for non-technical builders
+- About making everyday experiences more fun, visual, or human — NOT developer infrastructure
+- Conversational and playful in tone
 - Concrete and buildable (weekend project scale)
 - Specific enough to start immediately
 - Inspiring without being intimidating
@@ -93,7 +150,10 @@ Format each idea as JSON with:
 
 Output ONLY valid JSON array, no markdown fences.
 
-Generate 5 diverse side quest ideas for indie builders. Make them feel fresh, playful, and immediately buildable.`;
+Generate ${ideaCount} diverse side quest idea${ideaCount === 1 ? '' : 's'} for indie builders. Make them feel fresh, playful, and immediately buildable.
+
+Do NOT reuse or closely paraphrase any of these existing title keys:
+${blockedTitleKeys.length ? blockedTitleKeys.slice(0, 200).map((title) => `- ${title}`).join('\n') : '- (none provided)'}`;
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -166,6 +226,9 @@ export const handler = async (event) => {
   let ideas;
   try {
     ideas = await generateIdeas(anthropicKey);
+    ideas = normalizeQuestsForDate(ideas, date);
+    const existingTitles = await getExistingQuestTitles(supabaseUrl, supabaseKey);
+    ideas = await regenerateDuplicateIdeas({ apiKey: anthropicKey, ideas, existingTitles, date });
     ideas = enrichSources(ideas);
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message, date }) };

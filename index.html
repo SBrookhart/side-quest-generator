@@ -720,7 +720,12 @@ sequenceDiagram
   let currentIdea = null;
 
   async function loadIdeas() {
-    const res = await fetch("/.netlify/functions/latest");
+    const res = await fetch(`/.netlify/functions/latest?v=${Date.now()}`, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache"
+      }
+    });
     const data = await res.json();
     const container = document.getElementById("ideas");
 
