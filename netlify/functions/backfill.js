@@ -1,4 +1,5 @@
-import { findDuplicateQuestIndexes, normalizeQuestsForDate, normalizeTitleKey } from './lib/questTone.js';
+import { normalizeQuestsForDate } from './lib/questTone.js';
+import { regenerateDuplicateIdeas } from './lib/duplicateRegeneration.js';
 
 // One-time backfill helper: generates quests for a single date and stores in daily_quests.
 // Called once per date — use the terminal loop in the README to process all missing dates.
@@ -26,43 +27,6 @@ async function getExistingQuestTitles(supabaseUrl, supabaseKey) {
   return [...dailyRows, ...archiveRows]
     .map((row) => row.title)
     .filter(Boolean);
-}
-
-async function regenerateDuplicateIdeas({ apiKey, ideas, existingTitles, date }) {
-  const updated = [...ideas];
-  const existingKeys = new Set(existingTitles.map(normalizeTitleKey).filter(Boolean));
-
-  while (true) {
-    const duplicateIndexes = findDuplicateQuestIndexes(updated, [...existingKeys]);
-    if (!duplicateIndexes.length) return updated;
-
-    for (const index of duplicateIndexes) {
-      let replacement = null;
-
-      for (let attempt = 0; attempt < 4; attempt += 1) {
-        const blockedTitleKeys = [
-          ...existingKeys,
-          ...updated.map((item) => normalizeTitleKey(item.title)).filter(Boolean)
-        ];
-
-        const generated = await generateIdeas(apiKey, 1, blockedTitleKeys);
-        const candidate = normalizeQuestsForDate(generated, date)[0];
-        const candidateKey = normalizeTitleKey(candidate?.title);
-
-        if (candidate && candidateKey && !existingKeys.has(candidateKey)) {
-          replacement = candidate;
-          existingKeys.add(candidateKey);
-          break;
-        }
-      }
-
-      if (!replacement) {
-        throw new Error('Failed to regenerate a non-duplicate quest after multiple attempts');
-      }
-
-      updated[index] = replacement;
-    }
-  }
 }
 
 function enrichSources(ideas) {
@@ -228,7 +192,12 @@ export const handler = async (event) => {
     ideas = await generateIdeas(anthropicKey);
     ideas = normalizeQuestsForDate(ideas, date);
     const existingTitles = await getExistingQuestTitles(supabaseUrl, supabaseKey);
-    ideas = await regenerateDuplicateIdeas({ apiKey: anthropicKey, ideas, existingTitles, date });
+    ideas = await regenerateDuplicateIdeas({
+      ideas,
+      existingTitles,
+      normalizeDate: date,
+      regenerateOne: (blockedTitleKeys) => generateIdeas(anthropicKey, 1, blockedTitleKeys)
+    });
     ideas = enrichSources(ideas);
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message, date }) };

@@ -1,6 +1,7 @@
 import { getGitHubSignals } from './github.js';
 import { getArticleSignals } from './articles.js';
-import { findDuplicateQuestIndexes, normalizeQuestsForDate, normalizeTitleKey } from './lib/questTone.js';
+import { normalizeQuestsForDate } from './lib/questTone.js';
+import { regenerateDuplicateIdeas } from './lib/duplicateRegeneration.js';
 
 // Curated fallback sources used only when live signals are unavailable
 const FALLBACK_GITHUB = [
@@ -99,43 +100,6 @@ async function getExistingQuestTitles(supabaseUrl, supabaseKey) {
     .filter(Boolean);
 }
 
-async function regenerateDuplicateIdeas({ apiKey, ideas, existingTitles, today, githubSignals, articleSignals }) {
-  const updated = [...ideas];
-  const existingKeys = new Set(existingTitles.map(normalizeTitleKey).filter(Boolean));
-
-  while (true) {
-    const duplicateIndexes = findDuplicateQuestIndexes(updated, [...existingKeys]);
-    if (!duplicateIndexes.length) return updated;
-
-    for (const index of duplicateIndexes) {
-      let replacement = null;
-
-      for (let attempt = 0; attempt < 4; attempt += 1) {
-        const blockedTitleKeys = [
-          ...existingKeys,
-          ...updated.map((item) => normalizeTitleKey(item.title)).filter(Boolean)
-        ];
-
-        const generated = await generateIdeas(apiKey, githubSignals, articleSignals, 1, blockedTitleKeys);
-        const candidate = normalizeQuestsForDate(generated, today)[0];
-        const candidateKey = normalizeTitleKey(candidate?.title);
-
-        if (candidate && candidateKey && !existingKeys.has(candidateKey)) {
-          replacement = candidate;
-          existingKeys.add(candidateKey);
-          break;
-        }
-      }
-
-      if (!replacement) {
-        throw new Error('Failed to regenerate a non-duplicate quest after multiple attempts');
-      }
-
-      updated[index] = replacement;
-    }
-  }
-}
-
 // Generates ideas and stores them in Supabase. Idempotent: skips if today's quests exist.
 export async function generateAndStore() {
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -189,12 +153,10 @@ export async function generateAndStore() {
 
   const existingTitles = await getExistingQuestTitles(supabaseUrl, supabaseKey);
   ideas = await regenerateDuplicateIdeas({
-    apiKey: anthropicKey,
     ideas,
     existingTitles,
-    today,
-    githubSignals,
-    articleSignals
+    normalizeDate: today,
+    regenerateOne: (blockedTitleKeys) => generateIdeas(anthropicKey, githubSignals, articleSignals, 1, blockedTitleKeys)
   });
 
   ideas = enrichSources(ideas, githubSignals, articleSignals);
