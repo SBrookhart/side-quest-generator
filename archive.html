@@ -581,18 +581,18 @@
       return;
     }
 
-    // Get today's date in YYYY-MM-DD format
+    // Get today's date in YYYY-MM-DD format (local timezone)
     const today = new Date();
-    const todayString = today.getFullYear() + '-' + 
-                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+    const todayString = today.getFullYear() + '-' +
+                        String(today.getMonth() + 1).padStart(2, '0') + '-' +
                         String(today.getDate()).padStart(2, '0');
-    
+
     console.log('Today\'s date:', todayString);
 
-    // Filter out today's date
+    // Filter out today and any future dates
     filteredData = {};
     Object.entries(allData).forEach(([date, ideas]) => {
-      if (date !== todayString) {
+      if (date < todayString) {
         filteredData[date] = ideas;
       }
     });

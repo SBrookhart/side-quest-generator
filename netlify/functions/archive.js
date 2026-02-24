@@ -187,8 +187,8 @@ async function getFromSupabase() {
 
   // Read from both tables: quest_archive (legacy Jan 23-29) and daily_quests (Jan 30+)
   const [archiveRes, dailyRes] = await Promise.all([
-    fetch(`${supabaseUrl}/rest/v1/quest_archive?order=quest_date.desc,display_order.asc`, { headers }),
-    fetch(`${supabaseUrl}/rest/v1/daily_quests?quest_date=neq.${today}&order=quest_date.desc,display_order.asc`, { headers })
+    fetch(`${supabaseUrl}/rest/v1/quest_archive?quest_date=lt.${today}&order=quest_date.desc,display_order.asc`, { headers }),
+    fetch(`${supabaseUrl}/rest/v1/daily_quests?quest_date=lt.${today}&order=quest_date.desc,display_order.asc`, { headers })
   ]);
 
   const archiveRows = archiveRes.ok ? await archiveRes.json() : [];
