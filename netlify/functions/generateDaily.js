@@ -108,15 +108,15 @@ async function getRecentTitles(supabaseUrl, supabaseKey, days = 7) {
   }
 }
 
-// Generates ideas and stores them in Supabase. Idempotent: skips if today's quests exist.
-export async function generateAndStore() {
+// Generates ideas and stores them in Supabase.
+// Idempotent by default: skips if today's quests exist. Pass force=true to replace them.
+export async function generateAndStore({ force = false } = {}) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
   const today = getTodayET();
 
-  // Check if we already generated today
   if (supabaseUrl && supabaseKey) {
     const checkRes = await fetch(
       `${supabaseUrl}/rest/v1/daily_quests?quest_date=eq.${today}&select=id&limit=1`,
@@ -124,7 +124,7 @@ export async function generateAndStore() {
     );
     if (checkRes.ok) {
       const existing = await checkRes.json();
-      if (existing.length > 0) {
+      if (existing.length > 0 && !force) {
         console.log('Quests already exist for today, skipping generation');
         const existingRes = await fetch(
           `${supabaseUrl}/rest/v1/daily_quests?quest_date=eq.${today}&order=display_order.asc`,
@@ -139,6 +139,17 @@ export async function generateAndStore() {
           difficulty: r.difficulty,
           sources: r.sources
         }));
+      }
+      if (existing.length > 0 && force) {
+        const deleteRes = await fetch(
+          `${supabaseUrl}/rest/v1/daily_quests?quest_date=eq.${today}`,
+          { method: 'DELETE', headers: supabaseHeaders(supabaseKey) }
+        );
+        if (!deleteRes.ok) {
+          const err = await deleteRes.text();
+          throw new Error(`Failed to delete existing quests: ${err}`);
+        }
+        console.log(`Deleted existing quests for ${today} (force regeneration)`);
       }
     }
   }
@@ -225,8 +236,9 @@ export const handler = async (event) => {
   }
 
   try {
-    console.log('Generating and storing daily quests...');
-    const ideas = await generateAndStore();
+    const force = event.queryStringParameters?.force === 'true';
+    console.log(`Generating and storing daily quests...${force ? ' (force)' : ''}`);
+    const ideas = await generateAndStore({ force });
     const today = getTodayET();
     console.log('Successfully generated quests for:', today);
 
