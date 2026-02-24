@@ -1,5 +1,7 @@
 import { getGitHubSignals } from './github.js';
 import { getArticleSignals } from './articles.js';
+import { normalizeIdeas } from './normalize.js';
+import { buildSystemPrompt } from './questPrompt.js';
 
 // Curated fallback sources used only when live signals are unavailable
 const FALLBACK_GITHUB = [
@@ -68,100 +70,6 @@ function enrichSources(ideas, githubSignals, articleSignals) {
   });
 }
 
-
-const TECHNICAL_TERMS = [
-  /\bci\/?cd\b/i,
-  /\bcli\b/i,
-  /\bdevops\b/i,
-  /\bwebhook(s)?\b/i,
-  /\bmiddleware\b/i,
-  /\bcontainer(s|ization)?\b/i,
-  /\bproxy\b/i,
-  /\bterminal\b/i,
-  /\bdebug(ger)?\b/i,
-  /\blinter\b/i,
-  /\bgithub action(s)?\b/i,
-  /\bapi gateway\b/i,
-  /\bcron job\b/i,
-  /\bdeployment pipeline\b/i,
-  /\binfrastructure\b/i,
-  /\bself-host(ed|ing)?\b/i,
-  /\bkubernetes\b/i,
-  /\bdocker\b/i,
-  /\bserverless\b/i
-];
-
-function isTooTechnical(idea) {
-  const text = `${idea.title || ''} ${idea.murmur || ''} ${idea.quest || ''}`;
-  return TECHNICAL_TERMS.some(pattern => pattern.test(text));
-}
-
-function rewriteForVibeCoder(idea) {
-  const rewrite = (text = '') => text
-    .replace(/\bCI\/?CD\b/gi, 'automated checks')
-    .replace(/\bCLI\b/gi, 'simple command tool')
-    .replace(/\bDevOps\b/gi, 'app setup')
-    .replace(/\bwebhooks?\b/gi, 'live updates')
-    .replace(/\bmiddleware\b/gi, 'helper layer')
-    .replace(/\bcontainers?\b/gi, 'app packaging')
-    .replace(/\bcontainerization\b/gi, 'app packaging')
-    .replace(/\bproxy\b/gi, 'middle helper')
-    .replace(/\bterminal\b/gi, 'workspace')
-    .replace(/\bdebug(ger)?\b/gi, 'fixing workflow')
-    .replace(/\blinter\b/gi, 'quality helper')
-    .replace(/\bGitHub Actions?\b/gi, 'auto steps')
-    .replace(/\bAPI gateway\b/gi, 'request router')
-    .replace(/\bcron jobs?\b/gi, 'scheduled runs')
-    .replace(/\bdeployment pipeline\b/gi, 'release flow')
-    .replace(/\binfrastructure\b/gi, 'setup')
-    .replace(/\bself-host(ed|ing)?\b/gi, 'run-it-yourself')
-    .replace(/\bKubernetes\b/gi, 'orchestration stack')
-    .replace(/\bDocker\b/gi, 'packaged app')
-    .replace(/\bserverless\b/gi, 'managed backend');
-
-  return {
-    ...idea,
-    title: rewrite(idea.title),
-    murmur: rewrite(idea.murmur),
-    quest: rewrite(idea.quest)
-  };
-}
-
-function normalizeIdeas(ideas, dateISO) {
-  const appliesHardCap = dateISO >= '2026-02-21';
-  let hardCount = 0;
-
-  return ideas.map((idea, index) => {
-    let next = rewriteForVibeCoder(idea);
-    if (isTooTechnical(next)) {
-      next = {
-        ...next,
-        difficulty: next.difficulty === 'Hard' ? 'Medium' : (next.difficulty || 'Medium')
-      };
-    }
-
-    if (appliesHardCap && next.difficulty === 'Hard') {
-      hardCount += 1;
-      if (hardCount > 1) {
-        next = { ...next, difficulty: 'Medium' };
-      }
-    }
-
-    return {
-      ...next,
-      title: next.title || `Side Quest ${index + 1}`,
-      murmur: next.murmur || 'A practical idea that solves a real everyday friction point in a playful way.',
-      quest: next.quest || 'Build a simple app flow that helps people do this faster with less stress.',
-      worth: Array.isArray(next.worth) && next.worth.length ? next.worth.slice(0, 3) : [
-        'Practical value people can feel immediately',
-        'Straightforward weekend build scope',
-        'Teaches useful product-thinking skills'
-      ],
-      difficulty: ['Easy', 'Medium', 'Hard'].includes(next.difficulty) ? next.difficulty : 'Medium'
-    };
-  });
-}
-
 function getTodayET() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
 }
@@ -172,6 +80,32 @@ function supabaseHeaders(key) {
     'apikey': key,
     'Authorization': `Bearer ${key}`
   };
+}
+
+// Fetch recent quest titles from both tables to avoid generating duplicates.
+async function getRecentTitles(supabaseUrl, supabaseKey, days = 7) {
+  if (!supabaseUrl || !supabaseKey) return [];
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffDate = cutoff.toISOString().split('T')[0];
+
+    const [dailyRes, archiveRes] = await Promise.allSettled([
+      fetch(`${supabaseUrl}/rest/v1/daily_quests?quest_date=gte.${cutoffDate}&select=title`, { headers: supabaseHeaders(supabaseKey) }),
+      fetch(`${supabaseUrl}/rest/v1/quest_archive?quest_date=gte.${cutoffDate}&select=title`, { headers: supabaseHeaders(supabaseKey) }),
+    ]);
+
+    const titles = [];
+    for (const result of [dailyRes, archiveRes]) {
+      if (result.status === 'fulfilled' && result.value.ok) {
+        const rows = await result.value.json();
+        titles.push(...rows.map(r => r.title));
+      }
+    }
+    return titles;
+  } catch {
+    return [];
+  }
 }
 
 // Generates ideas and stores them in Supabase. Idempotent: skips if today's quests exist.
@@ -209,21 +143,22 @@ export async function generateAndStore() {
     }
   }
 
-  // Fetch live signals in parallel — failures are isolated and non-blocking
-  console.log('Fetching live signals from GitHub and article feeds...');
-  const [githubResult, articleResult] = await Promise.allSettled([
-    getGitHubSignals(),
-    getArticleSignals()
+  // Fetch live signals and recent titles in parallel
+  console.log('Fetching live signals and recent quest titles...');
+  const [githubResult, articleResult, recentTitles] = await Promise.all([
+    getGitHubSignals().catch(() => []),
+    getArticleSignals().catch(() => []),
+    getRecentTitles(supabaseUrl, supabaseKey),
   ]);
-  const githubSignals = githubResult.status === 'fulfilled' ? githubResult.value : [];
-  const articleSignals = articleResult.status === 'fulfilled' ? articleResult.value : [];
-  console.log(`Signals collected — GitHub: ${githubSignals.length}, Articles: ${articleSignals.length}`);
+  const githubSignals = githubResult || [];
+  const articleSignals = articleResult || [];
+  console.log(`Signals collected — GitHub: ${githubSignals.length}, Articles: ${articleSignals.length}, Recent titles to avoid: ${recentTitles.length}`);
 
   // Generate fresh ideas using live signals as context
-  let ideas = await generateIdeas(anthropicKey, githubSignals, articleSignals);
+  let ideas = await generateIdeas(anthropicKey, githubSignals, articleSignals, recentTitles);
 
-  // Medium strictness: rewrite overly technical phrasing + hard-cap enforcement
-  ideas = normalizeIdeas(ideas, today);
+  // Rewrite any remaining jargon + enforce difficulty cap
+  ideas = normalizeIdeas(ideas);
 
   ideas = enrichSources(ideas, githubSignals, articleSignals);
 
@@ -301,47 +236,8 @@ export const handler = async (event) => {
   }
 };
 
-async function generateIdeas(apiKey, githubSignals = [], articleSignals = []) {
-  const systemPrompt = `You are an AI assistant that generates playful, vibe-coder-friendly side quest ideas for indie builders.
-
-IMPORTANT — your audience is non-technical "vibe coders" who build with AI tools (Cursor, Claude Code, Replit, v0). They are creative, curious, and idea-driven — NOT experienced engineers. They can prompt their way to a working app but don't know what a proxy server or CI pipeline is.
-
-Generate exactly 5 project ideas with this distribution:
-- 2 thoughtful indie hacker / solo builder prompts (40%)
-- 1 early-stage product opportunity (20%)
-- 2 creative experiments & playful tools (40%)
-
-Each idea MUST be:
-- Accessible to someone with zero coding background who builds by vibing with AI
-- Practical first: solves a real, everyday friction people actually face
-- Slightly technical is okay, but keep it understandable for non-technical builders
-- About making everyday experiences more fun, visual, or human — NOT developer infrastructure
-- Conversational and playful in tone
-- Concrete and buildable (weekend project scale)
-- Specific enough to start immediately
-- Inspiring without being intimidating
-
-AVOID these — they are too technical for this audience:
-- Developer tools (linters, debuggers, CLI tools, git extensions, terminal utilities)
-- Infrastructure (APIs, proxies, pipelines, cron jobs, deployment tools)
-- Anything that assumes knowledge of databases, servers, or DevOps
-- Jargon-heavy concepts (webhooks, middleware, containerization, etc.)
-
-GOOD examples of the right vibe:
-- "What If My To-Do List Was a Plant?" (fun metaphor, visual, anyone can relate)
-- "Can My 404 Page Be a Game?" (creative, playful, delightful)
-- "What If My Code Commits Were a Tamagotchi?" (whimsical, uses everyday metaphor)
-- "Can My Spotify Wrapped Be for My Code?" (riffs on something everyone knows)
-
-Format each idea as JSON with:
-- title: A conversational question or observation (not a product pitch)
-- murmur: Why this exists (2-3 sentences, casual tone, no jargon)
-- quest: What to actually build (concrete, 2-3 sentences, described simply)
-- worth: Array of 3 short reasons why it's worth building
-- difficulty: "Easy", "Medium", or "Hard"
-- sources: Empty array (will be filled with actual signals later)
-
-Output ONLY valid JSON array, no markdown fences.`;
+async function generateIdeas(apiKey, githubSignals = [], articleSignals = [], recentTitles = []) {
+  const systemPrompt = buildSystemPrompt({ recentTitles });
 
   // Build signal context from live data
   let signalContext = '';
