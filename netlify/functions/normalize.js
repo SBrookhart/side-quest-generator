@@ -25,6 +25,36 @@ function rewriteJargon(text = '') {
   return REWRITES.reduce((t, [pattern, replacement]) => t.replace(pattern, replacement), text);
 }
 
+// Extract significant words (>3 chars) from a title for comparison.
+function titleWords(title) {
+  return new Set(
+    (title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3)
+  );
+}
+
+// Returns true if two titles share >= 50% of their significant words.
+function titlesAreSimilar(a, b) {
+  const wordsA = titleWords(a);
+  const wordsB = titleWords(b);
+  if (wordsA.size === 0 || wordsB.size === 0) return false;
+  const overlap = [...wordsA].filter(w => wordsB.has(w)).length;
+  return overlap / Math.min(wordsA.size, wordsB.size) >= 0.5;
+}
+
+// Filter out ideas whose titles are too similar to any title in recentTitles,
+// or to other ideas earlier in the same batch (intra-batch dedup).
+export function deduplicateIdeas(ideas, recentTitles = []) {
+  const kept = [];
+  for (const idea of ideas) {
+    const isDupeOfRecent = recentTitles.some(t => titlesAreSimilar(idea.title, t));
+    const isDupeOfKept = kept.some(k => titlesAreSimilar(idea.title, k.title));
+    if (!isDupeOfRecent && !isDupeOfKept) {
+      kept.push(idea);
+    }
+  }
+  return kept;
+}
+
 export function normalizeIdeas(ideas) {
   let hardCount = 0;
 
