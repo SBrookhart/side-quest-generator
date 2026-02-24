@@ -31,7 +31,7 @@ Format each idea as JSON with:
 - murmur: Why this exists (2-3 sentences, casual tone, no jargon)
 - quest: What to actually build (concrete, 2-3 sentences, described simply)
 - worth: Array of 3 short reasons why it's worth building
-- difficulty: "Easy", "Medium", or "Hard"
+- difficulty: "Easy", "Medium", or "Hard" (exactly 1 of the 5 must be "Hard")
 - sources: Empty array (will be filled later)
 
 Output ONLY valid JSON array, no markdown fences.`;
