@@ -9,6 +9,12 @@
 [functions]
   node_bundler = "esbuild"
 
+[functions."backfill"]
+  timeout = 26
+
+[functions."generateDaily"]
+  timeout = 26
+
 [[headers]]
   for = "/*.html"
   [headers.values]
