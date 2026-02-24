@@ -2,7 +2,7 @@
 // Called once per date — use the terminal loop in the README to process all missing dates.
 // Usage: GET /.netlify/functions/backfill?date=2026-01-30
 
-import { normalizeIdeas } from './normalize.js';
+import { normalizeIdeas, deduplicateIdeas } from './normalize.js';
 import { buildSystemPrompt } from './questPrompt.js';
 
 function supabaseHeaders(key) {
@@ -56,8 +56,33 @@ function enrichSources(ideas) {
   });
 }
 
-async function generateIdeas(apiKey) {
-  const prompt = buildSystemPrompt() + '\n\nGenerate 5 diverse side quest ideas for indie builders. Make them feel fresh, playful, and immediately buildable.';
+async function getRecentTitles(supabaseUrl, supabaseKey, excludeDate, days = 7) {
+  if (!supabaseUrl || !supabaseKey) return [];
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffDate = cutoff.toISOString().split('T')[0];
+
+    const [dailyRes, archiveRes] = await Promise.allSettled([
+      fetch(`${supabaseUrl}/rest/v1/daily_quests?quest_date=gte.${cutoffDate}&quest_date=neq.${excludeDate}&select=title`, { headers: supabaseHeaders(supabaseKey) }),
+      fetch(`${supabaseUrl}/rest/v1/quest_archive?quest_date=gte.${cutoffDate}&select=title`, { headers: supabaseHeaders(supabaseKey) }),
+    ]);
+
+    const titles = [];
+    for (const result of [dailyRes, archiveRes]) {
+      if (result.status === 'fulfilled' && result.value.ok) {
+        const rows = await result.value.json();
+        titles.push(...rows.map(r => r.title));
+      }
+    }
+    return titles;
+  } catch {
+    return [];
+  }
+}
+
+async function generateIdeas(apiKey, recentTitles = []) {
+  const prompt = buildSystemPrompt({ recentTitles }) + '\n\nGenerate 5 diverse side quest ideas for indie builders. Make them feel fresh, playful, and immediately buildable.';
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -126,11 +151,19 @@ export const handler = async (event) => {
     console.log(`Deleted existing quests for ${date} (force regeneration)`);
   }
 
-  // Generate quests
+  // Fetch recent titles for dedup, then generate
   let ideas;
   try {
-    ideas = await generateIdeas(anthropicKey);
+    const recentTitles = await getRecentTitles(supabaseUrl, supabaseKey, date);
+    ideas = await generateIdeas(anthropicKey, recentTitles);
     ideas = normalizeIdeas(ideas);
+    ideas = deduplicateIdeas(ideas, recentTitles);
+    if (ideas.length < 5) {
+      const allTitles = [...recentTitles, ...ideas.map(i => i.title)];
+      const extras = await generateIdeas(anthropicKey, allTitles);
+      const uniqueExtras = deduplicateIdeas(normalizeIdeas(extras), allTitles);
+      ideas.push(...uniqueExtras.slice(0, 5 - ideas.length));
+    }
     ideas = enrichSources(ideas);
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message, date }) };
