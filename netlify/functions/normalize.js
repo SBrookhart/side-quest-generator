@@ -58,7 +58,7 @@ export function deduplicateIdeas(ideas, recentTitles = []) {
 export function normalizeIdeas(ideas) {
   let hardCount = 0;
 
-  return ideas.map((idea, index) => {
+  const normalized = ideas.map((idea, index) => {
     let difficulty = ['Easy', 'Medium', 'Hard'].includes(idea.difficulty)
       ? idea.difficulty
       : 'Medium';
@@ -80,4 +80,14 @@ export function normalizeIdeas(ideas) {
       difficulty,
     };
   });
+
+  // Guarantee exactly 1 Hard quest: promote the last Medium if none exist
+  if (hardCount === 0 && normalized.length > 0) {
+    const lastMedium = normalized.findLastIndex(q => q.difficulty === 'Medium');
+    if (lastMedium !== -1) {
+      normalized[lastMedium].difficulty = 'Hard';
+    }
+  }
+
+  return normalized;
 }
