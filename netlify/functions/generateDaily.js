@@ -1,6 +1,6 @@
 import { getGitHubSignals } from './github.js';
 import { getArticleSignals } from './articles.js';
-import { normalizeIdeas } from './normalize.js';
+import { normalizeIdeas, deduplicateIdeas } from './normalize.js';
 import { buildSystemPrompt } from './questPrompt.js';
 
 // Curated fallback sources used only when live signals are unavailable
@@ -156,11 +156,25 @@ export async function generateAndStore() {
 
   // Generate fresh ideas using live signals as context
   let ideas = await generateIdeas(anthropicKey, githubSignals, articleSignals, recentTitles);
-
-  // Rewrite any remaining jargon + enforce difficulty cap
   ideas = normalizeIdeas(ideas);
 
-  ideas = enrichSources(ideas, githubSignals, articleSignals);
+  // Remove any ideas too similar to recently published quests (or to each other)
+  let unique = deduplicateIdeas(ideas, recentTitles);
+  if (unique.length < ideas.length) {
+    console.log(`Filtered ${ideas.length - unique.length} duplicate(s)`);
+  }
+
+  // If we lost ideas to dedup, generate one replacement batch
+  if (unique.length < 5) {
+    const allTitlesToAvoid = [...recentTitles, ...unique.map(i => i.title)];
+    console.log(`Generating replacements (have ${unique.length}, need 5)...`);
+    const extras = await generateIdeas(anthropicKey, githubSignals, articleSignals, allTitlesToAvoid);
+    const normalizedExtras = normalizeIdeas(extras);
+    const uniqueExtras = deduplicateIdeas(normalizedExtras, allTitlesToAvoid);
+    unique.push(...uniqueExtras.slice(0, 5 - unique.length));
+  }
+
+  ideas = enrichSources(unique, githubSignals, articleSignals);
 
   // Store in Supabase
   if (supabaseUrl && supabaseKey) {
