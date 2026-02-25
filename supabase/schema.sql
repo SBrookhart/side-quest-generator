@@ -57,7 +57,8 @@ BEGIN
   DELETE FROM daily_quests WHERE quest_date = yesterday;
   RETURN jsonb_build_object('status','archived','count',archived_count,'date',yesterday);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public;
 
 -- pg_cron: archive at both 04:00 and 05:00 UTC (covers EDT/EST)
 SELECT cron.schedule('archive-quests-est','0 5 * * *','SELECT archive_daily_quests()');
