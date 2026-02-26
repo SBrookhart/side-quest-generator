@@ -29,6 +29,17 @@ CREATE TABLE IF NOT EXISTS quest_archive (
 CREATE INDEX IF NOT EXISTS idx_daily_quests_date ON daily_quests(quest_date DESC);
 CREATE INDEX IF NOT EXISTS idx_quest_archive_date ON quest_archive(quest_date DESC, display_order);
 
+-- Enable Row Level Security
+ALTER TABLE daily_quests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quest_archive ENABLE ROW LEVEL SECURITY;
+
+-- Allow public read access (quests are publicly displayed)
+CREATE POLICY "Allow public read access" ON daily_quests
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow public read access" ON quest_archive
+  FOR SELECT USING (true);
+
 -- Idempotent archive function: moves yesterday's quests to archive
 CREATE OR REPLACE FUNCTION archive_daily_quests() RETURNS jsonb AS $$
 DECLARE
@@ -46,7 +57,8 @@ BEGIN
   DELETE FROM daily_quests WHERE quest_date = yesterday;
   RETURN jsonb_build_object('status','archived','count',archived_count,'date',yesterday);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public;
 
 -- pg_cron: archive at both 04:00 and 05:00 UTC (covers EDT/EST)
 SELECT cron.schedule('archive-quests-est','0 5 * * *','SELECT archive_daily_quests()');

@@ -158,11 +158,17 @@ export const handler = async (event) => {
     ideas = await generateIdeas(anthropicKey, recentTitles);
     ideas = normalizeIdeas(ideas);
     ideas = deduplicateIdeas(ideas, recentTitles);
-    if (ideas.length < 5) {
+    let attempts = 0;
+    while (ideas.length < 5 && attempts < 3) {
+      attempts++;
       const allTitles = [...recentTitles, ...ideas.map(i => i.title)];
+      console.log(`Generating replacements, attempt ${attempts} (have ${ideas.length}, need 5)...`);
       const extras = await generateIdeas(anthropicKey, allTitles);
       const uniqueExtras = deduplicateIdeas(normalizeIdeas(extras), allTitles);
       ideas.push(...uniqueExtras.slice(0, 5 - ideas.length));
+    }
+    if (ideas.length < 5) {
+      console.warn(`Only ${ideas.length} unique quests after ${attempts} replacement attempts for ${date}`);
     }
     ideas = enrichSources(ideas);
   } catch (err) {
