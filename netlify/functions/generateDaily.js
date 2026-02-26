@@ -175,14 +175,20 @@ export async function generateAndStore({ force = false } = {}) {
     console.log(`Filtered ${ideas.length - unique.length} duplicate(s)`);
   }
 
-  // If we lost ideas to dedup, generate one replacement batch
-  if (unique.length < 5) {
+  // If we lost ideas to dedup, generate replacement batches (up to 3 attempts)
+  let attempts = 0;
+  while (unique.length < 5 && attempts < 3) {
+    attempts++;
     const allTitlesToAvoid = [...recentTitles, ...unique.map(i => i.title)];
-    console.log(`Generating replacements (have ${unique.length}, need 5)...`);
+    console.log(`Generating replacements, attempt ${attempts} (have ${unique.length}, need 5)...`);
     const extras = await generateIdeas(anthropicKey, githubSignals, articleSignals, allTitlesToAvoid);
     const normalizedExtras = normalizeIdeas(extras);
     const uniqueExtras = deduplicateIdeas(normalizedExtras, allTitlesToAvoid);
     unique.push(...uniqueExtras.slice(0, 5 - unique.length));
+  }
+
+  if (unique.length < 5) {
+    console.warn(`Only ${unique.length} unique quests after ${attempts} replacement attempts, padding with fallback ideas`);
   }
 
   ideas = enrichSources(unique, githubSignals, articleSignals);

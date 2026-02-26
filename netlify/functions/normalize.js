@@ -25,10 +25,23 @@ function rewriteJargon(text = '') {
   return REWRITES.reduce((t, [pattern, replacement]) => t.replace(pattern, replacement), text);
 }
 
-// Extract significant words (>3 chars) from a title for comparison.
+// Common words that appear frequently in quest titles but carry no
+// distinguishing meaning (e.g. "What If My X …", "Build Your Own Y …").
+// Filtering these prevents false-positive similarity matches.
+const STOP_WORDS = new Set([
+  'what', 'your', 'that', 'this', 'with', 'from', 'have', 'were', 'could',
+  'would', 'should', 'will', 'been', 'into', 'them', 'then', 'than', 'when',
+  'each', 'every', 'about', 'their', 'there', 'where', 'which', 'does',
+  'make', 'made', 'like', 'just', 'also', 'more', 'most', 'some', 'over',
+  'only', 'very', 'even', 'much', 'such', 'here', 'come', 'came',
+  'build', 'tool', 'code', 'data', 'apps', 'turn', 'turns',
+]);
+
+// Extract significant words (>3 chars, excluding stop words) from a title.
 function titleWords(title) {
   return new Set(
-    (title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3)
+    (title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/)
+      .filter(w => w.length > 3 && !STOP_WORDS.has(w))
   );
 }
 
